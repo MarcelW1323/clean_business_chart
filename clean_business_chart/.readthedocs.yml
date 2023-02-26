@@ -4,9 +4,5 @@ version: 2
 
 sphinx:
   fail_on_warning: true
-  
-python:
-  # Install our python package before building the docs
-  install:
-    - method: pip
-      path: .
+     
+requirements_file: docs\requirements.txt
