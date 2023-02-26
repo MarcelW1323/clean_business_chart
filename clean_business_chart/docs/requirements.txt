@@ -1,0 +1,4 @@
+# File: docs/requirements.txt
+
+# Defining the exact version will make sure things don't break
+matplotlib==3.5.1
