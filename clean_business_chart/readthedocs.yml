@@ -1,8 +1,0 @@
-#.readthedocs.yaml
-
-version: 2
-
-sphinx:
-  fail_on_warning: true
-     
-requirements_file: docs\requirements.txt
