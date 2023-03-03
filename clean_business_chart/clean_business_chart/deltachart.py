@@ -35,6 +35,7 @@ class DeltaChart(GeneralChart):
         self.data_total = dataset
                    
         testvar = self.calculate(data=dataset, base_scenario='PL', compare_scenario_list=['AC', 'FC'])
+        print("Testvar\n",testvar)
               
 
     def calculate(self, data, base_scenario, compare_scenario_list, max_length=None, round_decimals_percentages=1):
