@@ -76,10 +76,14 @@ class DeltaChart(GeneralChart):
 
     def _calculate_element(self, old_scenario, old_delta_value_element, base_element, new_scenario, compare_element):
         
+        
         if compare_element is not None and compare_element != 0:
-            delta_scenario_element = new_scenario
-            delta_value_element    = old_delta_value_element + compare_element - base_element
-            return_base_element    = 0
+            if len(old_scenario) != 0:
+                raise ValueError("New scenario "+str(new_scenario)+" on top of old scenario "+old_scenario+" not supported yet.")
+            else:
+                delta_scenario_element = new_scenario
+                delta_value_element    = old_delta_value_element + compare_element - base_element
+                return_base_element    = 0
         else:
             delta_scenario_element = old_scenario
             delta_value_element    = old_delta_value_element

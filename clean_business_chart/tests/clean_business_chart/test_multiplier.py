@@ -5,10 +5,10 @@ import pytest
         
 def test_check_valid_multiplier():    
     test = Multiplier('1')
-    assert test.check_valid_multiplier('1') == True
-    assert test.check_valid_multiplier('k') == True
-    assert test.check_valid_multiplier('m') == True
-    assert test.check_valid_multiplier('b') == True
+    assert test.check_valid_multiplier('1') == True, "check_valid_multiplier('1') returned not True"
+    assert test.check_valid_multiplier('k') == True, "check_valid_multiplier('k') returned not True"
+    assert test.check_valid_multiplier('m') == True, "check_valid_multiplier('m') returned not True"
+    assert test.check_valid_multiplier('b') == True, "check_valid_multiplier('b') returned not True"
     with pytest.raises(ValueError):
         test.check_valid_multiplier('2')
 
