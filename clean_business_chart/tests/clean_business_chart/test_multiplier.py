@@ -5,99 +5,136 @@ import pytest
         
 def test_check_valid_multiplier():    
     test = Multiplier('1')
-    assert test.check_valid_multiplier('1') == True, "check_valid_multiplier('1') returned not True"
-    assert test.check_valid_multiplier('k') == True, "check_valid_multiplier('k') returned not True"
-    assert test.check_valid_multiplier('m') == True, "check_valid_multiplier('m') returned not True"
-    assert test.check_valid_multiplier('b') == True, "check_valid_multiplier('b') returned not True"
+    actual = test.check_valid_multiplier('1')
+    assert actual == True, "check_valid_multiplier('1') returned not True, but returned "+str(actual)
+    actual = test.check_valid_multiplier('k')
+    assert actual == True, "check_valid_multiplier('k') returned not True, but returned "+str(actual)
+    actual = test.check_valid_multiplier('m')
+    assert actual == True, "check_valid_multiplier('m') returned not True, but returned "+str(actual)
+    actual = test.check_valid_multiplier('b')
+    assert actual == True, "check_valid_multiplier('b') returned not True, but returned "+str(actual)
     with pytest.raises(ValueError):
         test.check_valid_multiplier('2')
 
 def test_set_multiplier():
     test = Multiplier('b')
     test.set_multiplier('1')
-    assert test.multiplier == '1'
+    assert test.multiplier == '1', "set_multiplier('1') did not return '1', but returned "+str(test.multiplier)
     test.set_multiplier('k')
-    assert test.multiplier == 'k'
+    assert test.multiplier == 'k', "set_multiplier('k') did not return 'k', but returned "+str(test.multiplier)
     test.set_multiplier('m')
-    assert test.multiplier == 'm'
+    assert test.multiplier == 'm', "set_multiplier('m') did not return 'm', but returned "+str(test.multiplier)
     test.set_multiplier('b')
-    assert test.multiplier == 'b'
+    assert test.multiplier == 'b', "set_multiplier('b') did not return 'b', but returned "+str(test.multiplier)
     with pytest.raises(ValueError):
         test.set_multiplier('2')
 
 def test_get_multiplier():
     test = Multiplier('b')
     test.set_multiplier('1')
-    assert test.get_multiplier() == '1'
+    actual = test.get_multiplier()
+    assert actual == '1', "get_multiplier() did not return '1', but returned "+str(actual)
     test.set_multiplier('k')
-    assert test.get_multiplier() == 'k'
+    actual = test.get_multiplier()
+    assert actual == 'k', "get_multiplier() did not return 'k', but returned "+str(actual)
     test.set_multiplier('m')
-    assert test.get_multiplier() == 'm'
+    actual = test.get_multiplier()
+    assert actual == 'm', "get_multiplier() did not return 'm', but returned "+str(actual)
     test.set_multiplier('b')
-    assert test.get_multiplier() == 'b'
+    actual = test.get_multiplier()
+    assert actual == 'b', "get_multiplier() did not return 'b', but returned "+str(actual)
 
 def test_get_multiplier_index():
     test = Multiplier('b')
     test.set_multiplier('1')
-    assert test.get_multiplier_index() == 0
+    actual = test.get_multiplier_index()
+    assert actual == 0, "get_multiplier_index() did not return 0, but returned "+str(actual)
     test.set_multiplier('k')
-    assert test.get_multiplier_index() == 1
+    actual = test.get_multiplier_index()
+    assert actual == 1, "get_multiplier_index() did not return 1, but returned "+str(actual)
     test.set_multiplier('m')
-    assert test.get_multiplier_index() == 2
+    actual = test.get_multiplier_index()
+    assert actual == 2, "get_multiplier_index() did not return 2, but returned "+str(actual)
     test.set_multiplier('b')
-    assert test.get_multiplier_index() == 3
-    assert test.get_multiplier_index('1') == 0
-    assert test.get_multiplier_index('k') == 1
-    assert test.get_multiplier_index('m') == 2
-    assert test.get_multiplier_index('b') == 3
+    actual = test.get_multiplier_index()
+    assert actual == 3, "get_multiplier_index() did not return 3, but returned "+str(actual)
+    actual = test.get_multiplier_index('1')
+    assert actual == 0, "get_multiplier_index('1') did not return 0, but returned "+str(actual)
+    actual = test.get_multiplier_index('k')
+    assert actual == 1, "get_multiplier_index('k') did not return 1, but returned "+str(actual)
+    actual = test.get_multiplier_index('m')
+    assert actual == 2, "get_multiplier_index('m') did not return 2, but returned "+str(actual)
+    actual = test.get_multiplier_index('b')
+    assert actual == 3, "get_multiplier_index('b') did not return 3, but returned "+str(actual)
     with pytest.raises(ValueError):
         test.get_multiplier_index('5')
 
 def test_get_multiplier_value():
     test = Multiplier('b')
     test.set_multiplier('1')
-    assert test.get_multiplier_value() == 1
+    actual = test.get_multiplier_value()
+    assert actual == 1, "get_multiplier_value() did not return 1, but returned "+str(actual)
     test.set_multiplier('k')
-    assert test.get_multiplier_value() == 1000
+    actual = test.get_multiplier_value()
+    assert actual == 1000, "get_multiplier_value() did not return 1000, but returned "+str(actual)
     test.set_multiplier('m')
-    assert test.get_multiplier_value() == 1000000
+    actual = test.get_multiplier_value()
+    assert actual == 1000000, "get_multiplier_value() did not return 1000000, but returned "+str(actual)
     test.set_multiplier('b')
-    assert test.get_multiplier_value() == 1000000000
-    assert test.get_multiplier_value('1') == 1
-    assert test.get_multiplier_value('k') == 1000
-    assert test.get_multiplier_value('m') == 1000000
-    assert test.get_multiplier_value('b') == 1000000000
+    actual = test.get_multiplier_value()
+    assert actual == 1000000000, "get_multiplier_value() did not return 1000000000, but returned "+str(actual)
+    actual = test.get_multiplier_value('1')
+    assert actual == 1, "get_multiplier_value('1') did not return 1, but returned "+str(actual)
+    actual = test.get_multiplier_value('k')
+    assert actual == 1000, "get_multiplier_value('k') did not return 1000, but returned "+str(actual)
+    actual = test.get_multiplier_value('m')
+    assert actual == 1000000, "get_multiplier_value('m') did not return 1000000, but returned "+str(actual)
+    actual = test.get_multiplier_value('b')
+    assert actual == 1000000000, "get_multiplier_value('b') did not return 1000000000, but returned "+str(actual)
     with pytest.raises(ValueError):
         test.get_multiplier_value('5')
 
 def test_get_multiplier_string():
     test = Multiplier('b')
     test.set_multiplier('1')
-    assert test.get_multiplier_string() == ''
+    actual = test.get_multiplier_string()
+    assert actual == '', "get_multiplier_string() did not return '', but returned "+str(actual)
     test.set_multiplier('k')
-    assert test.get_multiplier_string() == 'k'
+    actual = test.get_multiplier_string()
+    assert actual == 'k', "get_multiplier_string() did not return 'k', but returned "+str(actual)
     test.set_multiplier('m')
-    assert test.get_multiplier_string() == 'm'
+    actual = test.get_multiplier_string()
+    assert actual == 'm', "get_multiplier_string() did not return 'm', but returned "+str(actual)
     test.set_multiplier('b')
-    assert test.get_multiplier_string() == 'b'
-    assert test.get_multiplier_string('1') == ''
-    assert test.get_multiplier_string('k') == 'k'
-    assert test.get_multiplier_string('m') == 'm'
-    assert test.get_multiplier_string('b') == 'b'
+    actual = test.get_multiplier_string()
+    assert actual == 'b', "get_multiplier_string() did not return 'b', but returned "+str(actual)
+    actual = test.get_multiplier_string('1')
+    assert actual == '', "get_multiplier_string('1') did not return '', but returned "+str(actual)
+    actual = test.get_multiplier_string('k')
+    assert actual == 'k', "get_multiplier_string('k') did not return 'k', but returned "+str(actual)
+    actual = test.get_multiplier_string('m')
+    assert actual == 'm', "get_multiplier_string('m') did not return 'm', but returned "+str(actual)
+    actual = test.get_multiplier_string('b')
+    assert actual == 'b', "get_multiplier_string('b') did not return 'b', but returned "+str(actual)
     with pytest.raises(ValueError):
         test.get_multiplier_string('5')
 
 def test_optimize():
-    test = Multiplier('1')
+    test = Multiplier('b')
     test.set_multiplier('1')
-    assert test.optimize(5836415089) == 1000000000
+    actual = test.optimize(5836415089)
+    assert actual == 1000000000, "test.optimize(5836415089) did not return 1000000000, but returned "+str(actual)
     test.set_multiplier('k')
-    assert test.optimize(5836415089) == 1000000
+    actual = test.optimize(5836415089)
+    assert actual == 1000000, "test.optimize(5836415089) did not return 1000000, but returned "+str(actual)
     test.set_multiplier('m')
-    assert test.optimize(5836415089) == 1000
+    actual = test.optimize(5836415089)
+    assert actual == 1000, "test.optimize(5836415089) did not return 1000, but returned "+str(actual)
     test.set_multiplier('b')
-    assert test.optimize(5836415089) == 1
+    actual = test.optimize(5836415089)
+    assert actual == 1, "test.optimize(5836415089) did not return 1, but returned "+str(actual)
     test.set_multiplier('k')
-    assert test.optimize(58364.15089) == 1000
+    actual = test.optimize(58364.15089)
+    assert actual == 1000, "test.optimize(58364.15089) did not return 1000, but returned "+str(actual)
     with pytest.raises(TypeError):
         test.optimize('no integer or float')
