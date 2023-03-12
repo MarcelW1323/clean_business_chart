@@ -3,11 +3,40 @@
 # Import modules
 import matplotlib.pyplot as plt                   # for most graphics
 from matplotlib.patches import ConnectionPatch    # for lines between subplots (used in the function "plot_line_accross_axes")
+import pandas as pd                               # for easy pandas support
 
 
 #####################    
 # GENERAL FUNCTIONS #
 #####################
+
+def islist(inputvariable):
+    """Returns whether the inputvariable is a list (True) or not (False)"""
+    return isinstance(inputvariable, list)
+
+def isdictionary(inputvariable):
+    """Returns whether the inputvariable is a dictionary (True) or not (False)"""
+    return isinstance(inputvariable, dict)
+
+def isinteger(inputvariable):
+    """Returns whether the inputvariable is an integer (True) or not (False)"""
+    return isinstance(inputvariable, int)
+
+def isstring(inputvariable):
+    """Returns whether the inputvariable is a string (True) or not (False)"""
+    return isinstance(inputvariable, str)
+
+def isfloat(inputvariable):
+    """Returns whether the inputvariable is a float (True) or not (False)"""
+    return isinstance(inputvariable, float)
+
+def isboolean(inputvariable):
+    """Returns whether the inputvariable is a boolean (True) or not (False)"""
+    return isinstance(inputvariable, bool)
+
+def isdataframe(inputvariable):
+    """Returns whether the inputvariable is a pandas DataFrame (True) or not (False)"""
+    return isinstance(inputvariable, pd.DataFrame)   
 
 def plot_line_accross_axes(fig, axbegin, xbegin, ybegin, axend, xend, yend, linecolor='black', arrowstyle='-', linewidth=1, endpoints=False, endpointcolor=None):
     """
