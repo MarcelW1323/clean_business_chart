@@ -8,6 +8,28 @@ import pytest
 # GENERAL FUNCTIONS #
 #####################
 
+def test_islist():
+    # Test with a list
+    expected = True
+    actual   = islist(['list'])
+    assert actual == expected, "islist(['list']) gives back "+str(actual)+" instead of "+str(exptected)
+    # Test with a string
+    expected = False
+    actual   = islist('not a list')
+    assert actual == expected, "islist('not a list') gives back "+str(actual)+" instead of "+str(exptected)
+
+
+def test_isdictionary():
+    # Test with a dictionary
+    expected = True
+    actual   = isdictionary({'dictionary':'yes'})
+    assert actual == expected, "isdictionary({'dictionary':'yes'}) gives back "+str(actual)+" instead of "+str(exptected)
+    # Test with a string
+    expected = False
+    actual   = isdictionary('not a dictionary')
+    assert actual == expected, "isdictionary('not a dictionary') gives back "+str(actual)+" instead of "+str(exptected)
+
+
 def test_plot_line_accross_axes():
     # The function plot_line_accross_axes() draws a line in a figure object.
     #### At the moment I have no idea how to test this function
