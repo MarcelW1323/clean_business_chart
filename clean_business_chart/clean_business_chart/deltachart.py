@@ -34,13 +34,13 @@ class DeltaChart(GeneralChart):
         # TECHNICAL DEBT: Needed for the self.filter_scenarios
         self.data_total = dataset
                    
-        testvar = self.calculate(data=dataset, base_scenario='PL', compare_scenario_list=['AC', 'FC'])
+        testvar = self.calculate_h(data=dataset, base_scenario='PL', compare_scenario_list=['AC', 'FC'])
         print("Testvar\n",testvar)
               
 
-    def calculate(self, data, base_scenario, compare_scenario_list, max_length=None, round_decimals_percentages=1):
+    def calculate_h(self, data, base_scenario, compare_scenario_list, max_length=None, round_decimals_percentages=1):
         """
-        Calculate the delta values
+        Calculate the delta values for a horizontal delta chart
         """
         print("Calculate\ndata:", data, "\nbase_scenario:", base_scenario, "\ncompare_scenario_list:", compare_scenario_list)
         self.delta_base_scenario = base_scenario                       # Get the value of the base scenario and put it in a class variable
