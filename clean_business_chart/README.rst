@@ -27,6 +27,8 @@ Features
 --------
 
 * ColumnWithWaterfall, the first chart released with clean-business-chart!
+* added support for pandas in version 0.1.1
+
 
 Credits
 -------
