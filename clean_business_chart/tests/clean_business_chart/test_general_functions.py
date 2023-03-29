@@ -39,7 +39,7 @@ def test_isinteger():
     actual   = isinteger('not an integer')
     assert actual == expected, "isinteger('not an integer') gives back "+str(actual)+" instead of "+str(expected)
 
-def isstring():
+def test_isstring():
     # Test with a string
     expected = True
     actual   = isstring('this is a string')
@@ -49,7 +49,7 @@ def isstring():
     actual   = isstring(100)
     assert actual == expected, "isstring(100) gives back "+str(actual)+" instead of "+str(expected)
 
-def isfloat(inputvariable):
+def test_isfloat():
     # Test with a float
     expected = True
     actual   = isfloat(3.14)
@@ -59,7 +59,7 @@ def isfloat(inputvariable):
     actual   = isfloat('not a float')
     assert actual == expected, "isfloat('not a float') gives back "+str(actual)+" instead of "+str(expected)
 
-def isboolean(inputvariable):
+def test_isboolean():
     # Test with a boolean
     expected = True
     actual   = isboolean(True)
@@ -69,7 +69,7 @@ def isboolean(inputvariable):
     actual   = isboolean('not a boolean')
     assert actual == expected, "isboolean('not a boolean') gives back "+str(actual)+" instead of "+str(expected)
 
-def isdataframe(inputvariable):
+def test_isdataframe():
     # Test with a DataFrame
     expected = True
     actual   = isdataframe(pd.DataFrame({'Column1': ['Value1', 'Value2']}))
@@ -98,6 +98,42 @@ def test_plot_endpoint():
         plot_endpoint(ax=1, x=2, y=3, endpointcolor=[1,2,3])
     with pytest.raises(ValueError):
         plot_endpoint(ax=1, x=2, y=3, endpointcolor=[1,2], markersize_outercircle=5, markersize_innercircle=7)
+
+
+def test_string_to_value():
+    # Test with None
+    expected = None
+    actual   = string_to_value(None)
+    assert actual == expected, "string_to_value(None) gives back "+str(actual)+" instead of "+str(expected)
+    actual   = string_to_value('None')
+    assert actual == expected, "string_to_value('None') gives back "+str(actual)+" instead of "+str(expected)
+    # Test with list
+    expected = [1, 1.2, None]
+    actual   = string_to_value(['1', '1.2', 'None'])
+    assert actual == expected, "string_to_value(['1', '1.2', 'None']) gives back "+str(actual)+" instead of "+str(expected)
+    # Test with integer
+    expected = 1000
+    actual   = string_to_value(1000)
+    assert actual == expected, "string_to_value(1000) gives back "+str(actual)+" instead of "+str(expected)
+    expected = 2000
+    actual   = string_to_value('2000')
+    assert actual == expected, "string_to_value('2000') gives back "+str(actual)+" instead of "+str(expected)
+    expected = -3000
+    actual   = string_to_value('-3000')
+    assert actual == expected, "string_to_value('-3000') gives back "+str(actual)+" instead of "+str(expected)
+    # Test with float
+    expected = 324.71
+    actual   = string_to_value(324.71)
+    assert actual == expected, "string_to_value(324.71) gives back "+str(actual)+" instead of "+str(expected)
+    expected = 867.16
+    actual   = string_to_value('867.16')
+    assert actual == expected, "string_to_value('867.16') gives back "+str(actual)+" instead of "+str(expected)
+    expected = -123.45
+    actual   = string_to_value('-123.45')
+    assert actual == expected, "string_to_value('-123.45') gives back "+str(actual)+" instead of "+str(expected)
+    expected = '1.867.16'
+    actual   = string_to_value('1.867.16')
+    assert actual == expected, "string_to_value('1.867.16') gives back "+str(actual)+" instead of "+str(expected)
 
 
 #### Need to add more test-functions for automatic testing
