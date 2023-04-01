@@ -392,28 +392,43 @@ class ColumnWithWaterfall(GeneralChart):
         
         return data_list
 
-    def _convert_dataframe_to_list_of_lists_old_(self, dataframe):
+    def _data_frame_date_to_year_and_month(self, dataframe):
         """
-        If the data is a pandas DataFrame, this function will make it to a list of lists.
+        If the data is a pandas DataFrame, this function uses the column with the name 'Date' (if available) and extracts it to 'Year' and a 'month'
 
         Parameters
         ----------
-        dataframe : pandas DataFrame containing the columns Year and Month mandatory and the columns PY, PL, AC and/or FC.
+        dataframe        : pandas DataFrame with a lot of columns. A column named 'Date' is not mandatory, but optional
         
         Returns
         -------
-        data_list   : data_list contains a list of lists
+        export_dataframe : pandas DataFrame. If there was a column named 'Date', then there is now a column called 'Year' and 'Month' also with related values
         """
         # Check if the dataframe is not a pandas DataFrame
         if not isdataframe(dataframe):
             raise ValueError(str(dataframe)+" is not a pandas DataFrame")
 
-        dataframe = self._data_frame_keep_only_relevant_columns(dataframe)
-        dataframe = self._data_frame_aggregate(dataframe)
+        wanted_headers = ['Date']
 
-        data_list = [dataframe.columns.tolist()] + dataframe.values.tolist()
+        # Determine which wanted headers are available in the dataframe
+        available_headers = [x for x in wanted_headers if x in dataframe.columns]
 
-        return data_list
+        # Copy the dataframe to the export-parameter
+        export_dataframe = dataframe.copy()
+
+        # Check for Date-headers
+        if len(available_headers) > 0:
+            # There is a date column in te pandas dataframe, but it can have a non-date format yet. Be sure to make it a dateformat first
+            date_column = available_headers[0]
+            export_dataframe[date_column] = pd.to_datetime(export_dataframe[date_column])
+            # Now we have a real data-format in this column, now extract the year and the month
+            export_dataframe['Year']  = export_dataframe[date_column].dt.year
+            export_dataframe['Month'] = export_dataframe[date_column].dt.month
+        # else
+            # We don't need to do something. It is not mandatory that there should be a date column.
+        
+        return export_dataframe
+
 
     def _data_frame_keep_only_relevant_columns(self, dataframe):
         """
@@ -515,7 +530,7 @@ class ColumnWithWaterfall(GeneralChart):
         
         return export_dataframe
     
-    def _convert_year_month_to_string_dataframe(self, dataframe):
+    def _dataframe_convert_year_month_to_string(self, dataframe):
         """
         If the data is a pandas DataFrame, this function will convert the year and month to string values (containing numbers) for convenient sorting.
         
@@ -563,6 +578,9 @@ class ColumnWithWaterfall(GeneralChart):
         -------
         export_dictionary : dictionary with for each available scenario a list of 12 values and one value for the Year
         """
+        # If the dataframe has a column named 'Date' then the date information in this column will be converted to the 'Year' and 'Month' columns.
+        dataframe = self._data_frame_date_to_year_and_month(dataframe)
+        
         # If the dataframe has more columns than relevant, only keep the relevant columns
         dataframe = self._data_frame_keep_only_relevant_columns(dataframe)
         
@@ -570,7 +588,7 @@ class ColumnWithWaterfall(GeneralChart):
         dataframe = self._data_frame_aggregate(dataframe)
         
         # Convert year and month to strings and sort the dataframe on year and month
-        dataframe = self._convert_year_month_to_string_dataframe(dataframe)
+        dataframe = self._dataframe_convert_year_month_to_string(dataframe)
         
         # Determine the max-year and the year before the max-year. These will be the actual (AC) and previous year (PY)
         max_year        = dataframe['Year'].max()
