@@ -9,5 +9,6 @@ from .general_functions import *                 # Diverse set of functions to b
 from .multiplier import *                        # Class Multiplier
 from .deltachart import *                        # Class DeltaChart
 from .columnchartwithwaterfall import *          # Class ColumnWithWaterfall
-from .barchartwithwaterfall import *             # Class BarWithWaterfall
+#from .barchartwithwaterfall import *             # Class BarWithWaterfall
+
 
