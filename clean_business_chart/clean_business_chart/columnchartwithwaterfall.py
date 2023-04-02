@@ -259,7 +259,7 @@ class ColumnWithWaterfall(GeneralChart):
             # data is now in the form of a list of lists
         if isdataframe(data):
             # data is in the form of a pandas DataFrame
-            data = self._prepare_data_frame(data)
+            data = self._prepare_dataframe(data)
             # data is now in the form of a dictionary
         if islist(data):
             # Data is in the form of a list (of lists). We need to convert it to a dictionary
@@ -392,7 +392,43 @@ class ColumnWithWaterfall(GeneralChart):
         
         return data_list
 
-    def _data_frame_date_to_year_and_month(self, dataframe):
+    def _dataframe_search_for_headers(self, dataframe, search_for_headers, error_not_found=False):
+        """
+        If the data is a pandas DataFrame, this function will search for the headers and returns the found headers.
+        If error_not_found=True, and the headers are not found, you'll get an error.
+        
+        Parameters
+        ----------
+        dataframe          : pandas DataFrame
+        
+        search_for_headers : a list with headers to search for in the DataFrame
+        
+        error_not_found    : if te search_for_headers are not completely found, True gives an error, False gives no error
+        
+        Returns
+        -------
+        available_headers  : The headers out of the list of search_for_headers who are found in the DataFrame
+        """
+        # Check if the dataframe is a pandas DataFrame or not. Error when not a DataFrame.
+        if not isdataframe(dataframe):
+            raise ValueError(str(dataframe)+" is not a pandas DataFrame")
+
+        # Check if search_for_headers is a list. Error when not a list
+        if not islist(search_for_headers):
+            raise ValueError(str(search_for_headers)+" is not a list")
+
+        # Determine which headers are available in the dataframe
+        available_headers = [x for x in search_for_headers if x in dataframe.columns]
+
+        # Do we need to raise an error?
+        if error_not_found:
+            # Yes, we need to raise an error if both lists are not equal
+            if available_headers != search_for_headers:
+                raise ValueError("Expected columns in the DataFrame: "+str(search_for_headers)+". But found only these columns: "+str(available_headers))
+
+        return available_headers
+
+    def _dataframe_date_to_year_and_month(self, dataframe):
         """
         If the data is a pandas DataFrame, this function uses the column with the name 'Date' (if available) and extracts it to 'Year' and a 'month'
 
@@ -404,14 +440,11 @@ class ColumnWithWaterfall(GeneralChart):
         -------
         export_dataframe : pandas DataFrame. If there was a column named 'Date', then there is now a column called 'Year' and 'Month' also with related values
         """
-        # Check if the dataframe is not a pandas DataFrame
-        if not isdataframe(dataframe):
-            raise ValueError(str(dataframe)+" is not a pandas DataFrame")
-
+        # We want the header 'Date', but is not mandatory
         wanted_headers = ['Date']
 
-        # Determine which wanted headers are available in the dataframe
-        available_headers = [x for x in wanted_headers if x in dataframe.columns]
+        # Search for available headers
+        available_headers = self._dataframe_search_for_headers(dataframe, search_for_headers=wanted_headers, error_not_found=False)
 
         # Copy the dataframe to the export-parameter
         export_dataframe = dataframe.copy()
@@ -430,7 +463,7 @@ class ColumnWithWaterfall(GeneralChart):
         return export_dataframe
 
 
-    def _data_frame_keep_only_relevant_columns(self, dataframe):
+    def _dataframe_keep_only_relevant_columns(self, dataframe):
         """
         If the data is a pandas DataFrame, this function will narrow this DataFrame down to the needed columns.
 
@@ -442,21 +475,18 @@ class ColumnWithWaterfall(GeneralChart):
         -------
         export_dataframe : pandas DataFrame with at most the columns 'Year', 'Month', 'PY', 'PL', 'AC' and 'FC'
         """
-        # Check if the dataframe is not a pandas DataFrame
-        if not isdataframe(dataframe):
-            raise ValueError(str(dataframe)+" is not a pandas DataFrame")
-
+        # We want the headers 'Year', 'Month', 'PY', 'PL', 'AC', 'FC' and only those who are available. Nothing mandatory right now.
         wanted_headers = ['Year', 'Month', 'PY', 'PL', 'AC', 'FC']
 
-        # Determine which wanted headers are available in the dataframe
-        available_headers = [x for x in wanted_headers if x in dataframe.columns]
+        # Search for available headers
+        available_headers = self._dataframe_search_for_headers(dataframe, search_for_headers=wanted_headers, error_not_found=False)
 
-        # We only need the data from the columns for the purpose of this chart
+        # We only need the data from these columns for the purpose of this chart
         export_dataframe = dataframe[available_headers].copy()
         
         return export_dataframe
 
-    def _data_frame_aggregate(self, dataframe):
+    def _dataframe_aggregate(self, dataframe):
         """
         If the data is a pandas DataFrame, this function will aggregate this DataFrame by 'Year' and 'Month'.
         
@@ -470,25 +500,18 @@ class ColumnWithWaterfall(GeneralChart):
         -------
         export_dataframe : aggregated pandas DataFrame, aggregated by 'Year' and 'Month'
         """
-        # Check if the dataframe is not a pandas DataFrame
-        if not isdataframe(dataframe):
-            raise ValueError(str(dataframe)+" is not a pandas DataFrame")
-
-        # We need the Year and Month columns
+        # We need the 'Year' and 'Month' columns
         needed_headers = ['Year', 'Month']
 
-        # Determine which needed headers are available in the dataframe
-        available_headers = [x for x in needed_headers if x in dataframe.columns]
-
-        if available_headers != needed_headers:
-            raise ValueError("Expected columns in the DataFrame: "+str(needed_headers)+". But found only these columns: "+str(available_headers))
+        # Search for available headers
+        available_headers = self._dataframe_search_for_headers(dataframe, search_for_headers=needed_headers, error_not_found=True)
 
         # Aggregate data
         export_dataframe = dataframe.groupby(available_headers).sum().reset_index()
         
         return export_dataframe
 
-    def _data_frame_full_year(self, dataframe):
+    def _dataframe_full_year(self, dataframe):
         """
         If the data is a pandas DataFrame, this function will make incomplete years complete by adding missing months.
         
@@ -502,31 +525,24 @@ class ColumnWithWaterfall(GeneralChart):
         -------
         export_dataframe : pandas DataFrame with 12 rows, one for each month
         """
-        # Check if the dataframe is not a pandas DataFrame
-        if not isdataframe(dataframe):
-            raise ValueError(str(dataframe)+" is not a pandas DataFrame")
-
-        # We need the Year and Month columns
+        # We need the 'Year' and 'Month' columns
         needed_headers = ['Year', 'Month']
 
-        # Determine which needed headers are available in the dataframe
-        available_headers = [x for x in needed_headers if x in dataframe.columns]
-        
-        if available_headers != needed_headers:
-            raise ValueError("Expected columns in the DataFrame: "+str(needed_headers)+". But found only these columns: "+str(available_headers))
+        # Search for available headers
+        self._dataframe_search_for_headers(dataframe, search_for_headers=needed_headers, error_not_found=True)
 
         min_year = dataframe['Year'].min()
         max_year = dataframe['Year'].max()
         if min_year != max_year:
             raise ValueError("More than one year in DataFrame. Min year:"+str(min_year)+". Max year:"+str(max_year))
         
-        year = [str(min_year)] * 12
+        year = [str(min_year)] * 12  # min_year is equal to max_year. So max_year was also fine in this line of code
         month = [ ('00'+str(x))[-2:] for x in range(1,13)]  # Gives the numbers 1 to 12, both inclusive
-        df = pd.DataFrame({'Year':year, 'Month':month})
+        df = pd.DataFrame({'Year':year, 'Month':month})     # Makes a dataframe with 12 lines with Year and Month on each line
 
         # Fill full year
         export_dataframe = pd.merge(df, dataframe, how='left' ,on=['Year', 'Month'])
-        export_dataframe = export_dataframe.fillna(0)
+        export_dataframe = export_dataframe.fillna(0)  # Fill the not-existing values with 0
         
         return export_dataframe
     
@@ -544,18 +560,11 @@ class ColumnWithWaterfall(GeneralChart):
         -------
         export_dataframe : pandas DataFrame sorted by Year and Month
         """
-        # Check if the dataframe is not a pandas DataFrame
-        if not isdataframe(dataframe):
-            raise ValueError(str(dataframe)+" is not a pandas DataFrame")
-
-        # We need the Year and Month columns
+        # We need the 'Year' and 'Month' columns
         needed_headers = ['Year', 'Month']
 
-        # Determine which needed headers are available in the dataframe
-        available_headers = [x for x in needed_headers if x in dataframe.columns]
-
-        if available_headers != needed_headers:
-            raise ValueError("Expected columns in the DataFrame: "+str(needed_headers)+". But found only these columns: "+str(available_headers))
+        # Search for available headers
+        self._dataframe_search_for_headers(dataframe, search_for_headers=needed_headers, error_not_found=True)
 
         # Convert year to string. Convert month to string with length=2, filled with leading zeros if value < 10
         dataframe['Year'] = dataframe['Year'].apply(int).apply(str)
@@ -566,7 +575,7 @@ class ColumnWithWaterfall(GeneralChart):
         
         return export_dataframe
 
-    def _prepare_data_frame(self, dataframe):
+    def _prepare_dataframe(self, dataframe):
         """
         This function orchestrates other functions to transform a pandas DataFrame into a dictionary of scenarios.
 
@@ -579,13 +588,13 @@ class ColumnWithWaterfall(GeneralChart):
         export_dictionary : dictionary with for each available scenario a list of 12 values and one value for the Year
         """
         # If the dataframe has a column named 'Date' then the date information in this column will be converted to the 'Year' and 'Month' columns.
-        dataframe = self._data_frame_date_to_year_and_month(dataframe)
+        dataframe = self._dataframe_date_to_year_and_month(dataframe)
         
         # If the dataframe has more columns than relevant, only keep the relevant columns
-        dataframe = self._data_frame_keep_only_relevant_columns(dataframe)
+        dataframe = self._dataframe_keep_only_relevant_columns(dataframe)
         
         # It is possible that the dataframe has more detailed lines (especially when removing non-relevant columns). Aggregate them on Year/Month-level
-        dataframe = self._data_frame_aggregate(dataframe)
+        dataframe = self._dataframe_aggregate(dataframe)
         
         # Convert year and month to strings and sort the dataframe on year and month
         dataframe = self._dataframe_convert_year_month_to_string(dataframe)
@@ -599,8 +608,8 @@ class ColumnWithWaterfall(GeneralChart):
         df_py = dataframe[dataframe['Year'] == before_max_year].copy()
         
         # Complete dataframe for missing month-values. Nothing worse than incomplete time-axis
-        df_ac = self._data_frame_full_year(df_ac)
-        df_py = self._data_frame_full_year(df_py)
+        df_ac = self._dataframe_full_year(df_ac)
+        df_py = self._dataframe_full_year(df_py)
         
         if 'PY' in df_ac.columns:
             if 'AC' in df_py.columns:
