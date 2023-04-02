@@ -2,10 +2,12 @@
 
 import matplotlib.pyplot as plt                   # for most graphics
 from matplotlib import rcParams as mpl_rcp        # for font in _title
-from matplotlib import __version__ as mpl_version
+#from matplotlib import __version__ as mpl_version
+import pandas as pd                               # for easy pandas support
 
 from clean_business_chart.clean_business_chart import GeneralChart 
-from clean_business_chart.general_functions    import plot_line_accross_axes, plot_line_within_ax, prepare_title, formatstring, optimize_data
+from clean_business_chart.general_functions    import plot_line_accross_axes, plot_line_within_ax, prepare_title, formatstring, optimize_data, \
+                                                      islist, isdictionary, isinteger, isstring, isfloat, isboolean, isdataframe, string_to_value
 from clean_business_chart.multiplier           import Multiplier
 
 
@@ -43,15 +45,21 @@ class ColumnWithWaterfall(GeneralChart):
                               Default: False (don't force zero decimals)
     force_max_one_decimals  : If True, the maximum of decimals used is one. Know that force_zero_decimals has a higher priority than force_max_one_decimals.
                               Default: False (don't force max one decimals)
+    test                    : If True, only variables from the parent class are defined, together with other self-variables.
+                              This makes this module testable in an automatic way
+                              Default: False (this call it is not an automatic test)
     """
 
     def __init__(self, data=None, positive_is_good=True, preferred_base_scenario='PL', title=None, measure=True, multiplier='1', filename=None, 
-                 force_pl_is_zero=False, force_zero_decimals=False, force_max_one_decimals=False):
+                 force_pl_is_zero=False, force_zero_decimals=False, force_max_one_decimals=False, test=False):
         """
         This is the first function that will be called automatically. Here you'll find all the possible parameters to customize your experience.
         """
         super().__init__()                            # Get the variables from the parent class
         self._other_columnwithwaterfall_variables()   # Get additional variables for this class
+        
+        # for use to test automatically
+        if test: return None
         
         # Store variables
         self.original_data          = data
@@ -244,9 +252,17 @@ class ColumnWithWaterfall(GeneralChart):
         
         self.year               : Year of the data
         """
-        if type(data) == type(""):
-            data = self._convert_data_string_to_dict(data)
-        elif type(data) == type(list()):
+        # Do we need to convert the data to a dictionary? We support string and list.
+        if isstring(data):
+            # data is in the form of a string. We need to convert it to a list of lists (easier step) to prepare the conversion to a dictionary
+            data = self._convert_data_string_to_list_of_lists(data)
+            # data is now in the form of a list of lists
+        if isdataframe(data):
+            # data is in the form of a pandas DataFrame
+            data = self._prepare_dataframe(data)
+            # data is now in the form of a dictionary
+        if islist(data):
+            # Data is in the form of a list (of lists). We need to convert it to a dictionary
             data = self._convert_data_list_of_lists_to_dict(data)
         
         # Check for existence of data
@@ -346,9 +362,9 @@ class ColumnWithWaterfall(GeneralChart):
         self._optimize_multiplier()
 
 
-    def _convert_data_string_to_dict(self, data_string):
+    def _convert_data_string_to_list_of_lists(self, data_string):
         """
-        If the data is like a string, this function sees it as a CSV-file pasted in a string and will make it first to a list of lists and then calls an other function to make it a dictionary.
+        If the data is like a string, this function sees it as a CSV-file pasted in a string and will make it first to a list of lists.
 
         Parameters
         ----------
@@ -356,10 +372,10 @@ class ColumnWithWaterfall(GeneralChart):
         
         Returns
         -------
-        data_dict   : data_dict contains a dictionary with the scenario's as a key and the detail values as a list
-       """
-        # Check if the data is a string
-        if type(data_string) != type(''):
+        data_list   : data_list contains a list of lists
+        """
+        # Check if the data_string is not a string
+        if not isstring(data_string):
             raise ValueError(str(data_string)+" is not a string")
         
         # Split the string into lines, based on the 'new line'-character
@@ -371,13 +387,257 @@ class ColumnWithWaterfall(GeneralChart):
             if len(line.strip()) == 0:
                 # skip the empty line
                 continue
-            splitted_line = line.split(',')
+            splitted_line = line.strip().split(',')
             data_list.append(splitted_line)
         
-        # Convert the list of lists to a dictionary
-        data_dict = self._convert_data_list_of_lists_to_dict(data_list)
+        return data_list
 
-        return data_dict
+    def _dataframe_search_for_headers(self, dataframe, search_for_headers, error_not_found=False):
+        """
+        If the data is a pandas DataFrame, this function will search for the headers and returns the found headers.
+        If error_not_found=True, and the headers are not found, you'll get an error.
+        
+        Parameters
+        ----------
+        dataframe          : pandas DataFrame
+        
+        search_for_headers : a list with headers to search for in the DataFrame
+        
+        error_not_found    : if te search_for_headers are not completely found, True gives an error, False gives no error
+        
+        Returns
+        -------
+        available_headers  : The headers out of the list of search_for_headers who are found in the DataFrame
+        """
+        # Check if the dataframe is a pandas DataFrame or not. Error when not a DataFrame.
+        if not isdataframe(dataframe):
+            raise ValueError(str(dataframe)+" is not a pandas DataFrame")
+
+        # Check if search_for_headers is a list. Error when not a list
+        if not islist(search_for_headers):
+            raise ValueError(str(search_for_headers)+" is not a list")
+
+        # Determine which headers are available in the dataframe
+        available_headers = [x for x in search_for_headers if x in dataframe.columns]
+
+        # Do we need to raise an error?
+        if error_not_found:
+            # Yes, we need to raise an error if both lists are not equal
+            if available_headers != search_for_headers:
+                raise ValueError("Expected columns in the DataFrame: "+str(search_for_headers)+". But found only these columns: "+str(available_headers))
+
+        return available_headers
+
+    def _dataframe_date_to_year_and_month(self, dataframe):
+        """
+        If the data is a pandas DataFrame, this function uses the column with the name 'Date' (if available) and extracts it to 'Year' and a 'month'
+
+        Parameters
+        ----------
+        dataframe        : pandas DataFrame with a lot of columns. A column named 'Date' is not mandatory, but optional
+        
+        Returns
+        -------
+        export_dataframe : pandas DataFrame. If there was a column named 'Date', then there is now a column called 'Year' and 'Month' also with related values
+        """
+        # We want the header 'Date', but is not mandatory
+        wanted_headers = ['Date']
+
+        # Search for available headers
+        available_headers = self._dataframe_search_for_headers(dataframe, search_for_headers=wanted_headers, error_not_found=False)
+
+        # Copy the dataframe to the export-parameter
+        export_dataframe = dataframe.copy()
+
+        # Check for Date-headers
+        if len(available_headers) > 0:
+            # There is a date column in te pandas dataframe, but it can have a non-date format yet. Be sure to make it a dateformat first
+            date_column = available_headers[0]
+            export_dataframe[date_column] = pd.to_datetime(export_dataframe[date_column])
+            # Now we have a real data-format in this column, now extract the year and the month
+            export_dataframe['Year']  = export_dataframe[date_column].dt.year
+            export_dataframe['Month'] = export_dataframe[date_column].dt.month
+        # else
+            # We don't need to do something. It is not mandatory that there should be a date column.
+        
+        return export_dataframe
+
+
+    def _dataframe_keep_only_relevant_columns(self, dataframe):
+        """
+        If the data is a pandas DataFrame, this function will narrow this DataFrame down to the needed columns.
+
+        Parameters
+        ----------
+        dataframe        : pandas DataFrame with a lot of columns.
+        
+        Returns
+        -------
+        export_dataframe : pandas DataFrame with at most the columns 'Year', 'Month', 'PY', 'PL', 'AC' and 'FC'
+        """
+        # We want the headers 'Year', 'Month', 'PY', 'PL', 'AC', 'FC' and only those who are available. Nothing mandatory right now.
+        wanted_headers = ['Year', 'Month', 'PY', 'PL', 'AC', 'FC']
+
+        # Search for available headers
+        available_headers = self._dataframe_search_for_headers(dataframe, search_for_headers=wanted_headers, error_not_found=False)
+
+        # We only need the data from these columns for the purpose of this chart
+        export_dataframe = dataframe[available_headers].copy()
+        
+        return export_dataframe
+
+    def _dataframe_aggregate(self, dataframe):
+        """
+        If the data is a pandas DataFrame, this function will aggregate this DataFrame by 'Year' and 'Month'.
+        
+        Precondition: The dataframe should only have te needed columns.
+
+        Parameters
+        ----------
+        dataframe        : pandas DataFrame with hopefully a 'Year' and 'Month' column.
+        
+        Returns
+        -------
+        export_dataframe : aggregated pandas DataFrame, aggregated by 'Year' and 'Month'
+        """
+        # We need the 'Year' and 'Month' columns
+        needed_headers = ['Year', 'Month']
+
+        # Search for available headers
+        available_headers = self._dataframe_search_for_headers(dataframe, search_for_headers=needed_headers, error_not_found=True)
+
+        # Aggregate data
+        export_dataframe = dataframe.groupby(available_headers).sum().reset_index()
+        
+        return export_dataframe
+
+    def _dataframe_full_year(self, dataframe):
+        """
+        If the data is a pandas DataFrame, this function will make incomplete years complete by adding missing months.
+        
+        Precondition: The dataframe dataframe needs to be aggregated by Year and Month and only contains the data from one year.
+
+        Parameters
+        ----------
+        dataframe        : pandas DataFrame with data from one year.
+        
+        Returns
+        -------
+        export_dataframe : pandas DataFrame with 12 rows, one for each month
+        """
+        # We need the 'Year' and 'Month' columns
+        needed_headers = ['Year', 'Month']
+
+        # Search for available headers
+        self._dataframe_search_for_headers(dataframe, search_for_headers=needed_headers, error_not_found=True)
+
+        min_year = dataframe['Year'].min()
+        max_year = dataframe['Year'].max()
+        if min_year != max_year:
+            raise ValueError("More than one year in DataFrame. Min year:"+str(min_year)+". Max year:"+str(max_year))
+        
+        year = [str(min_year)] * 12  # min_year is equal to max_year. So max_year was also fine in this line of code
+        month = [ ('00'+str(x))[-2:] for x in range(1,13)]  # Gives the numbers 1 to 12, both inclusive
+        df = pd.DataFrame({'Year':year, 'Month':month})     # Makes a dataframe with 12 lines with Year and Month on each line
+
+        # Fill full year
+        export_dataframe = pd.merge(df, dataframe, how='left' ,on=['Year', 'Month'])
+        export_dataframe = export_dataframe.fillna(0)  # Fill the not-existing values with 0
+        
+        return export_dataframe
+    
+    def _dataframe_convert_year_month_to_string(self, dataframe):
+        """
+        If the data is a pandas DataFrame, this function will convert the year and month to string values (containing numbers) for convenient sorting.
+        
+        Precondition: The dataframe dataframe needs to be aggregated by Year and Month.
+
+        Parameters
+        ----------
+        dataframe        : pandas DataFrame, aggregated by Year and Month.
+        
+        Returns
+        -------
+        export_dataframe : pandas DataFrame sorted by Year and Month
+        """
+        # We need the 'Year' and 'Month' columns
+        needed_headers = ['Year', 'Month']
+
+        # Search for available headers
+        self._dataframe_search_for_headers(dataframe, search_for_headers=needed_headers, error_not_found=True)
+
+        # Convert year to string. Convert month to string with length=2, filled with leading zeros if value < 10
+        dataframe['Year'] = dataframe['Year'].apply(int).apply(str)
+        dataframe['Month'] = dataframe['Month'].apply(int).apply(str).str.zfill(2)
+        
+        # Sort dataframe by Year and Month
+        export_dataframe = dataframe.sort_values(['Year', 'Month'], ascending = [True, True]).copy()
+        
+        return export_dataframe
+
+    def _prepare_dataframe(self, dataframe):
+        """
+        This function orchestrates other functions to transform a pandas DataFrame into a dictionary of scenarios.
+
+        Parameters
+        ----------
+        dataframe         : pandas DataFrame
+        
+        Returns
+        -------
+        export_dictionary : dictionary with for each available scenario a list of 12 values and one value for the Year
+        """
+        # If the dataframe has a column named 'Date' then the date information in this column will be converted to the 'Year' and 'Month' columns.
+        dataframe = self._dataframe_date_to_year_and_month(dataframe)
+        
+        # If the dataframe has more columns than relevant, only keep the relevant columns
+        dataframe = self._dataframe_keep_only_relevant_columns(dataframe)
+        
+        # It is possible that the dataframe has more detailed lines (especially when removing non-relevant columns). Aggregate them on Year/Month-level
+        dataframe = self._dataframe_aggregate(dataframe)
+        
+        # Convert year and month to strings and sort the dataframe on year and month
+        dataframe = self._dataframe_convert_year_month_to_string(dataframe)
+        
+        # Determine the max-year and the year before the max-year. These will be the actual (AC) and previous year (PY)
+        max_year        = dataframe['Year'].max()
+        before_max_year = str(int(max_year)-1)
+
+        # Split the dataframes in the actual and previous year
+        df_ac = dataframe[dataframe['Year'] == max_year].copy()
+        df_py = dataframe[dataframe['Year'] == before_max_year].copy()
+        
+        # Complete dataframe for missing month-values. Nothing worse than incomplete time-axis
+        df_ac = self._dataframe_full_year(df_ac)
+        df_py = self._dataframe_full_year(df_py)
+        
+        if 'PY' in df_ac.columns:
+            if 'AC' in df_py.columns:
+                if not (df_ac['PY'] == df_py['AC']).all():
+                    raise ValueError(str(max_year)+"-DataFrame previous year does not match "+str(before_max_year)+ "-Dataframe", df_ac, df_py)
+                # else:
+                #    Everything is fine, go further
+            # else:
+            #    No actual values in previous year dataframe
+        else:
+            # No previous year values in actual dataframe
+            if 'AC' in df_py.columns:
+                # We can use the actual values in te previous year dataframe as previous year values in the actual dataframe
+                df_ac['PY'] = df_py['AC'].copy()
+        
+        # Transform the DataFrame into a dictionary
+        export_dictionary = df_ac.to_dict(orient='list')
+        export_dictionary['Year'] = max_year
+        if 'Month' in export_dictionary:
+            del export_dictionary['Month']
+        # Convert the values (that can be of type string) from the scenarios in integer or float values
+        for scenario in ['PY', 'PL', 'AC', 'FC']:
+            if scenario in export_dictionary.keys():
+                valuelist = export_dictionary[scenario]
+                export_dictionary[scenario] = string_to_value(valuelist)
+
+        return export_dictionary
+        
 
     def _convert_data_list_of_lists_to_dict(self, data_list):
         """
@@ -395,8 +655,8 @@ class ColumnWithWaterfall(GeneralChart):
         -------
         checked_data_dict  : checked_data_dict contains a dictionary with the scenario's as a key and the detail values as a list
        """
-        # Check if the data is a list
-        if type(data_list) != type(list()):
+        # Check if the data is not a list (ValueError), because we need a list (containing more lists)
+        if not islist(data_list):
             raise ValueError(str(data_list)+" is not a list")
         
         # Headers will ultimately contain the needed headers of the 'CSV'-list-structure
@@ -405,6 +665,8 @@ class ColumnWithWaterfall(GeneralChart):
         
         # Data_dict will contain the dictionary of lists to return from this function
         data_dict  = dict()
+        
+        # We keep track of the year_month-combinations for completeness (all 12 month from a year) and for uniqueness (each combination occurs one times)
         year_month = list()
         
         # Process each element of the list (which should be a list by themself)
@@ -414,9 +676,9 @@ class ColumnWithWaterfall(GeneralChart):
                 # skip the empty line
                 continue
             
-            # Check again if the element_list is a list
-            if type(element_list) != type(list()):
-                raise ValueError(str(element_list)+" is not a list")
+            # Check again if the element_list is not a list (ValueError), because we need a list at this level
+            if not islist(element_list):
+                raise ValueError("The element "+str(element_list)+" is not a list")
         
             if headers is None:
                 # Headers has no headervalues right now, use this first line as headers

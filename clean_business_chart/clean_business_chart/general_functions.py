@@ -3,11 +3,40 @@
 # Import modules
 import matplotlib.pyplot as plt                   # for most graphics
 from matplotlib.patches import ConnectionPatch    # for lines between subplots (used in the function "plot_line_accross_axes")
+import pandas as pd                               # for easy pandas support
 
 
 #####################    
 # GENERAL FUNCTIONS #
 #####################
+
+def islist(inputvariable):
+    """Returns whether the inputvariable is a list (True) or not (False)"""
+    return isinstance(inputvariable, list)
+
+def isdictionary(inputvariable):
+    """Returns whether the inputvariable is a dictionary (True) or not (False)"""
+    return isinstance(inputvariable, dict)
+
+def isinteger(inputvariable):
+    """Returns whether the inputvariable is an integer (True) or not (False)"""
+    return isinstance(inputvariable, int)
+
+def isstring(inputvariable):
+    """Returns whether the inputvariable is a string (True) or not (False)"""
+    return isinstance(inputvariable, str)
+
+def isfloat(inputvariable):
+    """Returns whether the inputvariable is a float (True) or not (False)"""
+    return isinstance(inputvariable, float)
+
+def isboolean(inputvariable):
+    """Returns whether the inputvariable is a boolean (True) or not (False)"""
+    return isinstance(inputvariable, bool)
+
+def isdataframe(inputvariable):
+    """Returns whether the inputvariable is a pandas DataFrame (True) or not (False)"""
+    return isinstance(inputvariable, pd.DataFrame)   
 
 def plot_line_accross_axes(fig, axbegin, xbegin, ybegin, axend, xend, yend, linecolor='black', arrowstyle='-', linewidth=1, endpoints=False, endpointcolor=None):
     """
@@ -188,7 +217,8 @@ def prepare_title(title=None, multiplier=None):
             if element == 'Business_measure':
                 if 'Unit' not in title.keys():
                     raise ValueError("Business_measure is filled, but Unit is empty. Please fill Unit also.")
-                title_text = title_text + r"$\bf{" + title[element].replace(' ', '\ ') + r"}$"                # In the math part, spaces needs to be converted to backslash space, or the space won't be visible
+                # In the math part below, spaces needs to be converted to backslash space, or the space won't be visible    
+                title_text = title_text + r"$\bf{" + title[element].replace(' ', '\ ') + r"}$"
             elif element == 'Unit':
                 title_text = title_text + ' in ' + multiplier_str + title[element] + '\n'
             else:
@@ -278,12 +308,29 @@ def optimize_data(data=None, numerator=1, denominator=1, decimals=0):
                  This can be a list of processed values when the input is a list
                  This can be the input value of data, just given back to the caller
     """
-    if type(data) == type(list()):
+    # Denominator may not be a zero, because of division by zero error
+    if isinteger(denominator) or isfloat(denominator):
+        if denominator == 0 or denominator == 0.0:
+            raise ValueError("Denominator "+str(denominator)+" will cause a division-by-zero-error")
+        # else there will be no division-by-zero-error, go further
+    else:
+        raise ValueError("Denominator "+str(denominator)+" is not of type integer or type float")
+
+    # Numerator needs to be an integer or a float
+    if not (isinteger(numerator) or isfloat(numerator)):
+        raise ValueError("Numerator "+str(numerator)+" is not of type integer or type float")
+
+    # Decimals needs to be an integer
+    if not isinteger(decimals):
+        raise ValueError("Decimals "+str(numerator)+" is not of type integer")    
+
+    # Process the data    
+    if islist(data):
         # Data is a list
         returnvalue = data[:]
         for number, element in enumerate(returnvalue):
             returnvalue[number] = optimize_data(data=element, numerator=numerator, denominator=denominator, decimals=decimals)
-    elif type(data) in (type(int(1)), type(float(1.1))):
+    elif isinteger(data) or isfloat(data):
         # Data is a integer or data is a float
         if decimals == 0:
             # The function "round" returns a float and with 0 decimals, you like to have an integer
@@ -295,4 +342,38 @@ def optimize_data(data=None, numerator=1, denominator=1, decimals=0):
         # Not a supported data type, just give the value back.
         returnvalue = data
     return returnvalue
-    
+
+def string_to_value(value):
+    """
+    Tries to make integers or floats from a stringvalue. When provided with a list, the list will processed element-wise
+    """
+    if value is None:
+        return value
+    elif islist(value):
+        for index, element in enumerate(value):
+            value[index] = string_to_value(element)
+        return value
+    elif value == 'None':
+        return None
+    elif isinteger(value) or isfloat(value):
+        return value
+    elif isstring(value):
+        if value.count(".") == 1:
+            if value.lstrip('-').replace('.', '').isdigit():
+                return float(value)
+            else:
+                # Not sure how to handle this, just return the value
+                return value
+        elif value.count(".") == 0:
+            if value.lstrip('-').isdigit():
+                return int(value)
+            else:
+                # Not sure how to handle this, just return the value
+                return value
+        else:
+            # Not sure how to handle this, just return the value
+            return value
+    else:
+        # Not sure how to handle it, just return the value
+        return value
+        

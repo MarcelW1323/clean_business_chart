@@ -10,7 +10,8 @@ with open('README.rst') as readme_file:
 with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
-requirements = ['matplotlib>=3.5.1']
+requirements = ['matplotlib>=3.5.1',
+                'pandas>=1.3']
 
 test_requirements = ['pytest>=3', ]
 
@@ -28,6 +29,9 @@ setup(
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
+        'Programming Language :: Python :: 3.11',
         'Topic :: Scientific/Engineering :: Visualization',
     ],
     description="Clean Business Chart is a Python package for IBCS-like charts based on matplotlib.",
@@ -35,12 +39,12 @@ setup(
     license="MIT license",
     long_description=readme + '\n\n' + history,
     include_package_data=True,
-    keywords=['clean business chart', 'IBCS', 'business chart'],
+    keywords=['clean business chart', 'IBCS', 'business chart', 'clean business charts', 'business charts'],
     name='Clean Business Chart',
     packages=find_packages(include=['clean_business_chart', 'clean_business_chart.*']),
     test_suite='tests',
     tests_require=test_requirements,
     url='https://github.com/marcelw1323/clean_business_chart',
-    version='0.1.0',
+    version='0.1.1',
     zip_safe=False,
 )

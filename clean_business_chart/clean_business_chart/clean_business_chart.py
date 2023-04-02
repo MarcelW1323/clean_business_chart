@@ -148,8 +148,16 @@ class GeneralChart:
         --------------
         self.barwidths : a dictionary of barwidths for measure and ratio
         """
+        # Commented out because of the linewidth, see implementation below.
         self.barwidths["measure"] = 0.65      # IBCS advices the width of 2/3 of a bar for measures
         self.barwidths["ratio"]   = 0.35      # IBCS advices the width of 1/3 of a bar for ratios
+        
+        #### I like to make the linewidth inside of the bars, but now the linewidth is outside of the bars
+        # So the bars need to be smaller to have the complete width about 2/3 for measures and 1/3 for ratios
+        # The values below are approx-values that look OK, but are not tested in every environment.
+        # It would be nice if this could be improved, where the linewidth would be part of the formula.
+        #self.barwidths["measure"] = 0.60      # IBCS advices the width of 2/3 of a bar for measures, now there is room for the linewidth
+        #self.barwidths["ratio"]   = 0.30      # IBCS advices the width of 1/3 of a bar for ratios, now there is room for the linewidth
 
  
     def get_barwidth(self, measure):
