@@ -430,7 +430,9 @@ class ColumnWithWaterfall(GeneralChart):
 
     def _dataframe_date_to_year_and_month(self, dataframe):
         """
-        If the data is a pandas DataFrame, this function uses the column with the name 'Date' (if available) and extracts it to 'Year' and a 'month'
+        If the data is a pandas DataFrame, this function uses the column with the name 'Date' (if available) and extracts it to 'Year' and a 'Month'.
+        If the 'Year' and 'Month' columns are already provided, they will be overwritten with the year and month out of the Date-column.
+        No testing will be done if the year and month out of the date-column is the same as the provided year and month columns.
 
         Parameters
         ----------
