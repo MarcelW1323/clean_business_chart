@@ -246,3 +246,41 @@ def test__dataframe_aggregate():
     with pytest.raises(ValueError):
         testvar = ColumnWithWaterfall(test=True)
         testvar._dataframe_aggregate("This is a string")
+
+
+def test__dataframe_full_year():
+    # Test 1 - good dataframe with missing month entries from one year
+    dataset = pd.DataFrame({'Year' : ['2022', '2022', '2022', '2022'], 
+                            'Month': ['02', '04', '07', '08'],
+                            'PY'   : [32, 38, 12, 29], 
+                            'PL'   : [33, 35, 15, 37], 
+                            'AC'   : [35, 33, 17, 41],
+                            'FC'   : [ 0,  0,  0,  0]})
+    testvar  = ColumnWithWaterfall(test=True)
+    expected = {'Year': {0: '2022', 1: '2022', 2: '2022', 3: '2022', 4: '2022', 5: '2022', 6: '2022', 7: '2022', 8: '2022', 9: '2022', 10: '2022', 11: '2022'}, 
+                'Month': {0: '01', 1: '02', 2: '03', 3: '04', 4: '05', 5: '06', 6: '07', 7: '08', 8: '09', 9: '10', 10: '11', 11: '12'}, 
+                'PY': {0: 0.0, 1: 32.0, 2: 0.0, 3: 38.0, 4: 0.0, 5: 0.0, 6: 12.0, 7: 29.0, 8: 0.0, 9: 0.0, 10: 0.0, 11: 0.0}, 
+                'PL': {0: 0.0, 1: 33.0, 2: 0.0, 3: 35.0, 4: 0.0, 5: 0.0, 6: 15.0, 7: 37.0, 8: 0.0, 9: 0.0, 10: 0.0, 11: 0.0}, 
+                'AC': {0: 0.0, 1: 35.0, 2: 0.0, 3: 33.0, 4: 0.0, 5: 0.0, 6: 17.0, 7: 41.0, 8: 0.0, 9: 0.0, 10: 0.0, 11: 0.0}, 
+                'FC': {0: 0.0, 1: 0.0, 2: 0.0, 3: 0.0, 4: 0.0, 5: 0.0, 6: 0.0, 7: 0.0, 8: 0.0, 9: 0.0, 10: 0.0, 11: 0.0}}
+    actual   = testvar._dataframe_full_year(dataset)
+    actual   = actual.to_dict()
+    message  = "Test 1 - ColumnWithWaterfall._dataframe_aggregate returned {0} instead of {1}".format(actual, expected)
+    assert actual == expected, message
+
+    # Test 2 - only dataframe supported
+    with pytest.raises(ValueError):
+        testvar = ColumnWithWaterfall(test=True)
+        testvar._dataframe_full_year("This is a string")
+
+    # Test 3 - a dataframe with more than one year
+    with pytest.raises(ValueError):
+        dataset = pd.DataFrame({'Year' : ['2022', '2021'], 
+                                'Month': ['01', '02'],
+                                'AC': [35, 33]})
+        testvar  = ColumnWithWaterfall(test=True)
+        actual   = testvar._dataframe_full_year(dataset)
+
+
+# Next test 
+# def test__dataframe_convert_year_month_to_string():
