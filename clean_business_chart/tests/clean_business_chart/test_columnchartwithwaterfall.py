@@ -247,6 +247,13 @@ def test__dataframe_aggregate():
         testvar = ColumnWithWaterfall(test=True)
         testvar._dataframe_aggregate("This is a string")
 
+    # Test 3 - a dataframe with missing column
+    with pytest.raises(ValueError):
+        dataset = pd.DataFrame({'Year' : ['2022', '2021'], 
+                                'AC': [35, 33]})
+        testvar  = ColumnWithWaterfall(test=True)
+        actual   = testvar._dataframe_convert_year_month_to_string(dataset)
+
 
 def test__dataframe_full_year():
     # Test 1 - good dataframe with missing month entries from one year
@@ -280,6 +287,13 @@ def test__dataframe_full_year():
                                 'AC': [35, 33]})
         testvar  = ColumnWithWaterfall(test=True)
         actual   = testvar._dataframe_full_year(dataset)
+
+    # Test 4 - a dataframe with missing column
+    with pytest.raises(ValueError):
+        dataset = pd.DataFrame({'Year' : ['2022', '2022'], 
+                                'AC': [35, 33]})
+        testvar  = ColumnWithWaterfall(test=True)
+        actual   = testvar._dataframe_convert_year_month_to_string(dataset)
 
 
 def test__dataframe_convert_year_month_to_string():
