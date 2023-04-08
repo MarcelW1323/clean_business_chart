@@ -252,11 +252,11 @@ class ColumnWithWaterfall(GeneralChart):
         
         self.year               : Year of the data
         """
-        # Do we need to convert the data to a dictionary? We support string and list.
+        # Do we need to convert the data to a dictionary? We support string (as CSV-file), list (of lists) and pandas DataFrame.
         if isstring(data):
-            # data is in the form of a string. We need to convert it to a list of lists (easier step) to prepare the conversion to a dictionary
-            data = self._convert_data_string_to_list_of_lists(data)
-            # data is now in the form of a list of lists
+            # data is in the form of a string. We need to convert it to a pandas DataFrame
+            data = self._convert_data_string_to_dataframe(data)
+            # data is now in the form of a pandas DataFrame
         if isdataframe(data):
             # data is in the form of a pandas DataFrame
             data = self._prepare_dataframe(data)
@@ -362,35 +362,27 @@ class ColumnWithWaterfall(GeneralChart):
         self._optimize_multiplier()
 
 
-    def _convert_data_string_to_list_of_lists(self, data_string):
+    def _convert_data_string_to_dataframe(self, data_string, separator=','):
         """
-        If the data is like a string, this function sees it as a CSV-file pasted in a string and will make it first to a list of lists.
+        If the data is like a string, this function sees it as a CSV-file pasted in a string and will make it a pandas DataFrame.
 
         Parameters
         ----------
-        data_string : data_string contains a string-like CSV-file.
+        data_string      : data_string contains a string-like CSV-file.
         
         Returns
         -------
-        data_list   : data_list contains a list of lists
+        export_dataframe : data_list contains a list of lists
         """
         # Check if the data_string is not a string
         if not isstring(data_string):
             raise ValueError(str(data_string)+" is not a string")
         
-        # Split the string into lines, based on the 'new line'-character
-        lines = data_string.splitlines()
-        
-        # Create an empty list to receive each line (as a list). So we end with the variable data_list as a list of lists.
-        data_list = list()
-        for line in lines:
-            if len(line.strip()) == 0:
-                # skip the empty line
-                continue
-            splitted_line = line.strip().split(',')
-            data_list.append(splitted_line)
-        
-        return data_list
+        export_dataframe = pd.DataFrame(data=[x.strip().split(separator) for x in data_string.split('\n') if len(x.strip())>0][1:], 
+                                        columns=[x.strip() for x in data_string.split('\n') if len(x.strip())>0][0].split(separator))
+
+        return export_dataframe
+
 
     def _dataframe_search_for_headers(self, dataframe, search_for_headers, error_not_found=False):
         """
