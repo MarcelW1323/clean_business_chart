@@ -68,30 +68,6 @@ def test__convert_data_string_to_dataframe():
         testvar._convert_data_string_to_dataframe(1.2)
 
 
-def test___convert_data_list_of_lists_to_dict():
-    # Test 1 - good list_of_lists to dictionary conversion 
-    dataset  = [['Year', 'Month', 'PL', 'AC', 'FC', 'PY'], ['2021', '1', '0', '32', '0', '0'], ['2021', '5', '0', '41', '0', '0'], 
-                ['2021', '6', '0', '37', '0', '0'], ['2021', '7', '0', '33', '0', '0'], ['2021', '2', '0', '38', '0', '0'], 
-                ['2021', '3', '0', '29', '0', '0'], ['2021', '4', '0', '35', '0', '0'], ['2021', '8', '0', '38', '0', '0'], 
-                ['2021', '9', '0', '42', '0', '0'], ['2021', '10', '0', '44', '0', '0'], ['2021', '11', '0', '39', '0', '0'], 
-                ['2021', '12', '24', '31', '48', '0'], ['2020', '10', '0', '44', '0', '0'], ['2020', '11', '0', '39', '0', '0'], 
-                ['2020', '12', '0', '31', '0', '0'], ['2022', '1', '33', '35', '0', '32'], ['2022', '2', '35', '33', '0', '38'], 
-                ['2022', '3', '37', '41', '0', '29'], ['2022', '4', '40', '41', '0', '35'], ['2022', '5', '38', '37', '0', '41'], 
-                ['2022', '6', '36', '37', '0', '37'], ['2022', '7', '35', '0', '38', '33'], ['2022', '8', '40', '0', '44', '38'], 
-                ['2022', '9', '45.0328', '0', '46', '42'], ['2022', '10', '50.8000', '0', '48', '44'], ['2022', '11', '45', '0', '44', '39'], 
-                ['2022', '12', '40', '0', '44', '31']]
-    testvar  = ColumnWithWaterfall(test=True)
-    expected = {'Year': 2022, 'PY': [32, 38, 29, 35, 41, 37, 33, 38, 42, 44, 39, 31], 'PL': [33, 35, 37, 40, 38, 36, 35, 40, 45.0328, 50.8, 45, 40], 
-                'AC': [35, 33, 41, 41, 37, 37, 0, 0, 0, 0, 0, 0], 'FC': [0, 0, 0, 0, 0, 0, 38, 44, 46, 48, 44, 44]}
-    actual   = testvar._convert_data_list_of_lists_to_dict(dataset)
-    message  = "Test 1 - ColumnWithWaterfall._convert_data_list_of_lists_to_dict returned {0} instead of {1}".format(actual, expected)
-    assert actual == expected, message
-
-    # Test 2 - only list supported
-    with pytest.raises(ValueError):
-        testvar = ColumnWithWaterfall(test=True)
-        testvar._convert_data_list_of_lists_to_dict("This is a string")
-
 def test__dataframe_search_for_headers():
     # Test 1 - good dataframe, search for available headers and error when not found
     dataset = pd.DataFrame({'Year' : [2022, 2022, 2022, 2022, 2022, 2022, 2022, 2022, 2022, 2022, 2022, 2022], 
@@ -331,3 +307,60 @@ def test__dataframe_convert_year_month_to_string():
                                 'AC': [35, 33]})
         testvar  = ColumnWithWaterfall(test=True)
         actual   = testvar._dataframe_convert_year_month_to_string(dataset)
+
+
+def test__dataframe_translate_field_headers():
+    # Test 1 - good dataframe with column names to be translated
+    dataset = pd.DataFrame({'Invoicedate' : [1, 2, 3], 
+                            'Revenue'     : [4, 5, 6],
+                            'Budget'      : [7, 8, 9]})
+    translate_headers = {'Invoicedate':'Date', 'Revenue':'AC', 'Budget':'PL'}
+    testvar  = ColumnWithWaterfall(test=True)
+    testvar.translate_headers=translate_headers
+    expected = {'Date': {0: 1, 1: 2, 2: 3}, 
+                'AC': {0: 4, 1: 5, 2: 6}, 
+                'PL': {0: 7, 1: 8, 2: 9}}
+    actual   = testvar._dataframe_translate_field_headers(dataset)
+    actual   = actual.to_dict()
+    message  = "Test 1 - ColumnWithWaterfall._dataframe_translate_field_headers returned {0} instead of {1}".format(actual, expected)
+    assert actual == expected, message
+
+    # Test 2 - only dataframe supported
+    with pytest.raises(ValueError):
+        testvar = ColumnWithWaterfall(test=True)
+        testvar._dataframe_translate_field_headers("This is a string")
+
+    # Test 3 - a dataframe with missing column
+    with pytest.raises(ValueError):
+        dataset = pd.DataFrame({'Invoicedate' : [1, 2, 3], 
+                                'Revenue'     : [4, 5, 6],
+                                'Budget'      : [7, 8, 9]})
+        testvar  = ColumnWithWaterfall(test=True)
+        testvar.translate_headers=['list item 1', 'list item 2']
+        actual   = testvar._dataframe_translate_field_headers(dataset)
+
+
+def test__convert_data_list_of_lists_to_dataframe():
+    # Test 1 - good dataframe with string year values and integer and float values
+    dataset = [['Year', 'Month', 'AC', 'PL', 'FC'], [2022, 1, 35, 33, 0], [2022, 2, 38, 40, 0], [2022, 3, 29, 35, 0]]
+    testvar  = ColumnWithWaterfall(test=True)
+    expected =  {'Year': {0: 2022, 1: 2022, 2: 2022}, 
+                 'Month': {0: 1, 1: 2, 2: 3}, 
+                 'AC': {0: 35, 1: 38, 2: 29}, 
+                 'PL': {0: 33, 1: 40, 2: 35}, 
+                 'FC': {0: 0, 1: 0, 2: 0}}
+    actual   = testvar._convert_data_list_of_lists_to_dataframe(dataset)
+    actual   = actual.to_dict()
+    message  = "Test 1 - ColumnWithWaterfall._convert_data_list_of_lists_to_dataframe returned {0} instead of {1}".format(actual, expected)
+    assert actual == expected, message
+
+    # Test 2 - only list (of lists) supported
+    with pytest.raises(ValueError):
+        testvar = ColumnWithWaterfall(test=True)
+        testvar._convert_data_list_of_lists_to_dataframe("This is a string")
+
+    # Test 3 - only list (of lists) supported
+    with pytest.raises(ValueError):
+        dataset = [['Year', 'Month', 'AC', 'PL', 'FC'], [2022, 1, 35, 33, 0], "This element is a string", [2022, 3, 29, 35, 0]]
+        testvar = ColumnWithWaterfall(test=True)
+        testvar._convert_data_list_of_lists_to_dataframe(dataset)

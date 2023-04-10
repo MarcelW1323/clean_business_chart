@@ -30,7 +30,8 @@ class ColumnWithWaterfall(GeneralChart):
     data                    : A dictionary with minimal PL and AC or PY and AC detailinformation, a string with CSV-values or a list of lists is also supported. Read the documentation.
     positive_is_good        : On a variance chart it decides whether a positive number makes a good color (True) or a bad number (False).
                               Default: True (good color)
-    preferred_base_scenario : PL, use PLaninfo as the base scenario in the main chart. PY uses Previous Year als the base scenario in the main chart
+    preferred_base_scenario : PL uses PLaninfo as the base scenario in the main chart. PY uses Previous Year als the base scenario in the main chart
+                              Default: None
     title                   : A dictionary with optional values to make a title inspired by IBCS
                               Default: None (no title)
     measure                 : True -> measure, False -> ratio
@@ -45,13 +46,15 @@ class ColumnWithWaterfall(GeneralChart):
                               Default: False (don't force zero decimals)
     force_max_one_decimals  : If True, the maximum of decimals used is one. Know that force_zero_decimals has a higher priority than force_max_one_decimals.
                               Default: False (don't force max one decimals)
+    translate_headers       : Dictionary where you can translate field headers, example {'Orderdate':'Date', 'Revenue':'AC'}
+                              Default: None
     test                    : If True, only variables from the parent class are defined, together with other self-variables.
                               This makes this module testable in an automatic way
                               Default: False (this call it is not an automatic test)
     """
 
-    def __init__(self, data=None, positive_is_good=True, preferred_base_scenario='PL', title=None, measure=True, multiplier='1', filename=None, 
-                 force_pl_is_zero=False, force_zero_decimals=False, force_max_one_decimals=False, test=False):
+    def __init__(self, data=None, positive_is_good=True, preferred_base_scenario=None, title=None, measure=True, multiplier='1', filename=None, 
+                 force_pl_is_zero=False, force_zero_decimals=False, force_max_one_decimals=False, translate_headers=None, test=False):
         """
         This is the first function that will be called automatically. Here you'll find all the possible parameters to customize your experience.
         """
@@ -72,6 +75,7 @@ class ColumnWithWaterfall(GeneralChart):
         self.force_pl_is_zero       = force_pl_is_zero
         self.force_zero_decimals    = force_zero_decimals
         self.force_max_one_decimals = force_max_one_decimals
+        self.translate_headers      = translate_headers
         
         # Make chart
         self.get_barwidth(measure)
@@ -257,19 +261,29 @@ class ColumnWithWaterfall(GeneralChart):
             # data is in the form of a string. We need to convert it to a pandas DataFrame
             data = self._convert_data_string_to_dataframe(data)
             # data is now in the form of a pandas DataFrame
+        if islist(data):
+            # Data is in the form of a list (of lists). We need to convert it to a pandas DataFrame
+            data = self._convert_data_list_of_lists_to_dataframe(data)
+            # data is now in the form of a pandas DataFrame
         if isdataframe(data):
             # data is in the form of a pandas DataFrame
             data = self._prepare_dataframe(data)
             # data is now in the form of a dictionary
-        if islist(data):
-            # Data is in the form of a list (of lists). We need to convert it to a dictionary
-            data = self._convert_data_list_of_lists_to_dict(data)
         
         # Check for existence of data
         if data is None:
             raise ValueError("No data available. Dictionary expected {'PY': [12x#], 'PL': [12x#], 'AC': [up to 12x#], 'FC': [up to 12x] }")
         
-        # Check for the existence of the base_scenario
+        # Was the parameter preferred_base_scenario given?
+        if self.base_scenario is None:
+            # No the parameter preferred_base_scenario was not given. We instead define this preference as most wanted 'PL' and less wanted 'PY'
+            scenarios = [i for i in ['PL', 'PY'] if i in data.keys()]
+            # See if there is a scenario to use as a base_scenario
+            if len(scenarios) > 0:
+                # Yes, we can use a base_scenario
+                self.base_scenario = scenarios[0]
+        
+        # Check if the base_scenario is in the data
         if self.base_scenario not in data.keys():
             raise ValueError("Variable preferred_base_scenario "+str(self.base_scenario)+" is not available in provided data. Possible values are: "+str(list(data.keys())))
 
@@ -569,6 +583,52 @@ class ColumnWithWaterfall(GeneralChart):
         
         return export_dataframe
 
+    def _dataframe_translate_field_headers(self, dataframe):
+        """
+        If the variable self.translate_headers is filled with a dictionary, we can use it for translating the field headers.
+        This function will do this translation to the columnheaders of the dataframe.
+        
+        Parameters
+        ----------
+        dataframe         : pandas DataFrame with 'old' field headers.
+        
+        Self variables
+        --------------
+        translate_headers : dictionary of {'old-field-name':'new-field-name'} combinations
+        
+        Returns
+        -------
+        export_dataframe  : pandas DataFrame with translated field headers
+        """
+        # Check if the dataframe is a pandas DataFrame or not. Error when not a DataFrame.
+        if not isdataframe(dataframe):
+            raise ValueError(str(dataframe)+" is not a pandas DataFrame")
+
+        # Prepare export_dataframe
+        export_dataframe = dataframe.copy()
+
+        # Is there a translations?
+        if self.translate_headers is not None:
+            # Yes, there is a translations
+            if isdictionary(self.translate_headers):
+                # Yes, and it of the type dictionary, now we can translate the field headers
+                columnlist = list(export_dataframe.columns)
+                for counter, fieldheader in enumerate(columnlist):
+                    if fieldheader in self.translate_headers:
+                        # Yes, we have a match for translation
+                        columnlist[counter] = self.translate_headers[fieldheader]
+                    # else
+                        # No match, go further
+                # Use the translated field headers
+                export_dataframe.columns = columnlist
+            else:
+               raise ValueError('Parameter '+str(self.translate_headers)+' is not a dictionary!')
+        # else
+            # No translation available, go further
+
+        return export_dataframe
+
+
     def _prepare_dataframe(self, dataframe):
         """
         This function orchestrates other functions to transform a pandas DataFrame into a dictionary of scenarios.
@@ -581,6 +641,9 @@ class ColumnWithWaterfall(GeneralChart):
         -------
         export_dictionary : dictionary with for each available scenario a list of 12 values and one value for the Year
         """
+        # If the dictionary self.translate_headers is filled with {'old-name':'new-name'} combinations, this will be translated in the upcoming function
+        dataframe = self._dataframe_translate_field_headers(dataframe)
+        
         # If the dataframe has a column named 'Date' then the date information in this column will be converted to the 'Year' and 'Month' columns.
         dataframe = self._dataframe_date_to_year_and_month(dataframe)
         
@@ -600,6 +663,7 @@ class ColumnWithWaterfall(GeneralChart):
         # Split the dataframes in the actual and previous year
         df_ac = dataframe[dataframe['Year'] == max_year].copy()
         df_py = dataframe[dataframe['Year'] == before_max_year].copy()
+        print("REGEL 666", df_py.empty)
         
         # Complete dataframe for missing month-values. Nothing worse than incomplete time-axis
         df_ac = self._dataframe_full_year(df_ac)
@@ -633,178 +697,30 @@ class ColumnWithWaterfall(GeneralChart):
         return export_dictionary
         
 
-    def _convert_data_list_of_lists_to_dict(self, data_list):
+    def _convert_data_list_of_lists_to_dataframe(self, data_list):
         """
-        Makes a dictionary out of a list of lists.
+        Makes a pandas DataFrame out of a list of lists.
  
         Parameters
         ----------
-        data_list          : data_list contains a list of lists.
-        
-        self variables
-        --------------
-        self.all_scenarios : all possible supported scenario's
+        data_list        : data_list contains a list of lists.
         
         Returns
         -------
-        checked_data_dict  : checked_data_dict contains a dictionary with the scenario's as a key and the detail values as a list
+        export_dataframe : pandas DataFrame
        """
         # Check if the data is not a list (ValueError), because we need a list (containing more lists)
         if not islist(data_list):
             raise ValueError(str(data_list)+" is not a list")
+        else:
+            # Check if all elements are lists too
+            for element in data_list:
+                if not islist(element):
+                    raise ValueError("Element "+str(element)+" is not a list")
         
-        # Headers will ultimately contain the needed headers of the 'CSV'-list-structure
-        headers = None
-        headerlength = 0
-        
-        # Data_dict will contain the dictionary of lists to return from this function
-        data_dict  = dict()
-        
-        # We keep track of the year_month-combinations for completeness (all 12 month from a year) and for uniqueness (each combination occurs one times)
-        year_month = list()
-        
-        # Process each element of the list (which should be a list by themself)
-        for element_list in data_list:
-            # Is the element_list containing data?
-            if len(element_list) == 0:
-                # skip the empty line
-                continue
-            
-            # Check again if the element_list is not a list (ValueError), because we need a list at this level
-            if not islist(element_list):
-                raise ValueError("The element "+str(element_list)+" is not a list")
-        
-            if headers is None:
-                # Headers has no headervalues right now, use this first line as headers
-                # The element_list usable as header must contain Year and Month information or else we can not prepare the data for the charts later
-                if "Year" not in element_list or "Month" not in element_list:
-                    raise ValueError("Year and Month needs to be in the first line of the dataset"+str(element_list))
-                headerline = [i for i in ["Year", "Month"]+self.all_scenarios if i in element_list]
-                headers = list()
-                for headerelement in headerline:
-                    headers.append([headerelement, element_list.index(headerelement)])
-                    data_dict[headerelement] = list()
-                headerline   = element_list  # keep the original headerline for explanation of lines with other lenghts
-                headerlength = len(headerline)
-            else:
-                # Headers has headervalues
-                
-                # For a correct dataset the element_list needs to contain exactly the same amount of elements than the headerline
-                if len(element_list) != headerlength:
-                    raise ValueError("Headerline "+str(headerline)+" is of length "+str(headerlength)+" and that's different in length than this line "+ \
-                                     str(element_list)+" with a length of "+str(len(element_list)))
-                                     
-                year  = None
-                month = None
-                for headerelement, index in headers:
-                    worklist = data_dict[headerelement]
-                    element = element_list[index]
-                    # If the element is still a string, we need to convert it to an integer of a float
-                    if type(element) == type(''):
-                        # element is still of type string
-                        if '.' in element:
-                            # Yes, a dot, so we convert to float
-                            element=float(element)
-                        else:
-                            # No dot, so we convert to integer
-                            element=int(element)
-                    if headerelement in ('Year', 'Month'):
-                        element = int(element)
-                    worklist.append(element)
-                    data_dict[headerelement] = worklist
-                    if headerelement == "Year" : year = element
-                    if headerelement == "Month": month = element
-                year_month.append(str(year)+'.'+("0"+str(month))[-2:])
+        export_dataframe = pd.DataFrame(data_list[1:], columns=data_list[0])
 
-        # The list year_month needs to be of the same lenght than the set of this list to ensure all unique values
-        if len(year_month) != len(set(year_month)):
-            raise ValueError("Same year/month occurs more than once somewhere in this list:\n"+str(sorted(year_month)))
-
-        checked_data_dict = self._check_data_dict(data_dict, year_month, headers)
-
-        return checked_data_dict
-
-
-    def _check_data_dict(self, data_dict, year_month, headers):
-        """
-        Checks the dictionary. Find out the most recent year (that will be the actual year).
-        Also filters out the previous year and the actual year (if more data is provided).
-        Sorts the values within the year from the first month to the last month.
-        Check if the actual of the previous year is the same als the previous-year-column in the actual year (if both provided).
-        If no previous year info provided in the actual year, but actual info provided in the previous year, it makes that the previous-year-data of the actual year.
-        Finally make it the dictionary-form to use with the visual.
- 
-        parameters
-        ----------
-        data_dict          : a dictionary of lists of the needed elements
-
-        year_month         : a list of year-month combinations
-
-        headers            : a list of lists where you can find the header-elements and their position
-        
-        self variables
-        --------------
-        self.all_scenarios : all possible supported scenario's
-        
-        returns
-        -------
-        dataset            : a dictionary containing the dataset in the preferred format
-
-        """
-        # AC, PY and make headers simple
-        actual_year    = max(data_dict["Year"])
-        previous_year  = actual_year - 1
-        headers_simple = list(list(zip(*headers))[0])  # Use of double list because the first element [0] of the inner list is a tuple!
-        
-        # Fill the combined list and remind where the year is in this combined list
-        combinedlist = list()
-        combinedlist.append(year_month)    # This is the first field. We use it for sorting later on 
-        yearlistnumber = None
-        for counter, element in enumerate(headers_simple):
-            combinedlist.append(data_dict[element])
-            if element == "Year": yearlistnumber=counter+1
-        
-        # Filter the lists based on year
-        transposelist     = list(zip(*combinedlist))   # We need to transpose the list, so we can filter on a value in the inner list
-        actualyear_list   = [x for x in transposelist if x[yearlistnumber]==actual_year]
-        previousyear_list = [x for x in transposelist if x[yearlistnumber]==previous_year]
-        
-        # Sort the lists by the first field in the sublist (year_month)
-        actualyear_list   = sorted(actualyear_list  , key = lambda x: x[0])
-        previousyear_list = sorted(previousyear_list, key = lambda x: x[0])
-        
-        # Transpose back to combinedlists, one for actual year and one for previous year
-        actualyear_list = list(zip(*actualyear_list))
-        previousyear_list = list(zip(*previousyear_list))
-        
-        if 'PY' in headers_simple and 'AC' in headers_simple:
-            # PY is provided, but PY is also the AC of the previous year. Check for consistency!!
-            PY_index = headers_simple.index('PY') + 1   # Because year_month is at 0!!
-            AC_index = headers_simple.index('AC') + 1   # Because year_month is at 0!!
-            if len(previousyear_list) > 0:
-                # Yes, there is information of previous year, now we need to check if the values are the same
-                if actualyear_list[PY_index] != previousyear_list[AC_index]:
-                    raise ValueError("PY in the actual year\n"+str(actualyear_list[PY_index])+" is not equal to the AC in the previous year\n"+str(previousyear_list[AC_index]))
-        
-        if 'PY' not in headers_simple and 'AC' in headers_simple:
-            AC_index = headers_simple.index('AC') + 1   # Because year_month is at 0!!
-            # PY is not provided, we can use the AC of the previous year
-            if len(previousyear_list) > 0:
-                # There is previous-year-data!
-                if len(previousyear_list[AC_index]) == 12:
-                    headers_simple.append('PY')
-                    actualyear_list.append(previousyear_list[AC_index])
-
-        # Make a dataset to use for the visuals        
-        dataset = dict()
-        for element, element_list in zip(headers_simple, actualyear_list[1:]):   # We start from the 2nd element in actualyear_list, because the first element is the combined year_month list.
-            if element == 'Year':
-                dataset[element] = max(element_list)   # min or average should also work, or even the first index [0]
-            elif element in self.all_scenarios:
-                dataset[element] = list(element_list)  # the element_list is technically a tuple and is now converted to a list
-            # else, do nothing. If the element doesn't match Year or a scenario, ignore the data
-        
-        return dataset
+        return export_dataframe
 
 
     def _make_subplots(self):
