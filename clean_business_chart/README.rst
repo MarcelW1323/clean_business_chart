@@ -28,6 +28,14 @@ Features
 
 * ColumnWithWaterfall, the first chart released with clean-business-chart!
 * added support for pandas in version 0.1.1
+* added date column support for pandas DataFrame and added translation of column headers inside the call in version 0.1.2
+
+
+Read more
+---------
+
+* README.MD on github: https://github.com/MarcelW1323/clean_business_chart/blob/main/README.md
+* LinkedIn Group on Clean Business Chart: https://www.linkedin.com/groups/12783685/
 
 
 Credits

@@ -531,13 +531,19 @@ class ColumnWithWaterfall(GeneralChart):
         
         Returns
         -------
-        export_dataframe : pandas DataFrame with 12 rows, one for each month
+        export_dataframe : empty pandas DataFrame or pandas DataFrame with 12 rows, one for each month
         """
         # We need the 'Year' and 'Month' columns
         needed_headers = ['Year', 'Month']
 
         # Search for available headers
         self._dataframe_search_for_headers(dataframe, search_for_headers=needed_headers, error_not_found=True)
+        
+        # Check for emptyness
+        if dataframe.empty:
+            # DataFrame is empty, return this empty dataframe
+            export_dataframe = dataframe.copy()
+            return export_dataframe
 
         min_year = dataframe['Year'].min()
         max_year = dataframe['Year'].max()
@@ -549,7 +555,7 @@ class ColumnWithWaterfall(GeneralChart):
         df = pd.DataFrame({'Year':year, 'Month':month})     # Makes a dataframe with 12 lines with Year and Month on each line
 
         # Fill full year
-        export_dataframe = pd.merge(df, dataframe, how='left' ,on=['Year', 'Month'])
+        export_dataframe = pd.merge(df, dataframe, how='left' ,on=['Year', 'Month']).copy()
         export_dataframe = export_dataframe.fillna(0)  # Fill the not-existing values with 0
         
         return export_dataframe
@@ -629,6 +635,101 @@ class ColumnWithWaterfall(GeneralChart):
         return export_dataframe
 
 
+    def _dataframe_handle_previous_year(self, dataframe):
+        """
+        If the dataframe contains 2 years of actual information and also previous year information, then the actuals of previous year will be compared with
+        the previous year information in the highest year. Error when not equal.
+        If the dataframe contains 2 years of actual information and no previous year information, then the actuals of previous year will be
+        the previous year information in the highest year.
+
+        Parameters
+        ----------
+        dataframe         : pandas DataFrame with possibly more year information
+
+        Returns
+        -------
+        export_dataframe  : pandas DataFrame with 'optimized' information of te highest year (possibly added with 'previous year' information)
+        """
+        # We need the 'Year' column
+        needed_headers = ['Year']
+
+        # Search for available headers
+        self._dataframe_search_for_headers(dataframe, search_for_headers=needed_headers, error_not_found=True)
+
+        # Determine the max-year and the year before the max-year. These will be the actual (AC) and previous year (PY)
+        max_year        = dataframe['Year'].max()
+        before_max_year = str(int(max_year)-1)
+
+        # Split the dataframes in the actual and previous year
+        df_ac = dataframe[dataframe['Year'] == max_year].copy()
+        df_py = dataframe[dataframe['Year'] == before_max_year].copy()
+        
+        # Complete dataframe for missing month-values. Nothing worse than incomplete time-axis
+        df_ac = self._dataframe_full_year(df_ac)
+        df_py = self._dataframe_full_year(df_py)
+        
+        if 'PY' in df_ac.columns:
+            if 'AC' in df_py.columns and not df_py.empty:
+                # Dataframe with previous year information is not empty and has an actual column
+                if not (df_ac['PY'] == df_py['AC']).all():
+                    raise ValueError(str(max_year)+"-DataFrame previous year does not match "+str(before_max_year)+ "-Dataframe", str(df_ac), str(df_py))
+                # else:
+                #    Everything is fine, go further
+            # else:
+            #    No actual values in previous year dataframe or dataframe is empty
+        else:
+            # No previous year column in actual dataframe
+            if 'AC' in df_py.columns and not df_py.empty:
+                # We can use the actual values in te previous year dataframe as previous year values in the actual dataframe
+                df_ac['PY'] = df_py['AC'].copy()
+            # else:
+            #   No actual values in previous year dataframe or dataframe is empty
+
+        # Prepare export_dataframe
+        export_dataframe = df_ac.copy()
+        
+        return export_dataframe
+
+
+    def _dataframe_to_dictionary(self, dataframe):
+        """
+        Straight forward conversion of the column names into the keys and the values into a list of values.
+        Only the year will be a single value.
+        And make sure that next to the scenarios (PY, PL, AC and/or FC) there will only be the 'Year'. So delete 'Month' if available
+
+        Parameters
+        ----------
+        dataframe         : pandas DataFrame
+
+        Returns
+        -------
+        export_dictionary : dictionary with scenarios (PY, PL, AC and/or FC) and a Year-value
+        """
+        # We need the 'Year' column
+        needed_headers = ['Year']
+
+        # Search for available headers
+        self._dataframe_search_for_headers(dataframe, search_for_headers=needed_headers, error_not_found=True)
+
+        # Convert to dictionary
+        export_dictionary = dataframe.to_dict(orient='list')
+
+        # Make a single year value
+        export_dictionary['Year'] = dataframe['Year'].max()
+
+        # Remove the 'Month'-entry, if available
+        if 'Month' in export_dictionary:
+            del export_dictionary['Month']
+
+        # Convert the values (that can be of type string) from the scenarios in integer or float values
+        for scenario in ['PY', 'PL', 'AC', 'FC']:
+            if scenario in export_dictionary.keys():
+                valuelist = export_dictionary[scenario]
+                export_dictionary[scenario] = string_to_value(valuelist)
+
+        return export_dictionary
+
+
     def _prepare_dataframe(self, dataframe):
         """
         This function orchestrates other functions to transform a pandas DataFrame into a dictionary of scenarios.
@@ -643,56 +744,24 @@ class ColumnWithWaterfall(GeneralChart):
         """
         # If the dictionary self.translate_headers is filled with {'old-name':'new-name'} combinations, this will be translated in the upcoming function
         dataframe = self._dataframe_translate_field_headers(dataframe)
-        
+
         # If the dataframe has a column named 'Date' then the date information in this column will be converted to the 'Year' and 'Month' columns.
         dataframe = self._dataframe_date_to_year_and_month(dataframe)
-        
+
         # If the dataframe has more columns than relevant, only keep the relevant columns
         dataframe = self._dataframe_keep_only_relevant_columns(dataframe)
-        
+
         # It is possible that the dataframe has more detailed lines (especially when removing non-relevant columns). Aggregate them on Year/Month-level
         dataframe = self._dataframe_aggregate(dataframe)
-        
+
         # Convert year and month to strings and sort the dataframe on year and month
         dataframe = self._dataframe_convert_year_month_to_string(dataframe)
-        
-        # Determine the max-year and the year before the max-year. These will be the actual (AC) and previous year (PY)
-        max_year        = dataframe['Year'].max()
-        before_max_year = str(int(max_year)-1)
 
-        # Split the dataframes in the actual and previous year
-        df_ac = dataframe[dataframe['Year'] == max_year].copy()
-        df_py = dataframe[dataframe['Year'] == before_max_year].copy()
-        print("REGEL 666", df_py.empty)
-        
-        # Complete dataframe for missing month-values. Nothing worse than incomplete time-axis
-        df_ac = self._dataframe_full_year(df_ac)
-        df_py = self._dataframe_full_year(df_py)
-        
-        if 'PY' in df_ac.columns:
-            if 'AC' in df_py.columns:
-                if not (df_ac['PY'] == df_py['AC']).all():
-                    raise ValueError(str(max_year)+"-DataFrame previous year does not match "+str(before_max_year)+ "-Dataframe", df_ac, df_py)
-                # else:
-                #    Everything is fine, go further
-            # else:
-            #    No actual values in previous year dataframe
-        else:
-            # No previous year values in actual dataframe
-            if 'AC' in df_py.columns:
-                # We can use the actual values in te previous year dataframe as previous year values in the actual dataframe
-                df_ac['PY'] = df_py['AC'].copy()
-        
+        # Handle previous year information
+        dataframe = self._dataframe_handle_previous_year(dataframe)
+
         # Transform the DataFrame into a dictionary
-        export_dictionary = df_ac.to_dict(orient='list')
-        export_dictionary['Year'] = max_year
-        if 'Month' in export_dictionary:
-            del export_dictionary['Month']
-        # Convert the values (that can be of type string) from the scenarios in integer or float values
-        for scenario in ['PY', 'PL', 'AC', 'FC']:
-            if scenario in export_dictionary.keys():
-                valuelist = export_dictionary[scenario]
-                export_dictionary[scenario] = string_to_value(valuelist)
+        export_dictionary = self._dataframe_to_dictionary(dataframe)
 
         return export_dictionary
         

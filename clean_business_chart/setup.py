@@ -39,13 +39,13 @@ setup(
     license="MIT license",
     long_description=readme + '\n\n' + history,
     include_package_data=True,
-    keywords=['clean business chart', 'IBCS', 'business chart', 'clean business charts', 'business charts'],
+    keywords=['clean business chart', 'IBCS', 'business chart', 'clean business charts', 'business charts', 'chart', 'charts'],
     name='Clean Business Chart',
     packages=find_packages(include=['clean_business_chart', 'clean_business_chart.*']),
     test_suite='tests',
     tests_require=test_requirements,
     url='https://github.com/marcelw1323/clean_business_chart',
-    version='0.1.1',
+    version='0.1.2',
     zip_safe=False,
 )
 

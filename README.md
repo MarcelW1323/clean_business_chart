@@ -10,3 +10,7 @@ Or DataCamp Workspace: https://app.datacamp.com/workspace/w/63ef8399-16af-49dd-8
 
 Read my announcement on LinkedIn:
 https://www.linkedin.com/pulse/clean-business-chart-first-mvp-python-package-charts-wuijtenburg/
+
+
+Follow the LinkedIn-group about Clean Business Chart:
+https://www.linkedin.com/groups/12783685/

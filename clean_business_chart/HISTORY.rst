@@ -2,6 +2,13 @@
 History
 =======
 
+0.1.2 (2023-04-11)
+------------------
+
+* Added date column in pandas DataFrame support in parameter data when calling the column chart with waterfall.
+* Also added translate_headers as a parameter in dictionary-form to rename the columns within the call.
+
+
 0.1.1 (2023-03-29)
 ------------------
 
