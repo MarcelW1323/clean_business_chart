@@ -3,6 +3,7 @@
 # Import modules
 import matplotlib.pyplot as plt                   # for most graphics
 from matplotlib.patches import ConnectionPatch    # for lines between subplots (used in the function "plot_line_accross_axes")
+from clean_business_chart.general_functions    import islist, isdictionary, isinteger, isstring, isfloat, isboolean, isdataframe
 
 
 class GeneralChart:
@@ -314,23 +315,23 @@ class GeneralChart:
         returnvalue           : one single string or a list of strings
         """
         # Supports int/float and lists of int/float
-        if type(delta_value) in [type(1), type(2.1)]:
+        if isinteger(delta_value) or isfloat(delta_value):
             # Delta_value is of type integer or of type float
             if delta_value >= 0: returnvalue = '+' + str(round(delta_value, self.decimals_details))
             else: returnvalue = str(round(delta_value, self.decimals_details))
-        elif type(delta_value) == type(' '):
+        elif isstring(delta_value):
             # Delta_value is of type string. Only 'not available' is supported.
             if delta_value == self.not_available:
                 returnvalue = delta_value
             else:
-                ValueError("We expect a delta_value of type integer, float, string or list. When string, the only value supported is 'not available'.")
-        elif type(delta_value) == type(list()):
+                raise ValueError("We expect a delta_value of type integer, float, string or list. When string, the only value supported is 'not available'.")
+        elif islist(delta_value):
             # Delta_value is of type list
             # Recursive so we check with the same code all elements of the list
             returnvalue = [self.convert_to_delta_string(x) for x in delta_value]
         else:
             # Delta_value is not of type integer, not of type float, not of type string and not of type list
-            ValueError(ValueError("We expect a delta_value of type integer, float, string or list. When string, the only value supported is 'not available'."))
+            raise ValueError(ValueError("We expect a delta_value of type integer, float, string or list. When string, the only value supported is 'not available'."))
 
         return returnvalue
 
