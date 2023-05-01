@@ -230,31 +230,6 @@ def prepare_title(title=None, multiplier=None):
 
     return title_text
 
-def check_valid_multiplier(multiplier=None):
-    """
-    Checks whether the multiplier is a valid multiplier (1, k, m, b).
-        
-    Parameters
-    ----------
-    multiplier : a string with one of the following values (1 character)
-         (default value: None). No multiplier available
-         
-         valid options:
-             1 : (this is the character 'one'). The corresponding value is one times that value (= the same value).
-             k : kilo. The corresponding value needs to be multiplied with 1000 (ten to the third power) to get the real value.
-             m : million. The corresponding value needs to be multiplied with 1000000 (ten to the sixth power) to get the real value.
-             b : billion. This is the "short scale" billion (https://en.wikipedia.org/wiki/Billion). The corresponding value needs to be multiplied with 1000000000 (ten to the ninth power) to get the real value.             
-    
-    Returns
-    -------
-    True: multiplier is one of the supported values (1, k, m, b)
-    False: multiplier is not one of the supported values
-    """
-    if multiplier not in ('1', 'k', 'm', 'b'):
-        raise ValueError("multiplier "+str(multiplier)+" not supported. Multiplier not in list of valid multipliers: ('1', 'k', 'm', 'b')")
-    else:
-        return True
-
 
 def formatstring(decimals=None):
     """
@@ -273,7 +248,7 @@ def formatstring(decimals=None):
             %0.2f : float with 2 decimals
             %0.3f : float with 3 decimals
     """
-    if type(decimals) == type(1):
+    if isinteger(decimals):
         # Integer-value provided
         if decimals >= 0 and decimals <= 3:
             return ["%0i", "%0.1f", "%0.2f", "%0.3f"][decimals]
@@ -376,4 +351,27 @@ def string_to_value(value):
     else:
         # Not sure how to handle it, just return the value
         return value
-        
+
+
+def filter_lists(list1=None, list2=None):
+    """
+    Filters list1 against list2 and returns only those elements who are in both lists, in the same order as list1
+
+    Parameters
+    ----------
+    list1          : the (mostly) smaller list
+                     Default: None (no list will result in a ValueError)
+    list2          : the (mostly) bigger list
+                     Default: None (no list will result in a ValueError)
+
+    Returns
+    -------
+    a list of elements who are in both lists in the same order as list1
+    """
+    if not islist(list1):
+        raise ValueError("list1 "+str(list1)+" is not a list.")
+    if not islist(list2):
+        raise ValueError("list2 "+str(list2)+" is not a list.")
+
+    # The order of the list is important. So implementation not with intersection, but a list comprehension
+    return [i for i in list1 if i in list2]

@@ -179,10 +179,10 @@ def test_optimize_data():
     message  = "Test 6 - optimize_data returned {0} instead of {1}".format(actual, expected)
     assert actual == expected, message
 
-    # Test 7 - Optimizing with other numerator and denominator
+    # Test 7 - Optimizing with other numerator and denominator and decimals
     data     = 123456789
-    expected = 370.4
-    actual   = optimize_data(data=data, numerator=3, denominator=1000000, decimals=1)
+    expected = 370.37
+    actual   = optimize_data(data=data, numerator=3, denominator=1000000, decimals=2)
     message  = "Test 7 - optimize_data returned {0} instead of {1}".format(actual, expected)
     assert actual == expected, message
 
@@ -254,6 +254,34 @@ def test_formatstring():
     with pytest.raises(ValueError):
         data    = "This is a string"
         formatstring(decimals=data)
+
+
+def test_filter_lists():
+    # Test 1 - list1 is a subset of list 2 and the order of the elements is different
+    list1    = ['AC', 'PY']
+    list2    = ['PY', 'PL', 'AC', 'FC']
+    expected = ['AC', 'PY']
+    actual   = filter_lists(list1=list1, list2=list2)
+    message  = "Test 1 - filter_lists returned {0} instead of {1}".format(actual, expected)
+    assert actual == expected, message
+
+    # Test 2 - list1 is not a subset of list 2 and the order of the elements is different
+    list1    = ['AC', 'PL']
+    list2    = ['PY', 'AC', 'FC']
+    expected = ['AC']
+    actual   = filter_lists(list1=list1, list2=list2)
+    message  = "Test 2 - filter_lists returned {0} instead of {1}".format(actual, expected)
+    assert actual == expected, message
+
+    # Test 3 - list1 is not present
+    with pytest.raises(ValueError):
+        list2    = ['PY', 'AC', 'FC']
+        filter_lists(list2=list2)
+
+    # Test 4 - list2 is not present
+    with pytest.raises(ValueError):
+        list1    = ['PY', 'AC', 'FC']
+        filter_lists(list1=list1)
 
 
 #### Need to add more test-functions for automatic testing
