@@ -27,11 +27,12 @@ class ColumnWithWaterfall(GeneralChart):
     
     Parameters
     ----------
-    data                    : A dictionary with minimal PL and AC or PY and AC detailinformation, a string with CSV-values or a list of lists is also supported. Read the documentation.
+    data                    : A dictionary with minimal PL and AC or PY and AC detailinformation, a string with CSV-values, a list of lists 
+                              or a pandas DataFrame. Read the documentation.
     positive_is_good        : On a variance chart it decides whether a positive number makes a good color (True) or a bad number (False).
                               Default: True (good color)
     preferred_base_scenario : PL uses PLaninfo as the base scenario in the main chart. PY uses Previous Year als the base scenario in the main chart
-                              Default: None
+                              Default: None ('PL' will be used if available or else 'PY' will be used if available)
     title                   : A dictionary with optional values to make a title inspired by IBCS
                               Default: None (no title)
     measure                 : True -> measure, False -> ratio
@@ -47,7 +48,7 @@ class ColumnWithWaterfall(GeneralChart):
     force_max_one_decimals  : If True, the maximum of decimals used is one. Know that force_zero_decimals has a higher priority than force_max_one_decimals.
                               Default: False (don't force max one decimals)
     translate_headers       : Dictionary where you can translate field headers, example {'Orderdate':'Date', 'Revenue':'AC'}
-                              Default: None
+                              Default: None (no translation of headers will occur)
     test                    : If True, only variables from the parent class are defined, together with other self-variables.
                               This makes this module testable in an automatic way
                               Default: False (this call it is not an automatic test)
@@ -699,7 +700,7 @@ class ColumnWithWaterfall(GeneralChart):
 
         Parameters
         ----------
-        dataframe         : pandas DataFrame
+        dataframe         : pandas DataFrame with a 'Year' column and scenario (PY, PL, AC and/or FC) columns
 
         Returns
         -------
