@@ -284,4 +284,88 @@ def test_filter_lists():
         filter_lists(list1=list1)
 
 
+def test_convert_data_string_to_pandas_dataframe():
+    # Test 1 - good string to pandas DataFrame conversion 
+    dataset  = """
+               Year,Month,PL,AC,FC,PY
+               2021,1,0,32,0,0
+               2021,5,0,41,0,0
+
+               2021,6,0,37,0,0
+               2021,7,0,33,0,0
+               2021,2,0,38,0,0
+               2021,3,0,29,0,0
+               2021,4,0,35,0,0
+               2021,8,0,38,0,0
+               2021,9,0,42,0,0
+               2021,10,0,44,0,0
+               2021,11,0,39,0,0
+               2021,12,24,31,48,0
+               2020,10,0,44,0,0
+               2020,11,0,39,0,0
+               2020,12,0,31,0,0
+               2022,1,33,35,0,32
+               2022,2,35,33,0,38
+               2022,3,37,41,0,29
+               2022,4,40,41,0,35
+               2022,5,38,37,0,41
+               2022,6,36,37,0,37
+               2022,7,35,0,38,33
+               2022,8,40,0,44,38
+               2022,9,45.0328,0,46,42
+               2022,10,50.8000,0,48,44
+               2022,11,45,0,44,39
+               2022,12,40,0,44,31
+               """
+    expected = {'Year': {0: '2021', 1: '2021', 2: '2021', 3: '2021', 4: '2021', 5: '2021', 6: '2021', 7: '2021', 8: '2021', 9: '2021', 
+                         10: '2021', 11: '2021', 12: '2020', 13: '2020', 14: '2020', 15: '2022', 16: '2022', 17: '2022', 18: '2022', 19: '2022', 
+                         20: '2022', 21: '2022', 22: '2022', 23: '2022', 24: '2022', 25: '2022', 26: '2022'}, 
+                'Month': {0: '1', 1: '5', 2: '6', 3: '7', 4: '2', 5: '3', 6: '4', 7: '8', 8: '9', 9: '10',
+                          10: '11', 11: '12', 12: '10', 13: '11', 14: '12', 15: '1', 16: '2', 17: '3', 18: '4', 19: '5', 
+                          20: '6', 21: '7', 22: '8', 23: '9', 24: '10', 25: '11', 26: '12'}, 
+                'PL': {0: '0', 1: '0', 2: '0', 3: '0', 4: '0', 5: '0', 6: '0', 7: '0', 8: '0', 9: '0', 
+                       10: '0', 11: '24', 12: '0', 13: '0', 14: '0', 15: '33', 16: '35', 17: '37', 18: '40', 19: '38', 
+                       20: '36', 21: '35', 22: '40', 23: '45.0328', 24: '50.8000', 25: '45', 26: '40'}, 
+                'AC': {0: '32', 1: '41', 2: '37', 3: '33', 4: '38', 5: '29', 6: '35', 7: '38', 8: '42', 9: '44', 
+                       10: '39', 11: '31', 12: '44', 13: '39', 14: '31', 15: '35', 16: '33', 17: '41', 18: '41', 19: '37', 
+                       20: '37', 21: '0', 22: '0', 23: '0', 24: '0', 25: '0', 26: '0'}, 
+                'FC': {0: '0', 1: '0', 2: '0', 3: '0', 4: '0', 5: '0', 6: '0', 7: '0', 8: '0', 9: '0', 
+                       10: '0', 11: '48', 12: '0', 13: '0', 14: '0', 15: '0', 16: '0', 17: '0', 18: '0', 19: '0', 
+                       20: '0', 21: '38', 22: '44', 23: '46', 24: '48', 25: '44', 26: '44'}, 
+                'PY': {0: '0', 1: '0', 2: '0', 3: '0', 4: '0', 5: '0', 6: '0', 7: '0', 8: '0', 9: '0', 
+                       10: '0', 11: '0', 12: '0', 13: '0', 14: '0', 15: '32', 16: '38', 17: '29', 18: '35', 19: '41', 
+                       20: '37', 21: '33', 22: '38', 23: '42', 24: '44', 25: '39', 26: '31'}}
+    actual   = convert_data_string_to_pandas_dataframe(dataset)
+    actual   = actual.to_dict()
+    message  = "Test 1 - convert_data_string_to_pandas_dataframe returned {0} instead of {1}".format(actual, expected)
+    assert actual == expected, message
+
+    # Test 2 - only string supported, we try it with a float
+    with pytest.raises(TypeError):
+        convert_data_string_to_pandas_dataframe(1.2)
+
+
+def test_convert_data_list_of_lists_to_pandas_dataframe():
+    # Test 1 - good list of lists 
+    dataset = [['Year', 'Month', 'AC', 'PL', 'FC'], [2022, 1, 35, 33, 0], [2022, 2, 38, 40, 0], [2022, 3, 29, 35, 0]]
+    expected =  {'Year': {0: 2022, 1: 2022, 2: 2022}, 
+                 'Month': {0: 1, 1: 2, 2: 3}, 
+                 'AC': {0: 35, 1: 38, 2: 29}, 
+                 'PL': {0: 33, 1: 40, 2: 35}, 
+                 'FC': {0: 0, 1: 0, 2: 0}}
+    actual   = convert_data_list_of_lists_to_pandas_dataframe(dataset)
+    actual   = actual.to_dict()
+    message  = "Test 1 - convert_data_list_of_lists_to_pandas_dataframe returned {0} instead of {1}".format(actual, expected)
+    assert actual == expected, message
+
+    # Test 2 - only list (of lists) supported, we try it with a string
+    with pytest.raises(TypeError):
+        convert_data_list_of_lists_to_pandas_dataframe("This is a string")
+
+    # Test 3 - only list (of lists) supported, we try it with a string element in a list
+    with pytest.raises(TypeError):
+        dataset = [['Year', 'Month', 'AC', 'PL', 'FC'], [2022, 1, 35, 33, 0], "This element is a string", [2022, 3, 29, 35, 0]]
+        convert_data_list_of_lists_to_pandas_dataframe(dataset)
+
+
 #### Need to add more test-functions for automatic testing

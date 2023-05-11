@@ -375,3 +375,59 @@ def filter_lists(list1=None, list2=None):
 
     # The order of the list is important. So implementation not with intersection, but a list comprehension
     return [i for i in list1 if i in list2]
+
+
+def convert_data_string_to_pandas_dataframe(data_string, separator=','):
+    """
+    If the data is like a string, this function sees it as a CSV-file pasted in a string and will make it a pandas DataFrame.
+
+    Parameters
+    ----------
+    data_string      : data_string contains a string-like CSV-file.
+
+    Returns
+    -------
+    export_dataframe : pandas DataFrame
+    """
+    # Check if data_string is a string
+    if not isstring(data_string):
+        # No, it is not a string
+        raise TypeError(str(data_string)+" is not a string")
+
+    # Data will be extracted from a list of lists (based on the first split '\n' (newline) and the second split with the separator), 
+    # from line 1 (second line) and up
+    # The column-names will be extracted from the line 0 (the first line)
+    # Stripped lines with a lenght of 0 will be skipped. So empty lines will be skipped. 
+    export_dataframe = pd.DataFrame(data=[x.strip().split(separator) for x in data_string.split('\n') if len(x.strip())>0][1:], 
+                                    columns=[x.strip() for x in data_string.split('\n') if len(x.strip())>0][0].split(separator))
+
+    return export_dataframe
+
+
+def convert_data_list_of_lists_to_pandas_dataframe(data_list):
+    """
+    Makes a pandas DataFrame out of a list of lists. The first list of the lists will be used as the header with the column names
+
+    Parameters
+    ----------
+    data_list        : data_list contains a list of lists with the first list of the lists as the header with the column names.
+
+    Returns
+    -------
+    export_dataframe : pandas DataFrame
+    """
+    # Check if the data is a list (or else we get a TypeError), because we need a list (containing more lists)
+    if not islist(data_list):
+        # No, it is not a list
+        raise TypeError(str(data_list)+" is not a list.")
+    else:
+        # Yes, data_list is a list. Check if all elements are lists too
+        for element in data_list:
+            if not islist(element):
+                # No, this element is not a list
+                raise TypeError("Element "+str(element)+" is not a list")
+
+    # First list-item (0) is the header with the column names. List-item 2 and up is the data.
+    export_dataframe = pd.DataFrame(data_list[1:], columns=data_list[0])
+
+    return export_dataframe

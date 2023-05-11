@@ -7,7 +7,8 @@ import pandas as pd                               # for easy pandas support
 
 from clean_business_chart.clean_business_chart import GeneralChart 
 from clean_business_chart.general_functions    import plot_line_accross_axes, plot_line_within_ax, prepare_title, formatstring, optimize_data, \
-                                                      islist, isdictionary, isinteger, isstring, isfloat, isboolean, isdataframe, string_to_value
+                                                      islist, isdictionary, isinteger, isstring, isfloat, isboolean, isdataframe, string_to_value, \
+                                                      convert_data_string_to_pandas_dataframe, convert_data_list_of_lists_to_pandas_dataframe
 from clean_business_chart.multiplier           import Multiplier
 
 
@@ -260,11 +261,11 @@ class ColumnWithWaterfall(GeneralChart):
         # Do we need to convert the data to a dictionary? We support string (as CSV-file), list (of lists) and pandas DataFrame.
         if isstring(data):
             # data is in the form of a string. We need to convert it to a pandas DataFrame
-            data = self._convert_data_string_to_dataframe(data)
+            data = convert_data_string_to_pandas_dataframe(data)
             # data is now in the form of a pandas DataFrame
         if islist(data):
             # Data is in the form of a list (of lists). We need to convert it to a pandas DataFrame
-            data = self._convert_data_list_of_lists_to_dataframe(data)
+            data = convert_data_list_of_lists_to_pandas_dataframe(data)
             # data is now in the form of a pandas DataFrame
         if isdataframe(data):
             # data is in the form of a pandas DataFrame
@@ -375,28 +376,6 @@ class ColumnWithWaterfall(GeneralChart):
         
         # Optimize multiplier and data        
         self._optimize_multiplier()
-
-
-    def _convert_data_string_to_dataframe(self, data_string, separator=','):
-        """
-        If the data is like a string, this function sees it as a CSV-file pasted in a string and will make it a pandas DataFrame.
-
-        Parameters
-        ----------
-        data_string      : data_string contains a string-like CSV-file.
-        
-        Returns
-        -------
-        export_dataframe : data_list contains a list of lists
-        """
-        # Check if the data_string is not a string
-        if not isstring(data_string):
-            raise ValueError(str(data_string)+" is not a string")
-        
-        export_dataframe = pd.DataFrame(data=[x.strip().split(separator) for x in data_string.split('\n') if len(x.strip())>0][1:], 
-                                        columns=[x.strip() for x in data_string.split('\n') if len(x.strip())>0][0].split(separator))
-
-        return export_dataframe
 
 
     def _dataframe_search_for_headers(self, dataframe, search_for_headers, error_not_found=False):
@@ -766,32 +745,6 @@ class ColumnWithWaterfall(GeneralChart):
 
         return export_dictionary
         
-
-    def _convert_data_list_of_lists_to_dataframe(self, data_list):
-        """
-        Makes a pandas DataFrame out of a list of lists.
- 
-        Parameters
-        ----------
-        data_list        : data_list contains a list of lists.
-        
-        Returns
-        -------
-        export_dataframe : pandas DataFrame
-       """
-        # Check if the data is not a list (ValueError), because we need a list (containing more lists)
-        if not islist(data_list):
-            raise ValueError(str(data_list)+" is not a list")
-        else:
-            # Check if all elements are lists too
-            for element in data_list:
-                if not islist(element):
-                    raise ValueError("Element "+str(element)+" is not a list")
-        
-        export_dataframe = pd.DataFrame(data_list[1:], columns=data_list[0])
-
-        return export_dataframe
-
 
     def _make_subplots(self):
         """
