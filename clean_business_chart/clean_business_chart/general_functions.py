@@ -387,7 +387,7 @@ def convert_data_string_to_pandas_dataframe(data_string, separator=','):
 
     Returns
     -------
-    export_dataframe : pandas DataFrame
+    export_dataframe : pandas DataFrame with stripped (remove leading and trailing spaces) object columns
     """
     # Check if data_string is a string
     if not isstring(data_string):
@@ -400,6 +400,15 @@ def convert_data_string_to_pandas_dataframe(data_string, separator=','):
     # Stripped lines with a lenght of 0 will be skipped. So empty lines will be skipped. 
     export_dataframe = pd.DataFrame(data=[x.strip().split(separator) for x in data_string.split('\n') if len(x.strip())>0][1:], 
                                     columns=[x.strip() for x in data_string.split('\n') if len(x.strip())>0][0].split(separator))
+
+    # First strip the column names
+    export_dataframe.columns = [x.strip() for x in export_dataframe.columns]
+
+    # Select the columns with data type objects (because the stripping of spaces can only be done on objects, not lists or other types in the dataframe)
+    dataframe_object = export_dataframe.select_dtypes(['object'])
+
+    # Now strip these colums of the object types
+    export_dataframe[dataframe_object.columns] = dataframe_object.apply(lambda x: x.str.strip())
 
     return export_dataframe
 

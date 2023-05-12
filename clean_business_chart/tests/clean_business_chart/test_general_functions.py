@@ -340,7 +340,37 @@ def test_convert_data_string_to_pandas_dataframe():
     message  = "Test 1 - convert_data_string_to_pandas_dataframe returned {0} instead of {1}".format(actual, expected)
     assert actual == expected, message
 
-    # Test 2 - only string supported, we try it with a float
+    # Test 2 - good string to pandas DataFrame conversion (extra white lines are intended for the test)
+    dataset  = """
+
+                 Country,       PY , PL , AC , FC 
+                 Spain,         30 , 33 , 53 ,  0 
+                 Greece,        38 , 33 , 39 ,  0
+                 Sweden,        38 , 35 , 40 ,  0
+
+                 Germany,       90 , 89 , 93 ,  0
+                 Russia,        60 , 56 , 60 ,  0
+                 Italy,         15 , 12 , 14 ,  0
+
+                 Great Britain, 15 , 13 , 15 ,  0
+                 Slovenia,       4 ,  5 ,  4 ,  0
+                 Denmark,       29 , 35 , 33 ,  0
+                 Netherlands,   39 , 42 , 38 ,  0
+                 France,        60 , 77 , 63 ,  0
+                 OTHER,         40 , 37 , 44 ,  0    
+                 
+               """
+    expected = {'Country': ['Spain', 'Greece', 'Sweden', 'Germany', 'Russia', 'Italy', 'Great Britain', 'Slovenia', 'Denmark', 'Netherlands', 'France', 'OTHER'],
+                     'PY': ['30', '38', '38', '90', '60', '15', '15', '4', '29', '39', '60', '40'], 
+                     'PL': ['33', '33', '35', '89', '56', '12', '13', '5', '35', '42', '77', '37'], 
+                     'AC': ['53', '39', '40', '93', '60', '14', '15', '4', '33', '38', '63', '44'], 
+                     'FC': [ '0',  '0',  '0',  '0',  '0',  '0',  '0', '0',  '0',  '0',  '0',  '0']}
+    actual   = convert_data_string_to_pandas_dataframe(dataset)
+    actual   = actual.to_dict(orient='list')
+    message  = "Test 2 - convert_data_string_to_pandas_dataframe returned {0} instead of {1}".format(actual, expected)
+    assert actual == expected, message
+
+    # Test 3 - only string supported, we try it with a float
     with pytest.raises(TypeError):
         convert_data_string_to_pandas_dataframe(1.2)
 
