@@ -6,62 +6,6 @@ from pandas import Timestamp  # Needed in test__dataframe_date_to_year_and_month
 import pytest
         
 
-def test__dataframe_search_for_headers():
-    # Test 1 - good dataframe, search for available headers and error when not found
-    dataset = pd.DataFrame({'Year' : [2022, 2022, 2022, 2022, 2022, 2022, 2022, 2022, 2022, 2022, 2022, 2022], 
-                            'Month': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
-                            'PY': [32, 38, 29, 35, 41, 37, 33, 38, 42, 44, 39, 31], 
-                            'PL': [33, 35, 37, 40, 38, 36, 35, 40, 45.0328, 50.8, 45, 40], 
-                            'AC': [35, 33, 41, 41, 37, 37, 0, 0, 0, 0, 0, 0], 
-                            'FC': [0, 0, 0, 0, 0, 0, 38, 44, 46, 48, 44, 44]})
-    search_for_headers = ['Year', 'Month', 'PY', 'PL', 'AC', 'FC']
-    error_not_found    = True
-    testvar  = ColumnWithWaterfall(test=True)
-    expected = search_for_headers
-    actual   = testvar._dataframe_search_for_headers(dataframe=dataset, search_for_headers=search_for_headers, error_not_found=error_not_found)
-    message  = "Test 1 - ColumnWithWaterfall._dataframe_search_for_headers returned {0} instead of {1}".format(actual, expected)
-    assert actual == expected, message
-
-    # Test 2 - good dataframe, search for other headers also and no error when not found
-    dataset = pd.DataFrame({'Year' : [2022, 2022, 2022, 2022, 2022, 2022, 2022, 2022, 2022, 2022, 2022, 2022], 
-                            'Month': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
-                            'PY': [32, 38, 29, 35, 41, 37, 33, 38, 42, 44, 39, 31], 
-                            'PL': [33, 35, 37, 40, 38, 36, 35, 40, 45.0328, 50.8, 45, 40], 
-                            'AC': [35, 33, 41, 41, 37, 37, 0, 0, 0, 0, 0, 0], 
-                            'FC': [0, 0, 0, 0, 0, 0, 38, 44, 46, 48, 44, 44]})
-    search_for_headers = ['Date', 'AC', 'Other']
-    error_not_found    = False
-    testvar  = ColumnWithWaterfall(test=True)
-    expected = ['AC']
-    actual   = testvar._dataframe_search_for_headers(dataframe=dataset, search_for_headers=search_for_headers, error_not_found=error_not_found)
-    message  = "Test 2 - ColumnWithWaterfall._dataframe_search_for_headers returned {0} instead of {1}".format(actual, expected)
-    assert actual == expected, message
-
-    # Test 3 - good dataframe, search for other headers also and error when not found
-    with pytest.raises(ValueError):
-        dataset = pd.DataFrame({'Year' : [2022, 2022, 2022, 2022, 2022, 2022, 2022, 2022, 2022, 2022, 2022, 2022], 
-                                'Month': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
-                                'PY': [32, 38, 29, 35, 41, 37, 33, 38, 42, 44, 39, 31], 
-                                'PL': [33, 35, 37, 40, 38, 36, 35, 40, 45.0328, 50.8, 45, 40], 
-                                'AC': [35, 33, 41, 41, 37, 37, 0, 0, 0, 0, 0, 0], 
-                                'FC': [0, 0, 0, 0, 0, 0, 38, 44, 46, 48, 44, 44]})
-        search_for_headers = ['Date', 'AC', 'Other']
-        error_not_found    = True
-        testvar = ColumnWithWaterfall(test=True)
-        testvar._dataframe_search_for_headers(dataframe=dataset, search_for_headers=search_for_headers, error_not_found=error_not_found)
-
-    # Test 4 - only DataFrame supported as first parameter
-    with pytest.raises(ValueError):
-        testvar = ColumnWithWaterfall(test=True)
-        testvar._dataframe_search_for_headers(dataframe="This is a string", search_for_headers=list())
-
-    # Test 5 - only list supported as second parameter
-    with pytest.raises(ValueError):
-        dataset = pd.DataFrame({'Year' : [2023]})
-        testvar = ColumnWithWaterfall(test=True)
-        testvar._dataframe_search_for_headers(dataframe=dataset, search_for_headers="This is a string")
-
-
 def test__dataframe_date_to_year_and_month():
     # Test 1 - good dataframe with date, but without year and month
     dataset = pd.DataFrame({'Date' : ['20220101', '2022-02-21', '2022-03-01', '2022-04-01', '2022-05-01', '20220628', '2022-07-25', '2022-08-05', '20220916',
@@ -114,7 +58,7 @@ def test__dataframe_date_to_year_and_month():
     assert actual == expected, message
 
     # Test 3 - only dataframe supported
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         testvar = ColumnWithWaterfall(test=True)
         testvar._dataframe_date_to_year_and_month("This is a string")
 
@@ -141,7 +85,7 @@ def test__dataframe_keep_only_relevant_columns():
     assert actual == expected, message
 
     # Test 2 - only dataframe supported
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         testvar = ColumnWithWaterfall(test=True)
         testvar._dataframe_keep_only_relevant_columns("This is a string")
 
@@ -167,7 +111,7 @@ def test__dataframe_aggregate():
     assert actual == expected, message
 
     # Test 2 - only dataframe supported
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         testvar = ColumnWithWaterfall(test=True)
         testvar._dataframe_aggregate("This is a string")
 
@@ -211,7 +155,7 @@ def test__dataframe_full_year():
     assert actual == expected, message
 
     # Test 3 - only dataframe supported
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         testvar = ColumnWithWaterfall(test=True)
         testvar._dataframe_full_year("This is a string")
 
@@ -246,7 +190,7 @@ def test__dataframe_convert_year_month_to_string():
     assert actual == expected, message
 
     # Test 2 - only dataframe supported
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         testvar = ColumnWithWaterfall(test=True)
         testvar._dataframe_convert_year_month_to_string("This is a string")
 
@@ -256,37 +200,6 @@ def test__dataframe_convert_year_month_to_string():
                                 'AC': [35, 33]})
         testvar  = ColumnWithWaterfall(test=True)
         actual   = testvar._dataframe_convert_year_month_to_string(dataset)
-
-
-def test__dataframe_translate_field_headers():
-    # Test 1 - good dataframe with column names to be translated
-    dataset = pd.DataFrame({'Invoicedate' : [1, 2, 3], 
-                            'Revenue'     : [4, 5, 6],
-                            'Budget'      : [7, 8, 9]})
-    translate_headers = {'Invoicedate':'Date', 'Revenue':'AC', 'Budget':'PL'}
-    testvar  = ColumnWithWaterfall(test=True)
-    testvar.translate_headers=translate_headers
-    expected = {'Date': {0: 1, 1: 2, 2: 3}, 
-                'AC': {0: 4, 1: 5, 2: 6}, 
-                'PL': {0: 7, 1: 8, 2: 9}}
-    actual   = testvar._dataframe_translate_field_headers(dataset)
-    actual   = actual.to_dict()
-    message  = "Test 1 - ColumnWithWaterfall._dataframe_translate_field_headers returned {0} instead of {1}".format(actual, expected)
-    assert actual == expected, message
-
-    # Test 2 - only dataframe supported
-    with pytest.raises(ValueError):
-        testvar = ColumnWithWaterfall(test=True)
-        testvar._dataframe_translate_field_headers("This is a string")
-
-    # Test 3 - a dataframe with missing column
-    with pytest.raises(ValueError):
-        dataset = pd.DataFrame({'Invoicedate' : [1, 2, 3], 
-                                'Revenue'     : [4, 5, 6],
-                                'Budget'      : [7, 8, 9]})
-        testvar  = ColumnWithWaterfall(test=True)
-        testvar.translate_headers=['list item 1', 'list item 2']
-        actual   = testvar._dataframe_translate_field_headers(dataset)
 
 
 def test__dataframe_handle_previous_year():
@@ -338,7 +251,7 @@ def test__dataframe_handle_previous_year():
         testvar._dataframe_handle_previous_year(dataset)
 
     # Test 5 - only dataframe supported
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         testvar = ColumnWithWaterfall(test=True)
         testvar._dataframe_handle_previous_year("This is a string")
 
@@ -389,6 +302,6 @@ def test__dataframe_to_dictionary():
         testvar._dataframe_to_dictionary(dataset)
 
     # Test 5 - only dataframe supported
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         testvar = ColumnWithWaterfall(test=True)
         testvar._dataframe_to_dictionary("This is a string")

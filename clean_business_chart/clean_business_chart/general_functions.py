@@ -440,3 +440,91 @@ def convert_data_list_of_lists_to_pandas_dataframe(data_list):
     export_dataframe = pd.DataFrame(data_list[1:], columns=data_list[0])
 
     return export_dataframe
+
+
+def dataframe_translate_field_headers(dataframe, translate_headers=None):
+    """
+    If the variable translate_headers is filled with a dictionary, we can use it for translating the field headers.
+    This function will do this translation to the columnheaders of the dataframe.
+
+    Parameters
+    ----------
+    dataframe         : pandas DataFrame with 'old' field headers.
+
+    translate_headers : dictionary of {'old-field-name':'new-field-name'} combinations
+                        Default: None (no translation of fieldnames)
+
+    Returns
+    -------
+    export_dataframe  : pandas DataFrame with translated field headers
+    """
+    # Check if the dataframe is a pandas DataFrame or not. Error when not a DataFrame.
+    if not isdataframe(dataframe):
+        raise TypeError(str(dataframe)+" is not a pandas DataFrame")
+
+    # Prepare export_dataframe
+    export_dataframe = dataframe.copy()
+
+    # Is there a translation?
+    if translate_headers is not None:
+        # Yes, there is a translations
+        if isdictionary(translate_headers):
+            # Yes, and it of the type dictionary, now we can translate the field headers
+            # Put the headers of the dataframe into 'columnlist'
+            columnlist = list(export_dataframe.columns)
+            for counter, fieldheader in enumerate(columnlist):
+                if fieldheader in translate_headers:
+                    # Yes, we have a match for translation
+                    columnlist[counter] = translate_headers[fieldheader]
+                # else
+                    # No matching fieldheader, go further
+            # Use the translated field headers for the dataframe
+            export_dataframe.columns = columnlist
+        else:
+            raise TypeError('Parameter '+str(translate_headers)+' is not a dictionary!')
+    # else
+        # No translation available, go further
+
+    return export_dataframe
+
+
+def dataframe_search_for_headers(dataframe, search_for_headers, error_not_found=False):
+    """
+    If the data is a pandas DataFrame, this function will search for the headers and returns the found headers.
+    If error_not_found=True, and the headers are not found, you'll get an error.
+    
+    Parameters
+    ----------
+    dataframe          : pandas DataFrame
+    
+    search_for_headers : a list with headers to search for in the DataFrame
+    
+    error_not_found    : if the search_for_headers are not completely found, True gives an error, False gives no error
+                         Default: False (give no error)
+    
+    Returns
+    -------
+    available_headers  : The headers out of the list of search_for_headers who are found in the DataFrame
+    """
+    # Check if the dataframe is a pandas DataFrame or not. Error when not a DataFrame.
+    if not isdataframe(dataframe):
+        raise TypeError(str(dataframe)+" is not a pandas DataFrame.")
+
+    # Check if search_for_headers is a list. Error when not a list
+    if not islist(search_for_headers):
+        raise TypeError(str(search_for_headers)+" is not a list")
+
+    # Check if error_not_found is a boolean
+    if not isboolean(error_not_found):
+        raise TypeError(str(error_not_found)+" is not a boolean")
+
+    # Determine which headers are available in the dataframe
+    available_headers = filter_lists(list1=search_for_headers, list2=list(dataframe.columns))
+
+    # Do we need to raise an error?
+    if error_not_found:
+        # Yes, we need to raise an error if both lists are not equal
+        if available_headers != search_for_headers:
+            raise ValueError("Expected columns in the DataFrame: "+str(search_for_headers)+". But found only these columns: "+str(available_headers))
+
+    return available_headers

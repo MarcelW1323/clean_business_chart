@@ -8,7 +8,8 @@ import pandas as pd                               # for easy pandas support
 from clean_business_chart.clean_business_chart import GeneralChart 
 from clean_business_chart.general_functions    import plot_line_accross_axes, plot_line_within_ax, prepare_title, formatstring, optimize_data, \
                                                       islist, isdictionary, isinteger, isstring, isfloat, isboolean, isdataframe, string_to_value, \
-                                                      convert_data_string_to_pandas_dataframe, convert_data_list_of_lists_to_pandas_dataframe
+                                                      convert_data_string_to_pandas_dataframe, convert_data_list_of_lists_to_pandas_dataframe, \
+                                                      dataframe_translate_field_headers, dataframe_search_for_headers
 from clean_business_chart.multiplier           import Multiplier
 
 
@@ -28,11 +29,13 @@ class ColumnWithWaterfall(GeneralChart):
     
     Parameters
     ----------
-    data                    : A dictionary with minimal PL and AC or PY and AC detailinformation, a string with CSV-values, a list of lists 
-                              or a pandas DataFrame. Read the documentation.
-    positive_is_good        : On a variance chart it decides whether a positive number makes a good color (True) or a bad number (False).
+    data                    : A dictionary with minimal PL and AC or PY and AC detailinformation, a string with CSV-values,
+                              a list of lists or a pandas DataFrame. Read the documentation.
+    positive_is_good        : On a variance chart it decides whether a positive number makes a good color (True) or 
+                              a bad color (False).
                               Default: True (good color)
-    preferred_base_scenario : PL uses PLaninfo as the base scenario in the main chart. PY uses Previous Year als the base scenario in the main chart
+    preferred_base_scenario : PL uses PLaninfo as the base scenario in the main chart. PY uses Previous Year 
+                              as the base scenario in the main chart
                               Default: None ('PL' will be used if available or else 'PY' will be used if available)
     title                   : A dictionary with optional values to make a title inspired by IBCS
                               Default: None (no title)
@@ -40,18 +43,22 @@ class ColumnWithWaterfall(GeneralChart):
                               Default: True (measure)
     multiplier              : One character with the multiplier ('1', 'k', 'm', 'b')
                               Default: '1' (one)
-    filename                : String with filename and path to export the chart to, including extention. Only tested with a .png-extention
+    filename                : String with filename and path to export the chart to, including extention.
+                              Only tested with a .png and a .jpg-extention
                               Default: None (no export of the chart to a file)
     force_pl_is_zero        : If PL are all zeros, can PL be ignored (False) or force that PL can be zero (True)
                               Default: False (PL can be ignored when all zeros)
-    force_zero_decimals     : If True, we use integers for output. This gives a more clean chart, but can lack some detail in some cases
+    force_zero_decimals     : If True, we use integers for output. This gives a more clean chart, 
+                              but can lack some detail in some cases
                               Default: False (don't force zero decimals)
-    force_max_one_decimals  : If True, the maximum of decimals used is one. Know that force_zero_decimals has a higher priority than force_max_one_decimals.
+    force_max_one_decimals  : If True, the maximum of decimals used is one. Know that force_zero_decimals 
+                              has a higher priority than force_max_one_decimals.
                               Default: False (don't force max one decimals)
-    translate_headers       : Dictionary where you can translate field headers, example {'Orderdate':'Date', 'Revenue':'AC'}
+    translate_headers       : Dictionary where you can translate field headers, example 
+                              {'Orderdate':'Date', 'Revenue':'AC'}
                               Default: None (no translation of headers will occur)
-    test                    : If True, only variables from the parent class are defined, together with other self-variables.
-                              This makes this module testable in an automatic way
+    test                    : If True, only variables from the parent class are defined, together with other 
+                              self-variables. This makes this module testable in an automatic way
                               Default: False (this call it is not an automatic test)
     """
 
@@ -378,42 +385,6 @@ class ColumnWithWaterfall(GeneralChart):
         self._optimize_multiplier()
 
 
-    def _dataframe_search_for_headers(self, dataframe, search_for_headers, error_not_found=False):
-        """
-        If the data is a pandas DataFrame, this function will search for the headers and returns the found headers.
-        If error_not_found=True, and the headers are not found, you'll get an error.
-        
-        Parameters
-        ----------
-        dataframe          : pandas DataFrame
-        
-        search_for_headers : a list with headers to search for in the DataFrame
-        
-        error_not_found    : if te search_for_headers are not completely found, True gives an error, False gives no error
-        
-        Returns
-        -------
-        available_headers  : The headers out of the list of search_for_headers who are found in the DataFrame
-        """
-        # Check if the dataframe is a pandas DataFrame or not. Error when not a DataFrame.
-        if not isdataframe(dataframe):
-            raise ValueError(str(dataframe)+" is not a pandas DataFrame")
-
-        # Check if search_for_headers is a list. Error when not a list
-        if not islist(search_for_headers):
-            raise ValueError(str(search_for_headers)+" is not a list")
-
-        # Determine which headers are available in the dataframe
-        available_headers = [x for x in search_for_headers if x in dataframe.columns]
-
-        # Do we need to raise an error?
-        if error_not_found:
-            # Yes, we need to raise an error if both lists are not equal
-            if available_headers != search_for_headers:
-                raise ValueError("Expected columns in the DataFrame: "+str(search_for_headers)+". But found only these columns: "+str(available_headers))
-
-        return available_headers
-
     def _dataframe_date_to_year_and_month(self, dataframe):
         """
         If the data is a pandas DataFrame, this function uses the column with the name 'Date' (if available) and extracts it to 'Year' and a 'Month'.
@@ -432,7 +403,7 @@ class ColumnWithWaterfall(GeneralChart):
         wanted_headers = ['Date']
 
         # Search for available headers
-        available_headers = self._dataframe_search_for_headers(dataframe, search_for_headers=wanted_headers, error_not_found=False)
+        available_headers = dataframe_search_for_headers(dataframe, search_for_headers=wanted_headers, error_not_found=False)
 
         # Copy the dataframe to the export-parameter
         export_dataframe = dataframe.copy()
@@ -467,7 +438,7 @@ class ColumnWithWaterfall(GeneralChart):
         wanted_headers = ['Year', 'Month', 'PY', 'PL', 'AC', 'FC']
 
         # Search for available headers
-        available_headers = self._dataframe_search_for_headers(dataframe, search_for_headers=wanted_headers, error_not_found=False)
+        available_headers = dataframe_search_for_headers(dataframe, search_for_headers=wanted_headers, error_not_found=False)
 
         # We only need the data from these columns for the purpose of this chart
         export_dataframe = dataframe[available_headers].copy()
@@ -478,7 +449,7 @@ class ColumnWithWaterfall(GeneralChart):
         """
         If the data is a pandas DataFrame, this function will aggregate this DataFrame by 'Year' and 'Month'.
         
-        Precondition: The dataframe should only have te needed columns.
+        Precondition: The dataframe should only have the needed columns.
 
         Parameters
         ----------
@@ -492,7 +463,7 @@ class ColumnWithWaterfall(GeneralChart):
         needed_headers = ['Year', 'Month']
 
         # Search for available headers
-        available_headers = self._dataframe_search_for_headers(dataframe, search_for_headers=needed_headers, error_not_found=True)
+        available_headers = dataframe_search_for_headers(dataframe, search_for_headers=needed_headers, error_not_found=True)
 
         # Aggregate data
         export_dataframe = dataframe.groupby(available_headers).sum().reset_index()
@@ -517,7 +488,7 @@ class ColumnWithWaterfall(GeneralChart):
         needed_headers = ['Year', 'Month']
 
         # Search for available headers
-        self._dataframe_search_for_headers(dataframe, search_for_headers=needed_headers, error_not_found=True)
+        dataframe_search_for_headers(dataframe, search_for_headers=needed_headers, error_not_found=True)
         
         # Check for emptyness
         if dataframe.empty:
@@ -558,7 +529,7 @@ class ColumnWithWaterfall(GeneralChart):
         needed_headers = ['Year', 'Month']
 
         # Search for available headers
-        self._dataframe_search_for_headers(dataframe, search_for_headers=needed_headers, error_not_found=True)
+        dataframe_search_for_headers(dataframe, search_for_headers=needed_headers, error_not_found=True)
 
         # Convert year to string. Convert month to string with length=2, filled with leading zeros if value < 10
         dataframe['Year'] = dataframe['Year'].apply(int).apply(str)
@@ -567,51 +538,6 @@ class ColumnWithWaterfall(GeneralChart):
         # Sort dataframe by Year and Month
         export_dataframe = dataframe.sort_values(['Year', 'Month'], ascending = [True, True]).copy()
         
-        return export_dataframe
-
-    def _dataframe_translate_field_headers(self, dataframe):
-        """
-        If the variable self.translate_headers is filled with a dictionary, we can use it for translating the field headers.
-        This function will do this translation to the columnheaders of the dataframe.
-        
-        Parameters
-        ----------
-        dataframe         : pandas DataFrame with 'old' field headers.
-        
-        Self variables
-        --------------
-        translate_headers : dictionary of {'old-field-name':'new-field-name'} combinations
-        
-        Returns
-        -------
-        export_dataframe  : pandas DataFrame with translated field headers
-        """
-        # Check if the dataframe is a pandas DataFrame or not. Error when not a DataFrame.
-        if not isdataframe(dataframe):
-            raise ValueError(str(dataframe)+" is not a pandas DataFrame")
-
-        # Prepare export_dataframe
-        export_dataframe = dataframe.copy()
-
-        # Is there a translations?
-        if self.translate_headers is not None:
-            # Yes, there is a translations
-            if isdictionary(self.translate_headers):
-                # Yes, and it of the type dictionary, now we can translate the field headers
-                columnlist = list(export_dataframe.columns)
-                for counter, fieldheader in enumerate(columnlist):
-                    if fieldheader in self.translate_headers:
-                        # Yes, we have a match for translation
-                        columnlist[counter] = self.translate_headers[fieldheader]
-                    # else
-                        # No match, go further
-                # Use the translated field headers
-                export_dataframe.columns = columnlist
-            else:
-               raise ValueError('Parameter '+str(self.translate_headers)+' is not a dictionary!')
-        # else
-            # No translation available, go further
-
         return export_dataframe
 
 
@@ -634,7 +560,7 @@ class ColumnWithWaterfall(GeneralChart):
         needed_headers = ['Year']
 
         # Search for available headers
-        self._dataframe_search_for_headers(dataframe, search_for_headers=needed_headers, error_not_found=True)
+        dataframe_search_for_headers(dataframe, search_for_headers=needed_headers, error_not_found=True)
 
         # Determine the max-year and the year before the max-year. These will be the actual (AC) and previous year (PY)
         max_year        = dataframe['Year'].max()
@@ -689,7 +615,7 @@ class ColumnWithWaterfall(GeneralChart):
         needed_headers = ['Year']
 
         # Search for available headers
-        self._dataframe_search_for_headers(dataframe, search_for_headers=needed_headers, error_not_found=True)
+        dataframe_search_for_headers(dataframe, search_for_headers=needed_headers, error_not_found=True)
 
         # Convert to dictionary
         export_dictionary = dataframe.to_dict(orient='list')
@@ -723,7 +649,7 @@ class ColumnWithWaterfall(GeneralChart):
         export_dictionary : dictionary with for each available scenario a list of 12 values and one value for the Year
         """
         # If the dictionary self.translate_headers is filled with {'old-name':'new-name'} combinations, this will be translated in the upcoming function
-        dataframe = self._dataframe_translate_field_headers(dataframe)
+        dataframe = dataframe_translate_field_headers(dataframe, translate_headers=self.translate_headers)
 
         # If the dataframe has a column named 'Date' then the date information in this column will be converted to the 'Year' and 'Month' columns.
         dataframe = self._dataframe_date_to_year_and_month(dataframe)

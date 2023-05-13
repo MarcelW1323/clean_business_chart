@@ -378,13 +378,13 @@ def test_convert_data_string_to_pandas_dataframe():
 def test_convert_data_list_of_lists_to_pandas_dataframe():
     # Test 1 - good list of lists 
     dataset = [['Year', 'Month', 'AC', 'PL', 'FC'], [2022, 1, 35, 33, 0], [2022, 2, 38, 40, 0], [2022, 3, 29, 35, 0]]
-    expected =  {'Year': {0: 2022, 1: 2022, 2: 2022}, 
-                 'Month': {0: 1, 1: 2, 2: 3}, 
-                 'AC': {0: 35, 1: 38, 2: 29}, 
-                 'PL': {0: 33, 1: 40, 2: 35}, 
-                 'FC': {0: 0, 1: 0, 2: 0}}
+    expected = {'Year' : [2022, 2022, 2022], 
+                'Month': [1, 2, 3], 
+                'AC'   : [35, 38, 29], 
+                'PL'   : [33, 40, 35], 
+                'FC'   : [0, 0, 0]} 
     actual   = convert_data_list_of_lists_to_pandas_dataframe(dataset)
-    actual   = actual.to_dict()
+    actual   = actual.to_dict(orient='list')
     message  = "Test 1 - convert_data_list_of_lists_to_pandas_dataframe returned {0} instead of {1}".format(actual, expected)
     assert actual == expected, message
 
@@ -396,6 +396,89 @@ def test_convert_data_list_of_lists_to_pandas_dataframe():
     with pytest.raises(TypeError):
         dataset = [['Year', 'Month', 'AC', 'PL', 'FC'], [2022, 1, 35, 33, 0], "This element is a string", [2022, 3, 29, 35, 0]]
         convert_data_list_of_lists_to_pandas_dataframe(dataset)
+
+
+def test_dataframe_translate_field_headers():
+    # Test 1 - good dataframe with column names to be translated
+    dataset = pd.DataFrame({'Invoicedate' : [1, 2, 3], 
+                            'Revenue'     : [4, 5, 6],
+                            'Budget'      : [7, 8, 9]})
+    translate_headers = {'Invoicedate':'Date', 'Revenue':'AC', 'Budget':'PL'}
+    expected =  {'Date': [1, 2, 3], 
+                 'AC'  : [4, 5, 6], 
+                 'PL'  : [7, 8, 9]}
+    actual   = dataframe_translate_field_headers(dataset, translate_headers=translate_headers)
+    actual   = actual.to_dict(orient='list')
+    message  = "Test 1 - dataframe_translate_field_headers returned {0} instead of {1}".format(actual, expected)
+    assert actual == expected, message
+
+    # Test 2 - only dataframe supported
+    with pytest.raises(TypeError):
+        dataframe_translate_field_headers("This is a string")
+
+    # Test 3 - a dataframe with missing column
+    with pytest.raises(TypeError):
+        dataset = pd.DataFrame({'Invoicedate' : [1, 2, 3], 
+                                'Revenue'     : [4, 5, 6],
+                                'Budget'      : [7, 8, 9]})
+        translate_headers=['list item 1', 'list item 2']
+        dataframe_translate_field_headers(dataset, translate_headers=translate_headers)
+
+
+def test_dataframe_search_for_headers():
+    # Test 1 - good dataframe, search for available headers and error when not found
+    dataset = pd.DataFrame({'Year' : [2022, 2022, 2022, 2022, 2022, 2022, 2022, 2022, 2022, 2022, 2022, 2022], 
+                            'Month': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+                            'PY': [32, 38, 29, 35, 41, 37, 33, 38, 42, 44, 39, 31], 
+                            'PL': [33, 35, 37, 40, 38, 36, 35, 40, 45.0328, 50.8, 45, 40], 
+                            'AC': [35, 33, 41, 41, 37, 37, 0, 0, 0, 0, 0, 0], 
+                            'FC': [0, 0, 0, 0, 0, 0, 38, 44, 46, 48, 44, 44]})
+    search_for_headers = ['Year', 'Month', 'PY', 'PL', 'AC', 'FC']
+    error_not_found    = True
+    expected = search_for_headers
+    actual   = dataframe_search_for_headers(dataframe=dataset, search_for_headers=search_for_headers, error_not_found=error_not_found)
+    message  = "Test 1 - dataframe_search_for_headers returned {0} instead of {1}".format(actual, expected)
+    assert actual == expected, message
+
+    # Test 2 - good dataframe, search for other headers also and no error when not found
+    dataset = pd.DataFrame({'Year' : [2022, 2022, 2022, 2022, 2022, 2022, 2022, 2022, 2022, 2022, 2022, 2022], 
+                            'Month': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+                            'PY': [32, 38, 29, 35, 41, 37, 33, 38, 42, 44, 39, 31], 
+                            'PL': [33, 35, 37, 40, 38, 36, 35, 40, 45.0328, 50.8, 45, 40], 
+                            'AC': [35, 33, 41, 41, 37, 37, 0, 0, 0, 0, 0, 0], 
+                            'FC': [0, 0, 0, 0, 0, 0, 38, 44, 46, 48, 44, 44]})
+    search_for_headers = ['Date', 'AC', 'Other']
+    error_not_found    = False
+    expected = ['AC']
+    actual   = dataframe_search_for_headers(dataframe=dataset, search_for_headers=search_for_headers, error_not_found=error_not_found)
+    message  = "Test 2 - dataframe_search_for_headers returned {0} instead of {1}".format(actual, expected)
+    assert actual == expected, message
+
+    # Test 3 - good dataframe, search for other headers also and error when not found
+    with pytest.raises(ValueError):
+        dataset = pd.DataFrame({'Year' : [2022, 2022, 2022, 2022, 2022, 2022, 2022, 2022, 2022, 2022, 2022, 2022], 
+                                'Month': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+                                'PY': [32, 38, 29, 35, 41, 37, 33, 38, 42, 44, 39, 31], 
+                                'PL': [33, 35, 37, 40, 38, 36, 35, 40, 45.0328, 50.8, 45, 40], 
+                                'AC': [35, 33, 41, 41, 37, 37, 0, 0, 0, 0, 0, 0], 
+                                'FC': [0, 0, 0, 0, 0, 0, 38, 44, 46, 48, 44, 44]})
+        search_for_headers = ['Date', 'AC', 'Other']
+        error_not_found    = True
+        dataframe_search_for_headers(dataframe=dataset, search_for_headers=search_for_headers, error_not_found=error_not_found)
+
+    # Test 4 - only DataFrame supported as first parameter
+    with pytest.raises(TypeError):
+        dataframe_search_for_headers(dataframe="This is a string", search_for_headers=list())
+
+    # Test 5 - only list supported as second parameter
+    with pytest.raises(TypeError):
+        dataset = pd.DataFrame({'Year' : [2023]})
+        dataframe_search_for_headers(dataframe=dataset, search_for_headers="This is a string")
+
+    # Test 6 - only boolean supported as third parameter
+    with pytest.raises(TypeError):
+        dataset = pd.DataFrame({'Year' : [2023]})
+        dataframe_search_for_headers(dataframe=dataset, search_for_headers=list(), error_not_found="This is a string")
 
 
 #### Need to add more test-functions for automatic testing
