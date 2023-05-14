@@ -3,7 +3,7 @@
 # Import modules
 import matplotlib.pyplot as plt                   # for most graphics
 from matplotlib.patches import ConnectionPatch    # for lines between subplots (used in the function "plot_line_accross_axes")
-from clean_business_chart.general_functions    import islist, isdictionary, isinteger, isstring, isfloat, isboolean, isdataframe
+from clean_business_chart.general_functions    import islist, isdictionary, isinteger, isstring, isfloat, isboolean, isdataframe, filter_lists
 
 
 class GeneralChart:
@@ -59,6 +59,9 @@ class GeneralChart:
         """
         Declaration of variables who are private for each instance. This don't need to be centralized, but I think this makes it a valuable summary
         """
+        # Which scenarios are in the data
+        self.data_scenarios   = list()      # Every class needs to fill this variable
+        
         # Data storage of input variables and totalisation
         self.data             = dict()      # Detail values for each scenario. Scenario is the key for the list of detail values
         self.data_total       = dict()      # Total values for each scenario. Scenario is the key for the total value
@@ -196,22 +199,23 @@ class GeneralChart:
  
     def filter_scenarios(self, scenario_list):
         """
-        Filters the scenario_list against a complete list of avaliable scenario's and returns only those scenario's who are in both lists, in the same order as the scenario list
+        Filters the scenario_list against a complete list of avaliable scenarios and returns only those scenario who are in both lists, 
+        in the same order as the scenario list.
 
         Parameters
         ----------
-        scenario_list          : list of scenario's you like to validate against the complete scenario list
+        scenario_list          : list of scenarios you like to validate against the complete scenario list
         
         Self variables
         --------------
-        self.data_total.keys() : list of all scenario's who are available
+        self.data_scenarios    : list of all scenarios who are available
 
         Returns
         -------
         a list of scenario's who are in both lists in the same order as the scenario list
         """
-        # The order of the list is important. So implementation not with intersection, but a list comprehension
-        return [i for i in scenario_list if i in self.data_total.keys()]
+        # The order of the list is important. So implementation not with intersection, but a list comprehension, implemented in function filter_lists
+        return filter_lists(list1=scenario_list, list2=self.data_scenarios)
 
 
     def calculate_delta(self, base_scenario, compare_scenario_list, delta_name, month_list=None, add_scenario_to_month=False, round_decimals_percentages=1):

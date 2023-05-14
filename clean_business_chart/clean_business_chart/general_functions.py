@@ -356,25 +356,26 @@ def string_to_value(value):
 def filter_lists(list1=None, list2=None):
     """
     Filters list1 against list2 and returns only those elements who are in both lists, in the same order as list1
+    If list1 or list2 (or both) are not a list a TypeError will occur.
 
     Parameters
     ----------
     list1          : the (mostly) smaller list
-                     Default: None (no list will result in a ValueError)
+                     Default: None (no list will result in a TypeError)
     list2          : the (mostly) bigger list
-                     Default: None (no list will result in a ValueError)
+                     Default: None (no list will result in a TypeError)
 
     Returns
     -------
     a list of elements who are in both lists in the same order as list1
     """
     if not islist(list1):
-        raise ValueError("list1 "+str(list1)+" is not a list.")
+        raise TypeError("list1 "+str(list1)+" is not a list, but it's type is: "+str(type(list1)))
     if not islist(list2):
-        raise ValueError("list2 "+str(list2)+" is not a list.")
+        raise TypeError("list2 "+str(list2)+" is not a list, but it's type is: "+str(type(list2)))
 
     # The order of the list is important. So implementation not with intersection, but a list comprehension
-    return [i for i in list1 if i in list2]
+    return [element for element in list1 if element in list2]
 
 
 def convert_data_string_to_pandas_dataframe(data_string, separator=','):

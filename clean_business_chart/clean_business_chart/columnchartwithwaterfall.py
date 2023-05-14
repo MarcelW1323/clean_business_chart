@@ -380,6 +380,8 @@ class ColumnWithWaterfall(GeneralChart):
             else:
                 self.base_scenario = temp_list[0]
         
+        # Centrally store the available scenarios (for filter_scenarios-function)
+        self.data_scenarios = list(self.data_total.keys())
         
         # Optimize multiplier and data        
         self._optimize_multiplier()
@@ -979,9 +981,9 @@ class ColumnWithWaterfall(GeneralChart):
                     value = optimize_data(data=self.data_total[scenario], numerator=1, denominator=1, decimals=self.decimals_totals)
                     
                     # use text function because the use of backgroundcolor
-                    #### I am searching to make the backgroundcolor of white a bit transparant, so we can see the hatching through it.
                     ax.text(0, bottom + self.data_total[scenario]/2, str(value), horizontalalignment='center', verticalalignment='center', 
-                            font=self.font, fontsize=self.fontsize, color=self.colors[scenario][2], backgroundcolor=self.colors[scenario][3])
+                            font=self.font, fontsize=self.fontsize, color=self.colors[scenario][2], backgroundcolor=self.colors[scenario][3],
+                            bbox=dict(facecolor=self.colors[scenario][3], edgecolor='none', pad=0.8, alpha=0.85))
                 else:
                     # use standard label function
                     ax.bar_label(ax.containers[-1], fmt=format_string, label_type='center', font=self.font, fontsize=self.fontsize, color=self.colors[scenario][2])    

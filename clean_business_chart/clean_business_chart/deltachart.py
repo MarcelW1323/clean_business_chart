@@ -32,7 +32,8 @@ class DeltaChart(GeneralChart):
                    'FC': [ 0,  0,  0,  0,  0,  0,  0,  0, 26, 22, 13, 29]}
                    
         # TECHNICAL DEBT: Needed for the self.filter_scenarios
-        self.data_total = dataset
+        self.data_scenarios = list(dataset.keys())
+        print("data_scenarios = ", self.data_scenarios)
                    
         testvar = self.calculate_h(data=dataset, base_scenario='PL', compare_scenario_list=['AC', 'FC'])
         print("Testvar\n",testvar)

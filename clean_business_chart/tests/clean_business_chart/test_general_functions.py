@@ -273,13 +273,13 @@ def test_filter_lists():
     message  = "Test 2 - filter_lists returned {0} instead of {1}".format(actual, expected)
     assert actual == expected, message
 
-    # Test 3 - list1 is not present
-    with pytest.raises(ValueError):
+    # Test 3 - list1 is not present, expect a TypeError, for the default of list1 is None
+    with pytest.raises(TypeError):
         list2    = ['PY', 'AC', 'FC']
         filter_lists(list2=list2)
 
-    # Test 4 - list2 is not present
-    with pytest.raises(ValueError):
+    # Test 4 - list2 is not present, expect a TypeError, for the default of list2 is None
+    with pytest.raises(TypeError):
         list1    = ['PY', 'AC', 'FC']
         filter_lists(list1=list1)
 
