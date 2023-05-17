@@ -13,4 +13,4 @@ https://www.linkedin.com/pulse/clean-business-chart-first-mvp-python-package-cha
 
 
 Follow the LinkedIn-group about Clean Business Chart:
-https://www.linkedin.com/groups/12783685/
+https://www.linkedin.com/groups/12827987/
