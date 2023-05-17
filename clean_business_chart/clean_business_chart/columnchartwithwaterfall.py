@@ -321,7 +321,10 @@ class ColumnWithWaterfall(GeneralChart):
             else:
                 # Not Plan, Not Previous Year, Not Actual, Not Forecast. Other scenario's are not supported
                 raise ValueError("Unknown scenario. Known scenario's are PL, PY, AC, FC. Variable data contains: "+str(list(data.keys())))
-                
+
+        # Centrally store the available scenarios (for filter_scenarios-function)
+        self.data_scenarios = list(self.data_total.keys())
+
         # Are there PL-values?
         if not self.force_pl_is_zero:
             # If pl is zero then this scenario can be deleted
@@ -379,10 +382,7 @@ class ColumnWithWaterfall(GeneralChart):
                 raise ValueError("No PL or PY scenario available. Please use an other chart")
             else:
                 self.base_scenario = temp_list[0]
-        
-        # Centrally store the available scenarios (for filter_scenarios-function)
-        self.data_scenarios = list(self.data_total.keys())
-        
+
         # Optimize multiplier and data        
         self._optimize_multiplier()
 
@@ -868,15 +868,17 @@ class ColumnWithWaterfall(GeneralChart):
                 # Yes, there are 2 scenario's. We need to put the bar of PY on the left and PL on the right.
                 textadjustment = 0.8
                 if scenario == 'PY':
-                    barsign    = -1
+                    # Scenario is Previous Year
+                    barsign    = -1     # Negative factor to place the PY-bar a bit to the left
                     if self.data_total['PY'] > self.data_total['PL']: linesign = -1
                     else: linesign = +1  
                     textsign   = -1
                     halignment = 'right'
                     xend       = 1    # We need a line to the end of the ax-comments if there are 2 scenario's for the PY-scenario
-                    if self.data_total['PY'] < self.data_total['PL']: PY_valuetext_special = True
+                    if self.data_total['PY'] < self.data_total['PL']*1.1: PY_valuetext_special = True  # PY-bar is not high enough to have it's value centered
                 else:
-                    barsign    = +1
+                    # Scenario is PLan
+                    barsign    = +1     # Positive factor to place the PL-bar a bit to the right
                     linesign   = +1
                     textsign   = +1
                     halignment = 'left'

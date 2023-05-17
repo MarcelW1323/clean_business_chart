@@ -59,8 +59,9 @@ class GeneralChart:
         """
         Declaration of variables who are private for each instance. This don't need to be centralized, but I think this makes it a valuable summary
         """
-        # Which scenarios are in the data
-        self.data_scenarios   = list()      # Every class needs to fill this variable
+        # Scenarios
+        self.all_scenarios    = ['PY', 'PL', 'AC', 'FC']  # Previous Year, PLan, ACtual, ForeCast (in order of time)
+        self.data_scenarios   = list()      # Every class needs to fill this variable to indicate which scenarios are in the data
         
         # Data storage of input variables and totalisation
         self.data             = dict()      # Detail values for each scenario. Scenario is the key for the list of detail values
