@@ -12,5 +12,6 @@ Read my announcement on LinkedIn:
 https://www.linkedin.com/pulse/clean-business-chart-first-mvp-python-package-charts-wuijtenburg/
 
 
-Follow the LinkedIn-group about Clean Business Chart:
-https://www.linkedin.com/groups/12783685/
+Follow the public LinkedIn-group about Clean Business Chart:
+https://www.linkedin.com/groups/12827987/
+
