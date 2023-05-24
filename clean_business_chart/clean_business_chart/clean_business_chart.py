@@ -63,6 +63,9 @@ class GeneralChart:
         self.all_scenarios    = ['PY', 'PL', 'AC', 'FC']  # Previous Year, PLan, ACtual, ForeCast (in order of time)
         self.data_scenarios   = list()      # Every class needs to fill this variable to indicate which scenarios are in the data
         
+        # Date columns
+        self.date_columns     = ['Date', 'Year', 'Month'] # Date, year and month are supported headercolumns
+        
         # Data storage of input variables and totalisation
         self.data             = dict()      # Detail values for each scenario. Scenario is the key for the list of detail values
         self.data_total       = dict()      # Total values for each scenario. Scenario is the key for the total value
@@ -104,14 +107,14 @@ class GeneralChart:
         self.colors['text']      = '#000000'
         self.colors['AC']        = ('#505050', '#505050', '#FFFFFF') #index 0= color, 1= bordercolor, 2=textcolor stacked bar
         # From book sample
-        self.colors['AC']        = ('#404040', '#404040', '#FFFFFF') #index 0= color, 1= bordercolor, 2=textcolor stacked bar
+        #self.colors['AC']        = ('#404040', '#404040', '#FFFFFF') #index 0= color, 1= bordercolor, 2=textcolor stacked bar
         self.colors['PY']        = ('#B0B0B0', '#B0B0B0')
         self.colors['PL']        = ('#FFFFFF', '#505050')
         # From book sample
-        self.colors['PL']        = ('#FFFFFF', '#000000')
+        #self.colors['PL']        = ('#FFFFFF', '#000000')
         self.colors['FC']        = ('#FFFFFF', '#505050', '#000000', '#FFFFFF') #index 0= color, 1= bordercolor, 2=textcolor stacked bar, 3=background color text stacked bar
         # From book sample
-        self.colors['FC']        = ('#FFFFFF', '#000000', '#000000', '#FFFFFF') #index 0= color, 1= bordercolor, 2=textcolor stacked bar, 3=background color text stacked bar
+        #self.colors['FC']        = ('#FFFFFF', '#000000', '#000000', '#FFFFFF') #index 0= color, 1= bordercolor, 2=textcolor stacked bar, 3=background color text stacked bar
         self.colors['line']      = '#C0C0C0'
         self.colors['barborder'] = self.colors['AC']
         self.colors['good']      = 'lightgreen'
