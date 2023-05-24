@@ -257,7 +257,7 @@ def test__dataframe_handle_previous_year():
 
 
 def test__dataframe_to_dictionary():
-    # Test 1 - good dataframe with one complete years of information
+    # Test 1 - good dataframe with one complete year of information
     dataset = pd.DataFrame({'Year' : ['2022', '2022', '2022', '2022', '2022', '2022', '2022', '2022', '2022', '2022', '2022', '2022'], 
                             'Month': ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'],
                             'PY'   : [35, 33, 17, 41, 25, 32, 28, 34, 27, 24, 37, 36], 
