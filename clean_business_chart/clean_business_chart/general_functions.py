@@ -88,7 +88,7 @@ def plot_line_accross_axes(fig, axbegin, xbegin, ybegin, axend, xend, yend, line
         plot_endpoint(ax=axend,   x=xend,   y=yend,   endpointcolor=endpointcolor, markersize_outercircle=7, markersize_innercircle=3)
         
 
-def plot_line_within_ax(ax, xbegin, ybegin, xend, yend, linecolor='black', arrowstyle='-', linewidth=1, endpoints=False, endpointcolor=None):
+def plot_line_within_ax(ax, xbegin, ybegin, xend, yend, linecolor='black', arrowstyle='-', linewidth=1, endpoints=False, endpointcolor=None, zorder=None):
     """
     plot_line_within_axes is needed when you want to draw a line within the borders of one subplot. Optionally the line has two endpoints to mark the beginning and end of the line
 
@@ -119,8 +119,18 @@ def plot_line_within_ax(ax, xbegin, ybegin, xend, yend, linecolor='black', arrow
     -------
     None: This function has no real returnvalue. A line is added in the figure-object and optionally two endpoints are added on the end of this line on the related axes-object
     """
-    ax.plot([xbegin, xend], [ybegin, yend], color=linecolor, linewidth=linewidth, solid_capstyle='butt')
-    # Without solid_capstyle='butt' the lines increase in length because of increasing linewidth
+    if zorder is None:
+        # No, don't use zorder. That is different from zorder=0
+        ax.plot([xbegin, xend], [ybegin, yend], color=linecolor, linewidth=linewidth, solid_capstyle='butt')
+        # Without solid_capstyle='butt' the lines increase in length because of increasing linewidth
+    else:
+        if isinteger(zorder) or isfloat(zorder):
+            # Yes, use zorder
+            ax.plot([xbegin, xend], [ybegin, yend], color=linecolor, linewidth=linewidth, solid_capstyle='butt', zorder=zorder)
+            # Without solid_capstyle='butt' the lines increase in length because of increasing linewidth
+        else:
+            # Zorder is of wrong type
+            raise TypeError("zorder can be integer or float. "+str(zorder)+" is now of type "+str(type(zorder))+".")
     
     # Check if enpoints are wanted
     if endpoints:
