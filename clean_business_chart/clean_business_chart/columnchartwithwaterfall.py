@@ -9,7 +9,8 @@ from clean_business_chart.clean_business_chart import GeneralChart
 from clean_business_chart.general_functions    import plot_line_accross_axes, plot_line_within_ax, prepare_title, formatstring, optimize_data, \
                                                       islist, isdictionary, isinteger, isstring, isfloat, isboolean, isdataframe, string_to_value, \
                                                       convert_data_string_to_pandas_dataframe, convert_data_list_of_lists_to_pandas_dataframe, \
-                                                      dataframe_translate_field_headers, dataframe_search_for_headers
+                                                      dataframe_translate_field_headers, dataframe_search_for_headers, \
+                                                      dataframe_date_to_year_and_month
 from clean_business_chart.multiplier           import Multiplier
 
 
@@ -322,9 +323,6 @@ class ColumnWithWaterfall(GeneralChart):
                 # Not Plan, Not Previous Year, Not Actual, Not Forecast. Other scenario's are not supported
                 raise ValueError("Unknown scenario. Known scenario's are PL, PY, AC, FC. Variable data contains: "+str(list(data.keys())))
 
-        # Centrally store the available scenarios (for filter_scenarios-function)
-        self.data_scenarios = list(self.data_total.keys())
-
         # Are there PL-values?
         if not self.force_pl_is_zero:
             # If pl is zero then this scenario can be deleted
@@ -332,7 +330,10 @@ class ColumnWithWaterfall(GeneralChart):
                 if self.data_total['PL'] == 0:
                     del self.data['PL']           # delete the dictionary-element with key PL from the data detailinformation
                     del self.data_total['PL']     # delete the dictionary-element with key PL from the data total-information
-                
+
+        # Centrally store the available scenarios (for filter_scenarios-function)
+        self.data_scenarios = list(self.data_total.keys())
+
         # Determine barshift for leftside chart. self.barshift_leftside is already initialized in the superclass
         if len(self.filter_scenarios(["PY", "PL"])) == 2:
             # Both PY and PL are in the data set
@@ -387,7 +388,7 @@ class ColumnWithWaterfall(GeneralChart):
         self._optimize_multiplier()
 
 
-    def _dataframe_date_to_year_and_month(self, dataframe):
+    def _dataframe_date_to_year_and_month_CAN_BE_DELETED(self, dataframe):
         """
         If the data is a pandas DataFrame, this function uses the column with the name 'Date' (if available) and extracts it to 'Year' and a 'Month'.
         If the 'Year' and 'Month' columns are already provided, they will be overwritten with the year and month out of the Date-column.
@@ -654,7 +655,7 @@ class ColumnWithWaterfall(GeneralChart):
         dataframe = dataframe_translate_field_headers(dataframe, translate_headers=self.translate_headers)
 
         # If the dataframe has a column named 'Date' then the date information in this column will be converted to the 'Year' and 'Month' columns.
-        dataframe = self._dataframe_date_to_year_and_month(dataframe)
+        dataframe = dataframe_date_to_year_and_month(dataframe)
 
         # If the dataframe has more columns than relevant, only keep the relevant columns
         dataframe = self._dataframe_keep_only_relevant_columns(dataframe)

@@ -539,3 +539,40 @@ def dataframe_search_for_headers(dataframe, search_for_headers, error_not_found=
             raise ValueError("Expected columns in the DataFrame: "+str(search_for_headers)+". But found only these columns: "+str(available_headers))
 
     return available_headers
+
+
+def dataframe_date_to_year_and_month(dataframe):
+    """
+    If the data is a pandas DataFrame, this function uses the column with the name 'Date' (if available) and extracts it to 'Year' and a 'Month'.
+    If the 'Year' and 'Month' columns are already provided, they will be overwritten with the year and month out of the Date-column.
+    No testing will be done if the year and month out of the date-column is the same as the provided year and month columns.
+
+    Parameters
+    ----------
+    dataframe        : pandas DataFrame with a lot of columns. A column named 'Date' is not mandatory, but optional
+
+    Returns
+    -------
+    export_dataframe : pandas DataFrame. If there was a column named 'Date', then there are now columns called 'Year' and 'Month' also with related values
+    """
+    # We want the header 'Date', but is not mandatory
+    wanted_headers = ['Date']
+
+    # Search for available headers
+    available_headers = dataframe_search_for_headers(dataframe, search_for_headers=wanted_headers, error_not_found=False)
+
+    # Copy the dataframe to the export-parameter
+    export_dataframe = dataframe.copy()
+
+    # Check for Date-headers
+    if len(available_headers) > 0:
+        # There is a date column in the pandas dataframe, but it can have a non-date format yet. Be sure to make it a dateformat first
+        date_column = available_headers[0]
+        export_dataframe[date_column] = pd.to_datetime(export_dataframe[date_column])
+        # Now we have a real data-format in this column, now extract the year and the month
+        export_dataframe['Year']  = export_dataframe[date_column].dt.year
+        export_dataframe['Month'] = export_dataframe[date_column].dt.month
+    # else
+        # We don't need to do something. It is not mandatory that there should be a date column.
+
+    return export_dataframe
