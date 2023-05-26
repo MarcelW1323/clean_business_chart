@@ -501,7 +501,7 @@ def test_dataframe_date_to_year_and_month():
                 'FC': {0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 38, 7: 44, 8: 46, 9: 48, 10: 44, 11: 44}, 
                 'Year': {0: 2022, 1: 2022, 2: 2022, 3: 2022, 4: 2022, 5: 2022, 6: 2022, 7: 2022, 8: 2022, 9: 2022, 10: 2022, 11: 2022}, 
                 'Month': {0: 1, 1: 2, 2: 3, 3: 4, 4: 5, 5: 6, 6: 7, 7: 8, 8: 9, 9: 10, 10: 11, 11: 12}} 
-    actual   = dataframe_date_to_year_and_month(dataset)
+    actual   = dataframe_date_to_year_and_month(dataset, date_field=['Date'], year_field=['Year'], month_field=['Month'])
     actual   = actual.to_dict()
     message  = "Test 1 - dataframe_date_to_year_and_month returned {0} instead of {1}".format(actual, expected)
     assert actual == expected, message
@@ -527,14 +527,48 @@ def test_dataframe_date_to_year_and_month():
                 'PL': {0: 33.0, 1: 35.0, 2: 37.0, 3: 40.0, 4: 38.0, 5: 36.0, 6: 35.0, 7: 40.0, 8: 45.0328, 9: 50.8, 10: 45.0, 11: 40.0}, 
                 'AC': {0: 35, 1: 33, 2: 41, 3: 41, 4: 37, 5: 37, 6: 0, 7: 0, 8: 0, 9: 0, 10: 0, 11: 0}, 
                 'FC': {0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 38, 7: 44, 8: 46, 9: 48, 10: 44, 11: 44}} 
-    actual   = dataframe_date_to_year_and_month(dataset)
+    actual   = dataframe_date_to_year_and_month(dataset, date_field=['Date'], year_field=['Year'], month_field=['Month'])
     actual   = actual.to_dict()
     message  = "Test 2 - dataframe_date_to_year_and_month returned {0} instead of {1}".format(actual, expected)
     assert actual == expected, message
 
-    # Test 3 - only dataframe supported
+    # Test 3 - only dataframe supported for first parameter
     with pytest.raises(TypeError):
-        dataframe_date_to_year_and_month("This is a string")
+        dataframe_date_to_year_and_month("This is a string", [1], [2], [3])
+
+    # Test 4 - only list supported for three other parameters
+    with pytest.raises(TypeError):
+        dataframe_date_to_year_and_month(pd.DataFrame({'Year' : [2022, 2023]}), "This is a string", [2], [3])
+
+
+def test_dataframe_keep_only_relevant_columns():
+    # Test 1 - good dataframe with extra columns
+    dataset = pd.DataFrame({'Year' : [2022, 2022, 2022, 2022, 2022, 2022, 2022, 2022, 2022, 2022, 2022, 2022], 
+                            'Month': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+                            'PY': [32, 38, 29, 35, 41, 37, 33, 38, 42, 44, 39, 31], 
+                            'PL': [33, 35, 37, 40, 38, 36, 35, 40, 45.0328, 50.8, 45, 40], 
+                            'AC': [35, 33, 41, 41, 37, 37, 0, 0, 0, 0, 0, 0],
+                            'AX': [10, 10, 10, 10, 10, 10, 10, 10, 10 ,10 ,10, 10],
+                            'FC': [0, 0, 0, 0, 0, 0, 38, 44, 46, 48, 44, 44]})
+    expected = {'Year': {0: 2022, 1: 2022, 2: 2022, 3: 2022, 4: 2022, 5: 2022, 6: 2022, 7: 2022, 8: 2022, 9: 2022, 10: 2022, 11: 2022}, 
+                'Month': {0: 1, 1: 2, 2: 3, 3: 4, 4: 5, 5: 6, 6: 7, 7: 8, 8: 9, 9: 10, 10: 11, 11: 12}, 
+                'PY': {0: 32, 1: 38, 2: 29, 3: 35, 4: 41, 5: 37, 6: 33, 7: 38, 8: 42, 9: 44, 10: 39, 11: 31}, 
+                'PL': {0: 33.0, 1: 35.0, 2: 37.0, 3: 40.0, 4: 38.0, 5: 36.0, 6: 35.0, 7: 40.0, 8: 45.0328, 9: 50.8, 10: 45.0, 11: 40.0}, 
+                'AC': {0: 35, 1: 33, 2: 41, 3: 41, 4: 37, 5: 37, 6: 0, 7: 0, 8: 0, 9: 0, 10: 0, 11: 0}, 
+                'FC': {0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 38, 7: 44, 8: 46, 9: 48, 10: 44, 11: 44}}
+    wanted_headers = ['Year', 'Month', 'PY', 'PL', 'AC', 'FC']
+    actual   = dataframe_keep_only_relevant_columns(dataset, wanted_headers=wanted_headers)
+    actual   = actual.to_dict()
+    message  = "Test 1 - ColumnWithWaterfall._dataframe_keep_only_relevant_columns returned {0} instead of {1}".format(actual, expected)
+    assert actual == expected, message
+
+    # Test 2 - only dataframe supported as dataset
+    with pytest.raises(TypeError):
+        dataframe_keep_only_relevant_columns(dataframe="This is a string", wanted_headers=[1,2])
+
+    # Test 3 - only list supported as wanted headers
+    with pytest.raises(TypeError):
+        dataframe_keep_only_relevant_columns(dataframe=pd.DataFrame({'Year' : [2022, 2023]}), wanted_headers="This is a string")
 
 
 #### Need to add more test-functions for automatic testing

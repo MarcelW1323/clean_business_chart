@@ -62,15 +62,18 @@ class GeneralChart:
         # Scenarios
         self.all_scenarios    = ['PY', 'PL', 'AC', 'FC']  # Previous Year, PLan, ACtual, ForeCast (in order of time)
         self.data_scenarios   = list()      # Every class needs to fill this variable to indicate which scenarios are in the data
-        
+
         # Date columns
-        self.date_columns     = ['Date', 'Year', 'Month'] # Date, year and month are supported headercolumns
-        
+        self.date_column      = ['Date']    # Date only as supported headercolumn
+        self.year_column      = ['Year']    # Year only as supported headercolumn
+        self.month_column     = ['Month']   # Month only as supported headercolumn
+        self.all_date_columns = ['Date', 'Year', 'Month'] # Date, year and month are supported headercolumns
+
         # Data storage of input variables and totalisation
         self.data             = dict()      # Detail values for each scenario. Scenario is the key for the list of detail values
         self.data_total       = dict()      # Total values for each scenario. Scenario is the key for the total value
         self.use_PL_as_FC     = True        # Default value for a parameter which causes the use of Plan-information when no Forecast information is available (PL-FC=0 for these cases while calculating the delta PL-FC)
-        
+
         # Storage of delta information
         self.delta_value      = dict()      # Delta values. Delta_name is the key for the list of delta values
         self.delta_percent    = dict()      # Delta relative values. Delta_name is the key for the list of delta relative values
@@ -78,7 +81,7 @@ class GeneralChart:
         self.main_months      = dict()      # Month-names with delta scenario information. Delta_name is the key for the list of month-names
         self.delta_base_value = dict()      # Base_values for the delta charts. Delta_name is the key for the value
         self.delta_digits     = 1           # Defaultvalue for number of digits when rounding delta values
-        
+
         # Storage of figure, axes and order of axes
         self.figure           = None        # Figure-object, needed for cross subplot lines
         self.ax               = dict()      # Dictionary of matplotlib-subplot-axes

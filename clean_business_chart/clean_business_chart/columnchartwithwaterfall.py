@@ -10,7 +10,7 @@ from clean_business_chart.general_functions    import plot_line_accross_axes, pl
                                                       islist, isdictionary, isinteger, isstring, isfloat, isboolean, isdataframe, string_to_value, \
                                                       convert_data_string_to_pandas_dataframe, convert_data_list_of_lists_to_pandas_dataframe, \
                                                       dataframe_translate_field_headers, dataframe_search_for_headers, \
-                                                      dataframe_date_to_year_and_month
+                                                      dataframe_date_to_year_and_month, dataframe_keep_only_relevant_columns
 from clean_business_chart.multiplier           import Multiplier
 
 
@@ -388,66 +388,6 @@ class ColumnWithWaterfall(GeneralChart):
         self._optimize_multiplier()
 
 
-    def _dataframe_date_to_year_and_month_CAN_BE_DELETED(self, dataframe):
-        """
-        If the data is a pandas DataFrame, this function uses the column with the name 'Date' (if available) and extracts it to 'Year' and a 'Month'.
-        If the 'Year' and 'Month' columns are already provided, they will be overwritten with the year and month out of the Date-column.
-        No testing will be done if the year and month out of the date-column is the same as the provided year and month columns.
-
-        Parameters
-        ----------
-        dataframe        : pandas DataFrame with a lot of columns. A column named 'Date' is not mandatory, but optional
-        
-        Returns
-        -------
-        export_dataframe : pandas DataFrame. If there was a column named 'Date', then there is now a column called 'Year' and 'Month' also with related values
-        """
-        # We want the header 'Date', but is not mandatory
-        wanted_headers = ['Date']
-
-        # Search for available headers
-        available_headers = dataframe_search_for_headers(dataframe, search_for_headers=wanted_headers, error_not_found=False)
-
-        # Copy the dataframe to the export-parameter
-        export_dataframe = dataframe.copy()
-
-        # Check for Date-headers
-        if len(available_headers) > 0:
-            # There is a date column in te pandas dataframe, but it can have a non-date format yet. Be sure to make it a dateformat first
-            date_column = available_headers[0]
-            export_dataframe[date_column] = pd.to_datetime(export_dataframe[date_column])
-            # Now we have a real data-format in this column, now extract the year and the month
-            export_dataframe['Year']  = export_dataframe[date_column].dt.year
-            export_dataframe['Month'] = export_dataframe[date_column].dt.month
-        # else
-            # We don't need to do something. It is not mandatory that there should be a date column.
-        
-        return export_dataframe
-
-
-    def _dataframe_keep_only_relevant_columns(self, dataframe):
-        """
-        If the data is a pandas DataFrame, this function will narrow this DataFrame down to the needed columns.
-
-        Parameters
-        ----------
-        dataframe        : pandas DataFrame with a lot of columns.
-        
-        Returns
-        -------
-        export_dataframe : pandas DataFrame with at most the columns 'Year', 'Month', 'PY', 'PL', 'AC' and 'FC'
-        """
-        # We want the headers 'Year', 'Month', 'PY', 'PL', 'AC', 'FC' and only those who are available. Nothing mandatory right now.
-        wanted_headers = ['Year', 'Month', 'PY', 'PL', 'AC', 'FC']
-
-        # Search for available headers
-        available_headers = dataframe_search_for_headers(dataframe, search_for_headers=wanted_headers, error_not_found=False)
-
-        # We only need the data from these columns for the purpose of this chart
-        export_dataframe = dataframe[available_headers].copy()
-        
-        return export_dataframe
-
     def _dataframe_aggregate(self, dataframe):
         """
         If the data is a pandas DataFrame, this function will aggregate this DataFrame by 'Year' and 'Month'.
@@ -472,6 +412,7 @@ class ColumnWithWaterfall(GeneralChart):
         export_dataframe = dataframe.groupby(available_headers).sum().reset_index()
         
         return export_dataframe
+
 
     def _dataframe_full_year(self, dataframe):
         """
@@ -655,10 +596,11 @@ class ColumnWithWaterfall(GeneralChart):
         dataframe = dataframe_translate_field_headers(dataframe, translate_headers=self.translate_headers)
 
         # If the dataframe has a column named 'Date' then the date information in this column will be converted to the 'Year' and 'Month' columns.
-        dataframe = dataframe_date_to_year_and_month(dataframe)
+        dataframe = dataframe_date_to_year_and_month(dataframe, date_field=self.date_column, year_field=self.year_column, month_field=self.month_column)
 
         # If the dataframe has more columns than relevant, only keep the relevant columns
-        dataframe = self._dataframe_keep_only_relevant_columns(dataframe)
+        wanted_headers = self.year_column + self.month_column + self.all_scenarios
+        dataframe = dataframe_keep_only_relevant_columns(dataframe, wanted_headers=wanted_headers)
 
         # It is possible that the dataframe has more detailed lines (especially when removing non-relevant columns). Aggregate them on Year/Month-level
         dataframe = self._dataframe_aggregate(dataframe)

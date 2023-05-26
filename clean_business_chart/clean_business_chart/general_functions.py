@@ -541,7 +541,7 @@ def dataframe_search_for_headers(dataframe, search_for_headers, error_not_found=
     return available_headers
 
 
-def dataframe_date_to_year_and_month(dataframe):
+def dataframe_date_to_year_and_month(dataframe, date_field, year_field, month_field):
     """
     If the data is a pandas DataFrame, this function uses the column with the name 'Date' (if available) and extracts it to 'Year' and a 'Month'.
     If the 'Year' and 'Month' columns are already provided, they will be overwritten with the year and month out of the Date-column.
@@ -555,8 +555,13 @@ def dataframe_date_to_year_and_month(dataframe):
     -------
     export_dataframe : pandas DataFrame. If there was a column named 'Date', then there are now columns called 'Year' and 'Month' also with related values
     """
+    # Check date_field, year_field and month_field parameter
+    if not islist(date_field) or not islist(year_field) or not islist(month_field):
+        raise TypeError("At least one of these is not a list: date_field:"+str(type(date_field))+", year_field:"+str(type(year_field))+ \
+                        ", month_field:"+str(type(month_field)))
+
     # We want the header 'Date', but is not mandatory
-    wanted_headers = ['Date']
+    wanted_headers = date_field
 
     # Search for available headers
     available_headers = dataframe_search_for_headers(dataframe, search_for_headers=wanted_headers, error_not_found=False)
@@ -570,9 +575,36 @@ def dataframe_date_to_year_and_month(dataframe):
         date_column = available_headers[0]
         export_dataframe[date_column] = pd.to_datetime(export_dataframe[date_column])
         # Now we have a real data-format in this column, now extract the year and the month
-        export_dataframe['Year']  = export_dataframe[date_column].dt.year
-        export_dataframe['Month'] = export_dataframe[date_column].dt.month
+        export_dataframe[year_field[0]]  = export_dataframe[date_column].dt.year
+        export_dataframe[month_field[0]] = export_dataframe[date_column].dt.month
     # else
         # We don't need to do something. It is not mandatory that there should be a date column.
 
+    return export_dataframe
+
+
+def dataframe_keep_only_relevant_columns(dataframe, wanted_headers):
+    """
+    If the data is a pandas DataFrame, this function will narrow this DataFrame down to the wanted columns. If not all wanted columns are available
+    we will use only the available headers
+
+    Parameters
+    ----------
+    dataframe        : pandas DataFrame with a lot of columns.
+    wanted_headers   : list of wanted column names
+    
+    Returns
+    -------
+    export_dataframe : pandas DataFrame with at most the columns of the wanted headers
+    """
+    # Check for the list of wanted headers
+    if not islist(wanted_headers):
+        raise TypeError("Parameter 'wanted_headers' ("+str(wanted_headers)+") is of type "+str(type(wanted_headers)))
+
+    # Search for available headers
+    available_headers = dataframe_search_for_headers(dataframe, search_for_headers=wanted_headers, error_not_found=False)
+
+    # We only need the data from these columns for the purpose of this chart
+    export_dataframe = dataframe[available_headers].copy()
+    
     return export_dataframe
