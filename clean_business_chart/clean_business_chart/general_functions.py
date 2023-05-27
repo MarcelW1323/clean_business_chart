@@ -608,3 +608,41 @@ def dataframe_keep_only_relevant_columns(dataframe, wanted_headers):
     export_dataframe = dataframe[available_headers].copy()
     
     return export_dataframe
+
+
+def dataframe_convert_year_month_to_string(dataframe, wanted_headers, year_field, month_field):
+    """
+    If the data is a pandas DataFrame, this function will convert the year and month to string values (containing numbers) for convenient sorting.
+
+    Precondition: The dataframe dataframe needs to be aggregated by the wanted_headers.
+
+    Parameters
+    ----------
+    dataframe        : pandas DataFrame, aggregated by wanted headers.
+    wanted_headers   : a list of column names
+    year_field       : a list with one element representing the header for the year-column
+    month_field      : a list with one element representing the header for the month-column
+
+    Returns
+    -------
+    export_dataframe : pandas DataFrame sorted by available headers
+    """
+    # Search for available headers
+    available_headers = dataframe_search_for_headers(dataframe, search_for_headers=wanted_headers, error_not_found=False)
+
+    # Convert year to string.
+    year = year_field[0]
+    if year in available_headers:
+        # Yes, year is available in the headers
+        dataframe[year] = dataframe[year].apply(int).apply(str)
+
+    # Convert month to string with length=2, filled with leading zeros if value < 10
+    month = month_field[0]
+    if month in available_headers:
+        # Yes, month is available in the headers
+        dataframe[month] = dataframe[month].apply(int).apply(str).str.zfill(2)
+
+    # Sort dataframe by available headers
+    export_dataframe = dataframe.sort_values(available_headers, ascending = [True] * len(available_headers)).copy()
+
+    return export_dataframe

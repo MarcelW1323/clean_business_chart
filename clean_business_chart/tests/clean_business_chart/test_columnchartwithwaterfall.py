@@ -36,7 +36,7 @@ def test__dataframe_aggregate():
         dataset = pd.DataFrame({'Year' : ['2022', '2021'], 
                                 'AC': [35, 33]})
         testvar  = ColumnWithWaterfall(test=True)
-        actual   = testvar._dataframe_convert_year_month_to_string(dataset)
+        actual   = testvar._dataframe_aggregate(dataset)
 
 
 def test__dataframe_full_year():
@@ -88,34 +88,7 @@ def test__dataframe_full_year():
         dataset = pd.DataFrame({'Year' : ['2022', '2022'], 
                                 'AC': [35, 33]})
         testvar  = ColumnWithWaterfall(test=True)
-        actual   = testvar._dataframe_convert_year_month_to_string(dataset)
-
-
-def test__dataframe_convert_year_month_to_string():
-    # Test 1 - good dataframe with string year values and integer and float values
-    dataset = pd.DataFrame({'Year' : [2022.0, '2021', '2018', 2019], 
-                            'Month': ['02', 4, '07', 8.0],
-                            'AC'   : [35, 33, 17, 41]})
-    testvar  = ColumnWithWaterfall(test=True)
-    expected = {'Year': {2: '2018', 3: '2019', 1: '2021', 0: '2022'}, 
-                'Month': {2: '07', 3: '08', 1: '04', 0: '02'}, 
-                'AC': {2: 17, 3: 41, 1: 33, 0: 35}}
-    actual   = testvar._dataframe_convert_year_month_to_string(dataset)
-    actual   = actual.to_dict()
-    message  = "Test 1 - ColumnWithWaterfall._dataframe_convert_year_month_to_string returned {0} instead of {1}".format(actual, expected)
-    assert actual == expected, message
-
-    # Test 2 - only dataframe supported
-    with pytest.raises(TypeError):
-        testvar = ColumnWithWaterfall(test=True)
-        testvar._dataframe_convert_year_month_to_string("This is a string")
-
-    # Test 3 - a dataframe with missing column
-    with pytest.raises(ValueError):
-        dataset = pd.DataFrame({'Year' : ['2022', '2021'], 
-                                'AC': [35, 33]})
-        testvar  = ColumnWithWaterfall(test=True)
-        actual   = testvar._dataframe_convert_year_month_to_string(dataset)
+        actual   = testvar._dataframe_full_year(dataset)
 
 
 def test__dataframe_handle_previous_year():

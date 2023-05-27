@@ -571,4 +571,38 @@ def test_dataframe_keep_only_relevant_columns():
         dataframe_keep_only_relevant_columns(dataframe=pd.DataFrame({'Year' : [2022, 2023]}), wanted_headers="This is a string")
 
 
+def test_dataframe_convert_year_month_to_string():
+    # Test 1 - good dataframe with string year values and integer and float values
+    dataset = pd.DataFrame({'Year' : [2022.0, '2021', '2018', 2019],
+                            'Month': ['02', 4, '07', 8.0],
+                            'AC'   : [35, 33, 17, 41]})
+    expected = {'Year': {2: '2018', 3: '2019', 1: '2021', 0: '2022'},
+                'Month': {2: '07', 3: '08', 1: '04', 0: '02'},
+                'AC': {2: 17, 3: 41, 1: 33, 0: 35}}
+    wanted_headers = ['Year', 'Month']
+    actual   = dataframe_convert_year_month_to_string(dataset, wanted_headers=wanted_headers, year_field=['Year'], month_field=['Month'])
+    actual   = actual.to_dict()
+    message  = "Test 1 - dataframe_convert_year_month_to_string returned {0} instead of {1}".format(actual, expected)
+    assert actual == expected, message
+
+    # Test 2 - good dataframe with string year values and integer and float values, also a category of interest is available
+    dataset = pd.DataFrame({'_Category' : ['sales', 'finance', 'sales', 'marketing', 'finance', 'sales'],
+                            'Year'      : [2022.0 , '2021'   , '2018' , 2018       , 2018     , 2019   ],
+                            'Month'     : ['02'   , 4        , '07'   , 6          , '6'      , 8.0    ],
+                            'AC'        : [35     , 33       , 17     , 3          , 26       , 41     ]})
+    expected = {'_Category': ['finance', 'marketing', 'sales', 'sales', 'finance', 'sales'],
+                'Year'     : ['2018', '2018', '2018', '2019', '2021', '2022'],
+                'Month'    : ['06', '06', '07', '08', '04', '02'],
+                'AC'       : [26, 3, 17, 41, 33, 35]}
+    wanted_headers = ['Year', 'Month', '_Category']
+    actual   = dataframe_convert_year_month_to_string(dataset, wanted_headers=wanted_headers, year_field=['Year'], month_field=['Month'])
+    actual   = actual.to_dict(orient='list')
+    message  = "Test 2 - dataframe_convert_year_month_to_string returned {0} instead of {1}".format(actual, expected)
+    assert actual == expected, message
+
+    # Test 3 - only dataframe supported
+    with pytest.raises(TypeError):
+        dataframe_convert_year_month_to_string("This is a string", wanted_headers=['Year', 'Month'], year_field=['Year'], month_field=['Month'])
+
+
 #### Need to add more test-functions for automatic testing

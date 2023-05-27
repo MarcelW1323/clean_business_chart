@@ -10,7 +10,8 @@ from clean_business_chart.general_functions    import plot_line_accross_axes, pl
                                                       islist, isdictionary, isinteger, isstring, isfloat, isboolean, isdataframe, string_to_value, \
                                                       convert_data_string_to_pandas_dataframe, convert_data_list_of_lists_to_pandas_dataframe, \
                                                       dataframe_translate_field_headers, dataframe_search_for_headers, \
-                                                      dataframe_date_to_year_and_month, dataframe_keep_only_relevant_columns
+                                                      dataframe_date_to_year_and_month, dataframe_keep_only_relevant_columns, \
+                                                      dataframe_convert_year_month_to_string
 from clean_business_chart.multiplier           import Multiplier
 
 
@@ -455,35 +456,6 @@ class ColumnWithWaterfall(GeneralChart):
         
         return export_dataframe
     
-    def _dataframe_convert_year_month_to_string(self, dataframe):
-        """
-        If the data is a pandas DataFrame, this function will convert the year and month to string values (containing numbers) for convenient sorting.
-        
-        Precondition: The dataframe dataframe needs to be aggregated by Year and Month.
-
-        Parameters
-        ----------
-        dataframe        : pandas DataFrame, aggregated by Year and Month.
-        
-        Returns
-        -------
-        export_dataframe : pandas DataFrame sorted by Year and Month
-        """
-        # We need the 'Year' and 'Month' columns
-        needed_headers = ['Year', 'Month']
-
-        # Search for available headers
-        dataframe_search_for_headers(dataframe, search_for_headers=needed_headers, error_not_found=True)
-
-        # Convert year to string. Convert month to string with length=2, filled with leading zeros if value < 10
-        dataframe['Year'] = dataframe['Year'].apply(int).apply(str)
-        dataframe['Month'] = dataframe['Month'].apply(int).apply(str).str.zfill(2)
-        
-        # Sort dataframe by Year and Month
-        export_dataframe = dataframe.sort_values(['Year', 'Month'], ascending = [True, True]).copy()
-        
-        return export_dataframe
-
 
     def _dataframe_handle_previous_year(self, dataframe):
         """
@@ -606,7 +578,9 @@ class ColumnWithWaterfall(GeneralChart):
         dataframe = self._dataframe_aggregate(dataframe)
 
         # Convert year and month to strings and sort the dataframe on year and month
-        dataframe = self._dataframe_convert_year_month_to_string(dataframe)
+        wanted_headers = self.year_column + self.month_column
+        dataframe_search_for_headers(dataframe, search_for_headers=wanted_headers, error_not_found=True)   # Year and Month needs to be column headers
+        dataframe = dataframe_convert_year_month_to_string(dataframe, wanted_headers=wanted_headers, year_field=self.year_column, month_field=self.month_column)
 
         # Handle previous year information
         dataframe = self._dataframe_handle_previous_year(dataframe)
