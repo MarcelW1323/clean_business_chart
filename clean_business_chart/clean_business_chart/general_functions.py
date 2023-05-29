@@ -541,9 +541,9 @@ def dataframe_search_for_headers(dataframe, search_for_headers, error_not_found=
     return available_headers
 
 
-def dataframe_date_to_year_and_month(dataframe, date_field, year_field, month_field):
+def dataframe_date_to_year_and_month(dataframe, date_field, year_field, month_field=None):
     """
-    If the data is a pandas DataFrame, this function uses the column with the name 'Date' (if available) and extracts it to 'Year' and a 'Month'.
+    If the data is a pandas DataFrame, this function uses the column with the name 'Date' (if available) and extracts it to 'Year' and 'Month' (optional).
     If the 'Year' and 'Month' columns are already provided, they will be overwritten with the year and month out of the Date-column.
     No testing will be done if the year and month out of the date-column is the same as the provided year and month columns.
 
@@ -551,14 +551,35 @@ def dataframe_date_to_year_and_month(dataframe, date_field, year_field, month_fi
     ----------
     dataframe        : pandas DataFrame with a lot of columns. A column named 'Date' is not mandatory, but optional
 
+    date_field       : list with one column name for the date field. ['Date'] would be a correct value
+
+    year_field       : list with one column name for the year field. ['Year'] would be a correct value
+
+    month_field      : list with one column name for the month field. ['Month'] would be a correct value
+                       Default: None (No extraction to date column will be done)
+
     Returns
     -------
-    export_dataframe : pandas DataFrame. If there was a column named 'Date', then there are now columns called 'Year' and 'Month' also with related values
+    export_dataframe : pandas DataFrame. If there was a column named 'Date', then there are now columns called 'Year' and 'Month' (optional)
+                       also with related values
     """
-    # Check date_field, year_field and month_field parameter
-    if not islist(date_field) or not islist(year_field) or not islist(month_field):
-        raise TypeError("At least one of these is not a list: date_field:"+str(type(date_field))+", year_field:"+str(type(year_field))+ \
-                        ", month_field:"+str(type(month_field)))
+    # Check date_field. It needs to be a list and it needs to have exactly one value.
+    if not islist(date_field):
+        raise TypeError("Date_field is not a list: "+str(type(date_field)))
+    elif len(date_field) != 1:
+        raise ValueError("Date_field needs to have exactly one value in the list: "+str(len(date_field)))
+
+    # Check year_field. It needs to be a list and it needs to have exactly one value.
+    if not islist(year_field):
+        raise TypeError("Year_field is not a list: "+str(type(year_field)))
+    elif len(year_field) != 1:
+        raise ValueError("Year_field needs to have exactly one value in the list: "+str(len(year_field)))
+
+    # Check month_field. It may be a list and when it is a list, it needs to have exactly one value.
+    if month_field is not None and not islist(month_field):
+        raise TypeError("Month_field is not None and month_field is not a list: "+str(type(month_field)))
+    elif islist(month_field) and len(month_field) != 1:
+        raise ValueError("If month_field is a list, it needs to have exactly one value: "+str(len(year_field)))
 
     # We want the header 'Date', but is not mandatory
     wanted_headers = date_field
@@ -571,12 +592,13 @@ def dataframe_date_to_year_and_month(dataframe, date_field, year_field, month_fi
 
     # Check for Date-headers
     if len(available_headers) > 0:
-        # There is a date column in the pandas dataframe, but it can have a non-date format yet. Be sure to make it a dateformat first
+        # There is a date column in the pandas dataframe, but the values in this column can have a non-date format yet. Be sure to make it a dateformat first
         date_column = available_headers[0]
         export_dataframe[date_column] = pd.to_datetime(export_dataframe[date_column])
-        # Now we have a real data-format in this column, now extract the year and the month
+        # Now we have a real date-format in this column, now extract the year and the month
         export_dataframe[year_field[0]]  = export_dataframe[date_column].dt.year
-        export_dataframe[month_field[0]] = export_dataframe[date_column].dt.month
+        if islist(month_field):
+            export_dataframe[month_field[0]] = export_dataframe[date_column].dt.month
     # else
         # We don't need to do something. It is not mandatory that there should be a date column.
 

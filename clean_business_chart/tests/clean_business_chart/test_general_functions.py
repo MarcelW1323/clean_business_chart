@@ -2,7 +2,7 @@
 
 from clean_business_chart.general_functions import *
 import pandas as pd
-from pandas import Timestamp  # Needed in test__dataframe_date_to_year_and_month()
+from pandas import Timestamp  # Needed in test_dataframe_date_to_year_and_month()
 import pytest
 
 
@@ -491,54 +491,112 @@ def test_dataframe_date_to_year_and_month():
                             'PL': [33, 35, 37, 40, 38, 36, 35, 40, 45.0328, 50.8, 45, 40], 
                             'AC': [35, 33, 41, 41, 37, 37, 0, 0, 0, 0, 0, 0],
                             'FC': [0, 0, 0, 0, 0, 0, 38, 44, 46, 48, 44, 44]})
-    expected = {'Date': {0: Timestamp('2022-01-01 00:00:00'), 1: Timestamp('2022-02-21 00:00:00'), 2: Timestamp('2022-03-01 00:00:00'), 
-                         3: Timestamp('2022-04-01 00:00:00'), 4: Timestamp('2022-05-01 00:00:00'), 5: Timestamp('2022-06-28 00:00:00'), 
-                         6: Timestamp('2022-07-25 00:00:00'), 7: Timestamp('2022-08-05 00:00:00'), 8: Timestamp('2022-09-16 00:00:00'), 
-                         9: Timestamp('2022-10-15 00:00:00'), 10: Timestamp('2022-11-12 00:00:00'), 11: Timestamp('2022-12-23 00:00:00')}, 
-                'PY': {0: 32, 1: 38, 2: 29, 3: 35, 4: 41, 5: 37, 6: 33, 7: 38, 8: 42, 9: 44, 10: 39, 11: 31}, 
-                'PL': {0: 33.0, 1: 35.0, 2: 37.0, 3: 40.0, 4: 38.0, 5: 36.0, 6: 35.0, 7: 40.0, 8: 45.0328, 9: 50.8, 10: 45.0, 11: 40.0}, 
-                'AC': {0: 35, 1: 33, 2: 41, 3: 41, 4: 37, 5: 37, 6: 0, 7: 0, 8: 0, 9: 0, 10: 0, 11: 0}, 
-                'FC': {0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 38, 7: 44, 8: 46, 9: 48, 10: 44, 11: 44}, 
-                'Year': {0: 2022, 1: 2022, 2: 2022, 3: 2022, 4: 2022, 5: 2022, 6: 2022, 7: 2022, 8: 2022, 9: 2022, 10: 2022, 11: 2022}, 
-                'Month': {0: 1, 1: 2, 2: 3, 3: 4, 4: 5, 5: 6, 6: 7, 7: 8, 8: 9, 9: 10, 10: 11, 11: 12}} 
+    expected = {'Date' : [Timestamp('2022-01-01 00:00:00'), Timestamp('2022-02-21 00:00:00'), Timestamp('2022-03-01 00:00:00'),
+                          Timestamp('2022-04-01 00:00:00'), Timestamp('2022-05-01 00:00:00'), Timestamp('2022-06-28 00:00:00'),
+                          Timestamp('2022-07-25 00:00:00'), Timestamp('2022-08-05 00:00:00'), Timestamp('2022-09-16 00:00:00'),
+                          Timestamp('2022-10-15 00:00:00'), Timestamp('2022-11-12 00:00:00'), Timestamp('2022-12-23 00:00:00')],
+                'Year' : [2022, 2022, 2022, 2022, 2022, 2022, 2022, 2022, 2022, 2022, 2022, 2022],
+                'Month': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+                'PY'   : [32, 38, 29, 35, 41, 37, 33, 38, 42, 44, 39, 31],
+                'PL'   : [33.0, 35.0, 37.0, 40.0, 38.0, 36.0, 35.0, 40.0, 45.0328, 50.8, 45.0, 40.0],
+                'AC'   : [35, 33, 41, 41, 37, 37, 0, 0, 0, 0, 0, 0],
+                'FC'   : [0, 0, 0, 0, 0, 0, 38, 44, 46, 48, 44, 44]}
     actual   = dataframe_date_to_year_and_month(dataset, date_field=['Date'], year_field=['Year'], month_field=['Month'])
-    actual   = actual.to_dict()
+    actual   = actual.to_dict(orient='list')
     message  = "Test 1 - dataframe_date_to_year_and_month returned {0} instead of {1}".format(actual, expected)
     assert actual == expected, message
 
-    # Test 2 - good dataframe with date and year and month
+    # Test 2 - good dataframe with date but with 'random' year and 'random' month
     # Note: There is NO TESTING in the productive function if the year and month out of the date are equal to the 'Year' and 'Month' columns provided.
     #       The columns 'Year' and 'Month' are overwritten.
     dataset = pd.DataFrame({'Date' : ['20220101', '2022-02-21', '2022-03-01', '2022-04-01', '2022-05-01', '20220628', '2022-07-25', '2022-08-05', '20220916',
-                                      '20221015', '2022-11-12', '2022-12-23'], 
-                            'Year' : [2022, 2022, 2022, 2022, 2022, 2022, 2022, 2022, 2022, 2022, 2022, 2022], 
-                            'Month': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
-                            'PY': [32, 38, 29, 35, 41, 37, 33, 38, 42, 44, 39, 31], 
-                            'PL': [33, 35, 37, 40, 38, 36, 35, 40, 45.0328, 50.8, 45, 40], 
+                                      '20221015', '2022-11-12', '2022-12-23'],
+                            'Year' : [2020, 2023, 2002, 2032, 1980, 1990, 2019, 2018, 2025, 2027, 2024, 2037],
+                            'Month': [4, 2, 3, 1, 5, 9, 7, 8, 6, 12, 11, 10],
+                            'PY': [32, 38, 29, 35, 41, 37, 33, 38, 42, 44, 39, 31],
+                            'PL': [33, 35, 37, 40, 38, 36, 35, 40, 45.0328, 50.8, 45, 40],
                             'AC': [35, 33, 41, 41, 37, 37, 0, 0, 0, 0, 0, 0],
                             'FC': [0, 0, 0, 0, 0, 0, 38, 44, 46, 48, 44, 44]})
-    expected = {'Date': {0: Timestamp('2022-01-01 00:00:00'), 1: Timestamp('2022-02-21 00:00:00'), 2: Timestamp('2022-03-01 00:00:00'), 
-                         3: Timestamp('2022-04-01 00:00:00'), 4: Timestamp('2022-05-01 00:00:00'), 5: Timestamp('2022-06-28 00:00:00'), 
-                         6: Timestamp('2022-07-25 00:00:00'), 7: Timestamp('2022-08-05 00:00:00'), 8: Timestamp('2022-09-16 00:00:00'), 
-                         9: Timestamp('2022-10-15 00:00:00'), 10: Timestamp('2022-11-12 00:00:00'), 11: Timestamp('2022-12-23 00:00:00')}, 
-                'Year': {0: 2022, 1: 2022, 2: 2022, 3: 2022, 4: 2022, 5: 2022, 6: 2022, 7: 2022, 8: 2022, 9: 2022, 10: 2022, 11: 2022}, 
-                'Month': {0: 1, 1: 2, 2: 3, 3: 4, 4: 5, 5: 6, 6: 7, 7: 8, 8: 9, 9: 10, 10: 11, 11: 12}, 
-                'PY': {0: 32, 1: 38, 2: 29, 3: 35, 4: 41, 5: 37, 6: 33, 7: 38, 8: 42, 9: 44, 10: 39, 11: 31}, 
-                'PL': {0: 33.0, 1: 35.0, 2: 37.0, 3: 40.0, 4: 38.0, 5: 36.0, 6: 35.0, 7: 40.0, 8: 45.0328, 9: 50.8, 10: 45.0, 11: 40.0}, 
-                'AC': {0: 35, 1: 33, 2: 41, 3: 41, 4: 37, 5: 37, 6: 0, 7: 0, 8: 0, 9: 0, 10: 0, 11: 0}, 
-                'FC': {0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 38, 7: 44, 8: 46, 9: 48, 10: 44, 11: 44}} 
+    expected = {'Date' : [Timestamp('2022-01-01 00:00:00'), Timestamp('2022-02-21 00:00:00'), Timestamp('2022-03-01 00:00:00'),
+                          Timestamp('2022-04-01 00:00:00'), Timestamp('2022-05-01 00:00:00'), Timestamp('2022-06-28 00:00:00'),
+                          Timestamp('2022-07-25 00:00:00'), Timestamp('2022-08-05 00:00:00'), Timestamp('2022-09-16 00:00:00'),
+                          Timestamp('2022-10-15 00:00:00'), Timestamp('2022-11-12 00:00:00'), Timestamp('2022-12-23 00:00:00')],
+                'Year' : [2022, 2022, 2022, 2022, 2022, 2022, 2022, 2022, 2022, 2022, 2022, 2022],
+                'Month': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+                'PY'   : [32, 38, 29, 35, 41, 37, 33, 38, 42, 44, 39, 31],
+                'PL'   : [33.0, 35.0, 37.0, 40.0, 38.0, 36.0, 35.0, 40.0, 45.0328, 50.8, 45.0, 40.0],
+                'AC'   : [35, 33, 41, 41, 37, 37, 0, 0, 0, 0, 0, 0],
+                'FC'   : [0, 0, 0, 0, 0, 0, 38, 44, 46, 48, 44, 44]}
     actual   = dataframe_date_to_year_and_month(dataset, date_field=['Date'], year_field=['Year'], month_field=['Month'])
-    actual   = actual.to_dict()
+    actual   = actual.to_dict(orient='list')
     message  = "Test 2 - dataframe_date_to_year_and_month returned {0} instead of {1}".format(actual, expected)
     assert actual == expected, message
 
-    # Test 3 - only dataframe supported for first parameter
-    with pytest.raises(TypeError):
-        dataframe_date_to_year_and_month("This is a string", [1], [2], [3])
+    # Test 3 - good dataframe with date but with 'random' year and 'random' month - no month_field in function parameters
+    # Note: There is NO TESTING in the productive function if the year and month out of the date are equal to the 'Year' and 'Month' columns provided.
+    #       The columns 'Year' is overwritten, but 'Month' is not overwritten.
+    dataset = pd.DataFrame({'Date' : ['20220101', '2022-02-21', '2022-03-01', '2022-04-01', '2022-05-01', '20220628', '2022-07-25', '2022-08-05', '20220916',
+                                      '20221015', '2022-11-12', '2022-12-23'], 
+                            'Year' : [2020, 2023, 2002, 2032, 1980, 1990, 2019, 2018, 2025, 2027, 2024, 2037], 
+                            'Month': [4, 2, 3, 1, 5, 9, 7, 8, 6, 12, 11, 10],
+                            'PY'   : [32, 38, 29, 35, 41, 37, 33, 38, 42, 44, 39, 31], 
+                            'PL'   : [33, 35, 37, 40, 38, 36, 35, 40, 45.0328, 50.8, 45, 40], 
+                            'AC'   : [35, 33, 41, 41, 37, 37, 0, 0, 0, 0, 0, 0],
+                            'FC'   : [0, 0, 0, 0, 0, 0, 38, 44, 46, 48, 44, 44]})
+    expected = {'Date' : [Timestamp('2022-01-01 00:00:00'), Timestamp('2022-02-21 00:00:00'), Timestamp('2022-03-01 00:00:00'),
+                          Timestamp('2022-04-01 00:00:00'), Timestamp('2022-05-01 00:00:00'), Timestamp('2022-06-28 00:00:00'),
+                          Timestamp('2022-07-25 00:00:00'), Timestamp('2022-08-05 00:00:00'), Timestamp('2022-09-16 00:00:00'),
+                          Timestamp('2022-10-15 00:00:00'), Timestamp('2022-11-12 00:00:00'), Timestamp('2022-12-23 00:00:00')],
+                'Year' : [2022, 2022, 2022, 2022, 2022, 2022, 2022, 2022, 2022, 2022, 2022, 2022],
+                'Month': [4, 2, 3, 1, 5, 9, 7, 8, 6, 12, 11, 10],
+                'PY'   : [32, 38, 29, 35, 41, 37, 33, 38, 42, 44, 39, 31],
+                'PL'   : [33.0, 35.0, 37.0, 40.0, 38.0, 36.0, 35.0, 40.0, 45.0328, 50.8, 45.0, 40.0],
+                'AC'   : [35, 33, 41, 41, 37, 37, 0, 0, 0, 0, 0, 0],
+                'FC'   : [0, 0, 0, 0, 0, 0, 38, 44, 46, 48, 44, 44]}
+    actual   = dataframe_date_to_year_and_month(dataset, date_field=['Date'], year_field=['Year'], month_field=None)
+    actual   = actual.to_dict(orient='list')
+    message  = "Test 3 - dataframe_date_to_year_and_month returned {0} instead of {1}".format(actual, expected)
+    assert actual == expected, message
 
-    # Test 4 - only list supported for three other parameters
+    # Test 4 - only dataframe supported for first parameter
     with pytest.raises(TypeError):
-        dataframe_date_to_year_and_month(pd.DataFrame({'Year' : [2022, 2023]}), "This is a string", [2], [3])
+        dataframe_date_to_year_and_month(dataframe="This is a string", date_field=[1], year_field=[2], month_field=[3])
+
+    # Test 5a - only list supported for date_field
+    with pytest.raises(TypeError):
+        dataframe_date_to_year_and_month(dataframe=pd.DataFrame({'Year' : [2022, 2023]}), date_field="This is a string", year_field=[2], month_field=[3])
+
+    # Test 5b - only one element in list supported for date_field
+    with pytest.raises(ValueError):
+        dataframe_date_to_year_and_month(dataframe=pd.DataFrame({'Year' : [2022, 2023]}), date_field=[], year_field=[2], month_field=[3])
+
+    # Test 5c - only one element in list supported for date_field
+    with pytest.raises(ValueError):
+        dataframe_date_to_year_and_month(dataframe=pd.DataFrame({'Year' : [2022, 2023]}), date_field=['one', 'two'], year_field=[2], month_field=[3])
+
+    # Test 6a - only list supported for year_field
+    with pytest.raises(TypeError):
+        dataframe_date_to_year_and_month(dataframe=pd.DataFrame({'Year' : [2022, 2023]}), date_field=["one"], year_field=2023, month_field=[3])
+
+    # Test 6b - only one element in list supported for year_field
+    with pytest.raises(ValueError):
+        dataframe_date_to_year_and_month(dataframe=pd.DataFrame({'Year' : [2022, 2023]}), date_field=["one"], year_field=[], month_field=[3])
+
+    # Test 6c - only one element in list supported for year_field
+    with pytest.raises(ValueError):
+        dataframe_date_to_year_and_month(dataframe=pd.DataFrame({'Year' : [2022, 2023]}), date_field=["one"], year_field=['one', 'two'], month_field=[3])
+
+    # Test 7a - only list supported for month_field
+    with pytest.raises(TypeError):
+        dataframe_date_to_year_and_month(dataframe=pd.DataFrame({'Year' : [2022, 2023]}), date_field=["one"], year_field=["year"], month_field=1.2)
+
+    # Test 7b - only one element in list supported for month_field
+    with pytest.raises(ValueError):
+        dataframe_date_to_year_and_month(dataframe=pd.DataFrame({'Year' : [2022, 2023]}), date_field=["one"], year_field=["year"], month_field=[])
+
+    # Test 7c - only one element in list supported for month_field
+    with pytest.raises(ValueError):
+        dataframe_date_to_year_and_month(dataframe=pd.DataFrame({'Year' : [2022, 2023]}), date_field=["one"], year_field=["year"], month_field=['one', 'two'])
 
 
 def test_dataframe_keep_only_relevant_columns():
