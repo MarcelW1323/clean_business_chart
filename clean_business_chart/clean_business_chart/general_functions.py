@@ -652,19 +652,22 @@ def dataframe_convert_year_month_to_string(dataframe, wanted_headers, year_field
     # Search for available headers
     available_headers = dataframe_search_for_headers(dataframe, search_for_headers=wanted_headers, error_not_found=False)
 
+    # Prepare the dataframe to be returned
+    export_dataframe = dataframe.copy()
+
     # Convert year to string.
     year = year_field[0]
     if year in available_headers:
         # Yes, year is available in the headers
-        dataframe[year] = dataframe[year].apply(int).apply(str)
+        export_dataframe[year] = export_dataframe[year].apply(int).apply(str)
 
     # Convert month to string with length=2, filled with leading zeros if value < 10
     month = month_field[0]
     if month in available_headers:
         # Yes, month is available in the headers
-        dataframe[month] = dataframe[month].apply(int).apply(str).str.zfill(2)
+        export_dataframe[month] = export_dataframe[month].apply(int).apply(str).str.zfill(2)
 
     # Sort dataframe by available headers
-    export_dataframe = dataframe.sort_values(available_headers, ascending = [True] * len(available_headers)).copy()
+    export_dataframe = export_dataframe.sort_values(available_headers, ascending = [True] * len(available_headers)).copy()
 
     return export_dataframe
