@@ -108,14 +108,14 @@ class GeneralChart:
         self.colors : a dictionary of colors needed for the consistent look of the charts
         """
         self.colors['text']      = '#000000'
-        self.colors['AC']        = ('#505050', '#505050', '#FFFFFF') #index 0= color, 1= bordercolor, 2=textcolor stacked bar
+        self.colors['AC']        = ('#404040', '#404040', '#FFFFFF') #index 0= color, 1= bordercolor, 2=textcolor stacked bar
         # From book sample
         #self.colors['AC']        = ('#404040', '#404040', '#FFFFFF') #index 0= color, 1= bordercolor, 2=textcolor stacked bar
         self.colors['PY']        = ('#B0B0B0', '#B0B0B0')
-        self.colors['PL']        = ('#FFFFFF', '#505050')
+        self.colors['PL']        = ('#FFFFFF', '#404040')
         # From book sample
         #self.colors['PL']        = ('#FFFFFF', '#000000')
-        self.colors['FC']        = ('#FFFFFF', '#505050', '#000000', '#FFFFFF') #index 0= color, 1= bordercolor, 2=textcolor stacked bar, 3=background color text stacked bar
+        self.colors['FC']        = ('#FFFFFF', '#404040', '#000000', '#FFFFFF') #index 0= color, 1= bordercolor, 2=textcolor stacked bar, 3=background color text stacked bar
         # From book sample
         #self.colors['FC']        = ('#FFFFFF', '#000000', '#000000', '#FFFFFF') #index 0= color, 1= bordercolor, 2=textcolor stacked bar, 3=background color text stacked bar
         self.colors['line']      = '#C0C0C0'
