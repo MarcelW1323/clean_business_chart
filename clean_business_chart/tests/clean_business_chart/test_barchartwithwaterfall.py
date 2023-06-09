@@ -222,3 +222,40 @@ def test__check_scenario_parameters():
             # The function below shoud give an ValueError and that is exactly what it should do.
             with pytest.raises(ValueError):
                 testvar._check_scenario_parameters()
+
+
+def test__fill_data_scenarios():
+    # Test 1 - good dataframe with all scenarios
+    dataset = pd.DataFrame({'Year' : ['2021', '2021'],
+                            'Month': ['02', '04'],
+                            'PY'   : [32, 38],
+                            'PL'   : [32, 38],
+                            'AC'   : [35, 33],
+                            'FC'   : [32, 38]})
+    testvar  = BarWithWaterfall(test=True)
+    testvar.all_scenarios = ['PY', 'PL', 'AC', 'FC']
+    expected = ['PY', 'PL', 'AC', 'FC']
+    testvar._fill_data_scenarios(dataframe=dataset)
+    actual = testvar.data_scenarios
+    message  = "Test 1 - BarWithWaterfall._fill_data_scenarios returned {0} instead of {1}".format(actual, expected)
+    assert actual == expected, message
+
+    # Test 2 - good dataframe with some scenarios
+    dataset = pd.DataFrame({'Year'     : ['2021', '2021'],
+                            'AC'       : [32, 38],
+                            'Month'    : ['02', '04'],
+                            'Category' : [32, 38],
+                            'PY'       : [32, 38]})
+    testvar  = BarWithWaterfall(test=True)
+    testvar.all_scenarios = ['PY', 'PL', 'AC', 'FC']
+    expected = ['PY', 'AC']
+    testvar._fill_data_scenarios(dataframe=dataset)
+    actual = testvar.data_scenarios
+    message  = "Test 2 - BarWithWaterfall._fill_data_scenarios returned {0} instead of {1}".format(actual, expected)
+    assert actual == expected, message
+    
+    # Test 3 - parameter is a string and not a dataframe
+    with pytest.raises(TypeError):
+        testvar  = BarWithWaterfall(test=True)
+        testvar.all_scenarios = ['PY', 'PL', 'AC', 'FC']
+        testvar._fill_data_scenarios(dataframe="This is a string")
