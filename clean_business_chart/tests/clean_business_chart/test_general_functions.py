@@ -194,22 +194,22 @@ def test_optimize_data():
         optimize_data(data=data, numerator=3, denominator=0, decimals=1)
 
     # Test 9 - Denominator = string
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         data    = 3
         optimize_data(data=data, numerator=3, denominator="This is a string", decimals=1)
 
     # Test 10 - Nominator = string
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         data    = 3
         optimize_data(data=data, numerator="This is a string", denominator=1, decimals=1)
 
     # Test 11 - Decimals = string
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         data    = 3
         optimize_data(data=data, numerator=1, denominator=1, decimals="This is a string")
 
     # Test 12 - Decimals = float
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         data    = 3
         optimize_data(data=data, numerator=1, denominator=1, decimals=1.1)
 

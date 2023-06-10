@@ -295,19 +295,23 @@ def optimize_data(data=None, numerator=1, denominator=1, decimals=0):
     """
     # Denominator may not be a zero, because of division by zero error
     if isinteger(denominator) or isfloat(denominator):
+        # Denominator is an integer or a float
         if denominator == 0 or denominator == 0.0:
             raise ValueError("Denominator "+str(denominator)+" will cause a division-by-zero-error")
         # else there will be no division-by-zero-error, go further
     else:
-        raise ValueError("Denominator "+str(denominator)+" is not of type integer or type float")
+        # Denominator is not an integer and not a float
+        raise TypeError("Denominator "+str(denominator)+" is not of type integer or type float, but of type "+str(type(denominator)))
 
     # Numerator needs to be an integer or a float
     if not (isinteger(numerator) or isfloat(numerator)):
-        raise ValueError("Numerator "+str(numerator)+" is not of type integer or type float")
+        # Numerator is not an integer and not a float
+        raise TypeError("Numerator "+str(numerator)+" is not of type integer or type float")
 
     # Decimals needs to be an integer
     if not isinteger(decimals):
-        raise ValueError("Decimals "+str(numerator)+" is not of type integer")    
+        # Decimals is not an integer
+        raise TypeError("Decimals "+str(decimals)+" is not of type integer, but of type "+str(type(decimals)))    
 
     # Process the data    
     if islist(data):
