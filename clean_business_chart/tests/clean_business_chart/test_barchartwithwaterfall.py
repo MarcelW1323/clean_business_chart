@@ -226,36 +226,116 @@ def test__check_scenario_parameters():
 
 def test__fill_data_scenarios():
     # Test 1 - good dataframe with all scenarios
-    dataset = pd.DataFrame({'Year' : ['2021', '2021'],
-                            'Month': ['02', '04'],
-                            'PY'   : [32, 38],
-                            'PL'   : [32, 38],
-                            'AC'   : [35, 33],
-                            'FC'   : [32, 38]})
+    dataset  = pd.DataFrame({'Year' : ['2021', '2021'],
+                             'Month': ['02', '04'],
+                             'PY'   : [32, 38],
+                             'PL'   : [32, 38],
+                             'AC'   : [35, 33],
+                             'FC'   : [32, 38]})
     testvar  = BarWithWaterfall(test=True)
     testvar.all_scenarios = ['PY', 'PL', 'AC', 'FC']
     expected = ['PY', 'PL', 'AC', 'FC']
     testvar._fill_data_scenarios(dataframe=dataset)
-    actual = testvar.data_scenarios
+    actual   = testvar.data_scenarios
     message  = "Test 1 - BarWithWaterfall._fill_data_scenarios returned {0} instead of {1}".format(actual, expected)
     assert actual == expected, message
 
     # Test 2 - good dataframe with some scenarios
-    dataset = pd.DataFrame({'Year'     : ['2021', '2021'],
-                            'AC'       : [32, 38],
-                            'Month'    : ['02', '04'],
-                            'Category' : [32, 38],
-                            'PY'       : [32, 38]})
+    dataset  = pd.DataFrame({'Year'     : ['2021', '2022'],
+                             'AC'       : [32, 38],
+                             'Month'    : ['02', '04'],
+                             'Category' : ["Dog", "Cat"],
+                             'PY'       : [32, 38]})
     testvar  = BarWithWaterfall(test=True)
     testvar.all_scenarios = ['PY', 'PL', 'AC', 'FC']
     expected = ['PY', 'AC']
     testvar._fill_data_scenarios(dataframe=dataset)
-    actual = testvar.data_scenarios
+    actual   = testvar.data_scenarios
     message  = "Test 2 - BarWithWaterfall._fill_data_scenarios returned {0} instead of {1}".format(actual, expected)
     assert actual == expected, message
     
     # Test 3 - parameter is a string and not a dataframe
     with pytest.raises(TypeError):
-        testvar  = BarWithWaterfall(test=True)
+        testvar = BarWithWaterfall(test=True)
         testvar.all_scenarios = ['PY', 'PL', 'AC', 'FC']
         testvar._fill_data_scenarios(dataframe="This is a string")
+
+
+def test__fill_data_total():
+    # Test 1 - good dataframe with all scenarios. Decimals is 2
+    dataset  = pd.DataFrame({'Year' : ['2021', '2022'],
+                             'Month': ['02', '04'],
+                             'PY'   : [32.453, 38.2],
+                             'PL'   : [32.74532, 38.98899],
+                             'AC'   : [35.3, 33],
+                             'FC'   : [32, 38]})
+    testvar  = BarWithWaterfall(test=True)
+    testvar.data_scenarios = ['PY', 'PL', 'AC', 'FC']
+    expected = {'PY': 70.65, 'PL': 71.73, 'AC': 68.3, 'FC': 70}
+    testvar._fill_data_total(dataframe=dataset, decimals=2)
+    actual   = testvar.data_total
+    message  = "Test 1 - BarWithWaterfall._fill_data_total returned {0} instead of {1}".format(actual, expected)
+    assert actual == expected, message
+
+    # Test 2 - good dataframe with some scenarios. Decimals is 1
+    dataset  = pd.DataFrame({'Year' : ['2021', '2022'],
+                             'Month': ['02', '04'],
+                             'PY'   : [32.453, 38.2],
+                             'PL'   : [32.74532, 38.98899],
+                             'AC'   : [35.3, 33],
+                             'FC'   : [32, 38]})
+    testvar  = BarWithWaterfall(test=True)
+    testvar.data_scenarios = ['PY', 'PL', 'AC', 'FC']
+    expected = {'PY': 70.7, 'PL': 71.7, 'AC': 68.3, 'FC': 70}
+    testvar._fill_data_total(dataframe=dataset, decimals=1)
+    actual   = testvar.data_total
+    message  = "Test 2 - BarWithWaterfall._fill_data_total returned {0} instead of {1}".format(actual, expected)
+    assert actual == expected, message
+
+    # Test 3 - good dataframe with some scenarios. Decimals is 0
+    dataset  = pd.DataFrame({'Year' : ['2021', '2022'],
+                             'Month': ['02', '04'],
+                             'PY'   : [32.453, 38.2],
+                             'PL'   : [32.74532, 38.98899],
+                             'AC'   : [35.3, 33],
+                             'FC'   : [32, 38]})
+    testvar  = BarWithWaterfall(test=True)
+    testvar.data_scenarios = ['PY', 'PL', 'AC', 'FC']
+    expected = {'PY': 71, 'PL': 72, 'AC': 68, 'FC': 70}
+    testvar._fill_data_total(dataframe=dataset, decimals=0)
+    actual   = testvar.data_total
+    message  = "Test 3 - BarWithWaterfall._fill_data_total returned {0} instead of {1}".format(actual, expected)
+    assert actual == expected, message
+
+    # Test 4 - good dataframe with some scenarios. Decimals is None (default value)
+    dataset  = pd.DataFrame({'Year' : ['2021', '2022'],
+                             'Month': ['02', '04'],
+                             'PY'   : [32.453, 38.2],
+                             'PL'   : [32.74532, 38.98899],
+                             'AC'   : [35.3, 33],
+                             'FC'   : [32, 38]})
+    testvar  = BarWithWaterfall(test=True)
+    testvar.data_scenarios = ['PY', 'PL', 'AC', 'FC']
+    expected = {'PY': 70.653, 'PL': 71.73431, 'AC': 68.3, 'FC': 70}
+    testvar._fill_data_total(dataframe=dataset)
+    actual   = testvar.data_total
+    message  = "Test 4 - BarWithWaterfall._fill_data_total returned {0} instead of {1}".format(actual, expected)
+    assert actual == expected, message
+
+    # Test 5 - parameter dataframe is a string and not a dataframe
+    with pytest.raises(TypeError):
+        testvar = BarWithWaterfall(test=True)
+        testvar.data_scenarios = ['PY', 'PL', 'AC', 'FC']
+        testvar._fill_data_total(dataframe="This is a string")  # Default parameter decimals is None and that is supported
+
+    # Test 6 - parameter decimals is a string and not an integer
+    with pytest.raises(TypeError):
+        testvar = BarWithWaterfall(test=True)
+        testvar.data_scenarios = ['PY', 'PL', 'AC', 'FC']
+        dataset  = pd.DataFrame({'Year' : ['2021', '2022'],
+                                 'Month': ['02', '04'],
+                                 'PY'   : [32.453, 38.2],
+                                 'PL'   : [32.74532, 38.98899],
+                                 'AC'   : [35.3, 33],
+                                 'FC'   : [32, 38]})
+        testvar._fill_data_total(dataframe=dataset, decimals="This is a string")
