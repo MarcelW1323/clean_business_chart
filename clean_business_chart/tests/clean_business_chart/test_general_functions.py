@@ -139,76 +139,113 @@ def test_string_to_value():
 
 
 def test_optimize_data():
-    # Test 1 - data-list to be rounded with 1 decimals
-    data     = [15, 3.56, 4.876, 45.932, 100]
-    expected = [15.0, 3.6, 4.9, 45.9, 100.0]
-    actual   = optimize_data(data=data, numerator=1, denominator=1, decimals=1)
-    message  = "Test 1 - optimize_data returned {0} instead of {1}".format(actual, expected)
-    assert actual == expected, message
-    
-    # Test 2 - data-list to be rounded with 0 decimals
+    # Test 1 - data-list to be rounded with 0 decimals
     data     = [15, 3.56, 4.876, 45.932, 100]
     expected = [15, 4, 5, 46, 100]
     actual   = optimize_data(data=data, numerator=1, denominator=1, decimals=0)
+    message  = "Test 1 - optimize_data returned {0} instead of {1}".format(actual, expected)
+    assert actual == expected, message
+    
+    # Test 2 - data-list to be rounded with 1 decimals
+    data     = [15, 3.56, 4.876, 45.932, 100]
+    expected = [15.0, 3.6, 4.9, 45.9, 100.0]
+    actual   = optimize_data(data=data, numerator=1, denominator=1, decimals=1)
     message  = "Test 2 - optimize_data returned {0} instead of {1}".format(actual, expected)
     assert actual == expected, message
 
-    # Test 3 - integer rounded with 1 decimals
-    data     = 16
-    expected = 16.0
-    actual   = optimize_data(data=data, numerator=1, denominator=1, decimals=1)
+    # Test 3 - data-list to be rounded with 2 decimals
+    # Be aware (before output) that some values won't get trailing zeros to get to two decimals
+    data     = [15, 3.56, 4.876, 45.932, 100]
+    expected = [15.0, 3.56, 4.88, 45.93, 100.0]
+    actual   = optimize_data(data=data, numerator=1, denominator=1, decimals=2)
     message  = "Test 3 - optimize_data returned {0} instead of {1}".format(actual, expected)
     assert actual == expected, message
 
-    # Test 4 - float rounded with 0 decimals
-    data     = 16.37682
+    # Test 4 - integer rounded with 0 decimals
+    data     = 16
     expected = 16
     actual   = optimize_data(data=data, numerator=1, denominator=1, decimals=0)
     message  = "Test 4 - optimize_data returned {0} instead of {1}".format(actual, expected)
     assert actual == expected, message
 
-    # Test 5 - None
+    # Test 5 - integer rounded with 1 decimals
+    data     = 16
+    expected = 16.0
+    actual   = optimize_data(data=data, numerator=1, denominator=1, decimals=1)
+    message  = "Test 5 - optimize_data returned {0} instead of {1}".format(actual, expected)
+    assert actual == expected, message
+
+    # Test 6 - integer rounded with 2 decimals
+    # Be aware (before output) that some values won't get trailing zeros to get to two decimals
+    data     = 16
+    expected = 16.0
+    actual   = optimize_data(data=data, numerator=1, denominator=1, decimals=2)
+    message  = "Test 6 - optimize_data returned {0} instead of {1}".format(actual, expected)
+    assert actual == expected, message
+
+    # Test 7 - float rounded with 0 decimals
+    data     = 16.37682
+    expected = 16
+    actual   = optimize_data(data=data, numerator=1, denominator=1, decimals=0)
+    message  = "Test 7 - optimize_data returned {0} instead of {1}".format(actual, expected)
+    assert actual == expected, message
+
+    # Test 8 - float rounded with 1 decimals
+    data     = 16.37682
+    expected = 16.4
+    actual   = optimize_data(data=data, numerator=1, denominator=1, decimals=1)
+    message  = "Test 8 - optimize_data returned {0} instead of {1}".format(actual, expected)
+    assert actual == expected, message
+
+    # Test 9 - float rounded with 2 decimals
+    data     = 16.37682
+    expected = 16.38
+    actual   = optimize_data(data=data, numerator=1, denominator=1, decimals=2)
+    message  = "Test 9 - optimize_data returned {0} instead of {1}".format(actual, expected)
+    assert actual == expected, message
+
+    # Test 9 - None
     data     = None
     expected = None
     actual   = optimize_data(data=data, numerator=1, denominator=1, decimals=1)
     message  = "Test 5 - optimize_data returned {0} instead of {1}".format(actual, expected)
     assert actual == expected, message
 
-    # Test 6 - String
+    # Test 10 - String
     data     = "This is a string"
     expected = "This is a string"
     actual   = optimize_data(data=data, numerator=1, denominator=1, decimals=1)
     message  = "Test 6 - optimize_data returned {0} instead of {1}".format(actual, expected)
     assert actual == expected, message
 
-    # Test 7 - Optimizing with other numerator and denominator and decimals
+    # Test 11 - Optimizing with other numerator and denominator and decimals
     data     = 123456789
     expected = 370.37
     actual   = optimize_data(data=data, numerator=3, denominator=1000000, decimals=2)
     message  = "Test 7 - optimize_data returned {0} instead of {1}".format(actual, expected)
     assert actual == expected, message
 
-    # Test 8 - Denominator = 0
+    # Test 12 - Denominator = 0
     with pytest.raises(ValueError):
         data    = 3
         optimize_data(data=data, numerator=3, denominator=0, decimals=1)
 
-    # Test 9 - Denominator = string
+    # Test 13 - Denominator = string
     with pytest.raises(TypeError):
         data    = 3
         optimize_data(data=data, numerator=3, denominator="This is a string", decimals=1)
 
-    # Test 10 - Nominator = string
+    # Test 14 - Nominator = string
     with pytest.raises(TypeError):
         data    = 3
         optimize_data(data=data, numerator="This is a string", denominator=1, decimals=1)
 
-    # Test 11 - Decimals = string
+    # Test 15 - Decimals = string
     with pytest.raises(TypeError):
         data    = 3
         optimize_data(data=data, numerator=1, denominator=1, decimals="This is a string")
 
-    # Test 12 - Decimals = float
+    # Test 16 - Decimals = float
     with pytest.raises(TypeError):
         data    = 3
         optimize_data(data=data, numerator=1, denominator=1, decimals=1.1)
