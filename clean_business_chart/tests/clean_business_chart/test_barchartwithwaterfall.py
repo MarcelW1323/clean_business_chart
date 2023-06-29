@@ -339,3 +339,87 @@ def test__fill_data_total():
                                  'AC'   : [35.3, 33],
                                  'FC'   : [32, 38]})
         testvar._fill_data_total(dataframe=dataset, decimals="This is a string")
+
+
+def test__dataframe_find_category_of_interest():
+    # Test 1 - good dataframe with all scenarios and a few extra categories. Parameter category provided
+    dataset  = pd.DataFrame({'Year' : ['2021', '2022'],
+                             'Month': ['02', '04'],
+                             'PY'   : [32.453, 38.2],
+                             'PL'   : [32.74532, 38.98899],
+                             'Plane': ['Airbus', 'Boeing'],
+                             'Type' : ['Passenger', 'Freight'],
+                             'AC'   : [35.3, 33],
+                             'FC'   : [32, 38]})
+    testvar  = BarWithWaterfall(test=True)
+    testvar.all_scenarios = ['Month', 'Date', 'Year', 'PY', 'PL', 'AC', 'FC']
+    testvar.category = 'Type'
+    expected = 'Type'
+    actual = testvar._dataframe_find_category_of_interest(dataframe=dataset)
+    message  = "Test 1 - BarWithWaterfall._dataframe_find_category_of_interest returned {0} instead of {1}".format(actual, expected)
+    assert actual == expected, message
+
+    # Test 2 - good dataframe with all scenarios and a few extra categories. Parameter category not provided
+    dataset  = pd.DataFrame({'Year' : ['2021', '2022'],
+                             'Month': ['02', '04'],
+                             'PY'   : [32.453, 38.2],
+                             'PL'   : [32.74532, 38.98899],
+                             'Plane': ['Airbus', 'Boeing'],
+                             'Type' : ['Passenger', 'Freight'],
+                             'AC'   : [35.3, 33],
+                             'FC'   : [32, 38]})
+    testvar  = BarWithWaterfall(test=True)
+    testvar.all_scenarios = ['Month', 'Date', 'Year', 'PY', 'PL', 'AC', 'FC']
+    testvar.category = None
+    expected = 'Plane'
+    actual = testvar._dataframe_find_category_of_interest(dataframe=dataset)
+    message  = "Test 2 - BarWithWaterfall._dataframe_find_category_of_interest returned {0} instead of {1}".format(actual, expected)
+    assert actual == expected, message
+
+    # Test 3 - good dataframe with all scenarios and a few extra categories. Parameter category is provided but value is not in column headers
+    with pytest.raises(ValueError):
+        dataset  = pd.DataFrame({'Year' : ['2021', '2022'],
+                             'Month': ['02', '04'],
+                             'PY'   : [32.453, 38.2],
+                             'PL'   : [32.74532, 38.98899],
+                             'Plane': ['Airbus', 'Boeing'],
+                             'Type' : ['Passenger', 'Freight'],
+                             'AC'   : [35.3, 33],
+                             'FC'   : [32, 38]})
+        testvar  = BarWithWaterfall(test=True)
+        testvar.all_scenarios = ['Month', 'Date', 'Year', 'PY', 'PL', 'AC', 'FC']
+        testvar.category = 'Airport'
+        testvar._dataframe_find_category_of_interest(dataframe=dataset)
+
+    # Test 4 - good dataframe with all scenarios, but no extra categories. Parameter category is not provided.
+    with pytest.raises(ValueError):
+        dataset  = pd.DataFrame({'Year' : ['2021', '2022'],
+                             'Month': ['02', '04'],
+                             'PY'   : [32.453, 38.2],
+                             'PL'   : [32.74532, 38.98899],
+                             'AC'   : [35.3, 33],
+                             'FC'   : [32, 38]})
+        testvar  = BarWithWaterfall(test=True)
+        testvar.all_scenarios = ['Month', 'Date', 'Year', 'PY', 'PL', 'AC', 'FC']
+        testvar.category = None
+        testvar._dataframe_find_category_of_interest(dataframe=dataset)
+
+    # Test 5 - good dataframe with all scenarios, but no extra categories. Parameter category is one of the supported date categories.
+    with pytest.raises(ValueError):
+        dataset  = pd.DataFrame({'Year' : ['2021', '2022'],
+                             'Month': ['02', '04'],
+                             'PY'   : [32.453, 38.2],
+                             'PL'   : [32.74532, 38.98899],
+                             'AC'   : [35.3, 33],
+                             'FC'   : [32, 38]})
+        testvar  = BarWithWaterfall(test=True)
+        testvar.all_scenarios = ['Month', 'Date', 'Year', 'PY', 'PL', 'AC', 'FC']
+        testvar.category = 'Year'
+        testvar._dataframe_find_category_of_interest(dataframe=dataset)
+
+    # Test 6 - parameter is a string and not a dataframe
+    with pytest.raises(TypeError):
+        testvar  = BarWithWaterfall(test=True)
+        testvar.all_scenarios = ['Month', 'Date', 'Year', 'PY', 'PL', 'AC', 'FC']
+        testvar.category = None
+        testvar._dataframe_find_category_of_interest(dataframe="This is a string")
