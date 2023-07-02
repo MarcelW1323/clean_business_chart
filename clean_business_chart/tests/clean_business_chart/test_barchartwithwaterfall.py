@@ -423,3 +423,81 @@ def test__dataframe_find_category_of_interest():
         testvar.all_scenarios = ['Month', 'Date', 'Year', 'PY', 'PL', 'AC', 'FC']
         testvar.category = None
         testvar._dataframe_find_category_of_interest(dataframe="This is a string")
+
+
+def test__dataframe_aggregate():
+    # Test 1 - good dataframe with all scenarios and a few extra categories, aggregate on _Category and Year
+    dataset  = pd.DataFrame({'Year'     : ['2021', '2021', '2021', '2022', '2022'],
+                             'Month'    : ['02', '04', '07', '08', '09'],
+                             'PY'       : [32, 38.2, 40, 39, 38],
+                             'PL'       : [33, 38.98899, 41, 40, 39],
+                             '_Category': ['Airbus', 'Boeing', 'Airbus', 'Boeing', 'Airbus'],
+                             'Type'     : ['Passenger', 'Freight', 'Freight', 'Passenger', 'Freight'],
+                             'AC'       : [35, 33, 39, 37, 36],
+                             'FC'       : [32, 38, 41, 39, 40]})
+    testvar  = BarWithWaterfall(test=True)
+    expected = {'_Category': ['Airbus', 'Airbus', 'Boeing', 'Boeing'], 'Year': ['2021', '2022', '2021', '2022'], 
+                'PY': [72.0, 38.0, 38.2, 39.0], 'PL': [74.0, 39.0, 38.98899, 40.0], 'AC': [74, 36, 33, 37], 'FC': [73, 40, 38, 39]}
+    actual   = testvar._dataframe_aggregate(dataframe=dataset, wanted_headers=['_Category', 'Year'])
+    actual   = actual.to_dict(orient='list')
+    message  = "Test 1 - BarWithWaterfall._dataframe_aggregate returned {0} instead of {1}".format(actual, expected)
+    assert actual == expected, message
+
+    # Test 2 - good dataframe with all scenarios and a few extra categories, aggregate on _Category
+    dataset  = pd.DataFrame({'Year'     : ['2021', '2021', '2021', '2022', '2022'],
+                             'Month'    : ['02', '04', '07', '08', '09'],
+                             'PY'       : [32, 38.2, 40, 39, 38],
+                             'PL'       : [33, 38.98899, 41, 40, 39],
+                             '_Category': ['Airbus', 'Boeing', 'Airbus', 'Boeing', 'Airbus'],
+                             'Type'     : ['Passenger', 'Freight', 'Freight', 'Passenger', 'Freight'],
+                             'AC'       : [35, 33, 39, 37, 36],
+                             'FC'       : [32, 38, 41, 39, 40]})
+    testvar  = BarWithWaterfall(test=True)
+    expected =  {'_Category': ['Airbus', 'Boeing'], 'PY': [110.0, 77.2], 'PL': [113.0, 78.98899], 'AC': [110, 70], 'FC': [113, 77]}
+    actual   = testvar._dataframe_aggregate(dataframe=dataset, wanted_headers=['_Category'])
+    actual   = actual.to_dict(orient='list')
+    message  = "Test 2 - BarWithWaterfall._dataframe_aggregate returned {0} instead of {1}".format(actual, expected)
+    assert actual == expected, message
+
+    # Test 3 - parameter dataframe is a string and not a dataframe
+    with pytest.raises(TypeError):
+        testvar  = BarWithWaterfall(test=True)
+        testvar._dataframe_aggregate(dataframe="This is a string", wanted_headers=['list-item 1', 'list-item 2'])
+
+    # Test 4 - parameter wanted_headers is a string and not a list
+    with pytest.raises(TypeError):
+        testvar  = BarWithWaterfall(test=True)
+        dataset  = pd.DataFrame({'Year'     : ['2021', '2021', '2021', '2022', '2022'],
+                                 'Month'    : ['02', '04', '07', '08', '09'],
+                                 'PY'       : [32, 38.2, 40, 39, 38],
+                                 'PL'       : [33, 38.98899, 41, 40, 39],
+                                 '_Category': ['Airbus', 'Boeing', 'Airbus', 'Boeing', 'Airbus'],
+                                 'Type'     : ['Passenger', 'Freight', 'Freight', 'Passenger', 'Freight'],
+                                 'AC'       : [35, 33, 39, 37, 36],
+                                 'FC'       : [32, 38, 41, 39, 40]})
+        testvar._dataframe_aggregate(dataframe=dataset, wanted_headers="This is a string")
+
+    # Test 5 - dataframe does not contain header _Category
+    with pytest.raises(ValueError):
+        testvar  = BarWithWaterfall(test=True)
+        dataset  = pd.DataFrame({'Year'     : ['2021', '2021', '2021', '2022', '2022'],
+                                 'Month'    : ['02', '04', '07', '08', '09'],
+                                 'PY'       : [32, 38.2, 40, 39, 38],
+                                 'PL'       : [33, 38.98899, 41, 40, 39],
+                                 'Type'     : ['Passenger', 'Freight', 'Freight', 'Passenger', 'Freight'],
+                                 'AC'       : [35, 33, 39, 37, 36],
+                                 'FC'       : [32, 38, 41, 39, 40]})
+        testvar._dataframe_aggregate(dataframe=dataset, wanted_headers=['_Category'])
+
+    # Test 6 - dataframe does contain header _Category, but it is not in the wanted_headers
+    with pytest.raises(ValueError):
+        testvar  = BarWithWaterfall(test=True)
+        dataset  = pd.DataFrame({'Year'     : ['2021', '2021', '2021', '2022', '2022'],
+                                 'Month'    : ['02', '04', '07', '08', '09'],
+                                 'PY'       : [32, 38.2, 40, 39, 38],
+                                 '_Category': ['Airbus', 'Boeing', 'Airbus', 'Boeing', 'Airbus'],
+                                 'PL'       : [33, 38.98899, 41, 40, 39],
+                                 'Type'     : ['Passenger', 'Freight', 'Freight', 'Passenger', 'Freight'],
+                                 'AC'       : [35, 33, 39, 37, 36],
+                                 'FC'       : [32, 38, 41, 39, 40]})
+        testvar._dataframe_aggregate(dataframe=dataset, wanted_headers=['Year'])
