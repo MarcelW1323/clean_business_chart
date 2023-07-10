@@ -501,3 +501,56 @@ def test__dataframe_aggregate():
                                  'AC'       : [35, 33, 39, 37, 36],
                                  'FC'       : [32, 38, 41, 39, 40]})
         testvar._dataframe_aggregate(dataframe=dataset, wanted_headers=['Year'])
+
+
+def test__optimize_data_total():
+    # Test 1 - good dictionary and good parameters (with unusual, but valid values and two decimals)
+    testvar  = BarWithWaterfall(test=True)
+    testvar.data_total = {'AC':1357.2468, 'PL':862.64, 'PY':8723.85, 'FC':103020.76932}
+    expected = {'AC': 48.85, 'PL': 31.05, 'PY': 313.97, 'FC': 3707.69}
+    testvar._optimize_data_total(numerator=14, denominator=389, decimals=2)
+    actual   = testvar.data_total
+    message  = "Test 1 - BarWithWaterfall._optimize_data_total returned {0} instead of {1}".format(actual, expected)
+    assert actual == expected, message
+
+    # Test 2 - good dictionary and good parameters (with normal, valid values and one decimals)
+    testvar  = BarWithWaterfall(test=True)
+    testvar.data_total = {'AC':1357.2468, 'PL':862.64, 'PY':8723.85, 'FC':103020.76932}
+    expected = {'AC': 1.4, 'PL': 0.9, 'PY': 8.7, 'FC': 103.0}
+    testvar._optimize_data_total(numerator=1, denominator=1000, decimals=1)
+    actual   = testvar.data_total
+    message  = "Test 2 - BarWithWaterfall._optimize_data_total returned {0} instead of {1}".format(actual, expected)
+    assert actual == expected, message
+
+    # Test 3 - good dictionary and good parameters (with unusual, valid values and no decimals)
+    testvar  = BarWithWaterfall(test=True)
+    testvar.data_total = {'AC':1357.2468, 'PL':862.64, 'PY':8723.85, 'FC':103020.76932}
+    expected = {'AC': 68, 'PL': 43, 'PY': 436, 'FC': 5151}
+    testvar._optimize_data_total(numerator=50, denominator=1000, decimals=0)
+    actual   = testvar.data_total
+    message  = "Test 3 - BarWithWaterfall._optimize_data_total returned {0} instead of {1}".format(actual, expected)
+    assert actual == expected, message
+
+    # Test 4 - Numerator is not an integer
+    with pytest.raises(TypeError):
+        testvar  = BarWithWaterfall(test=True)
+        testvar.data_total = {'AC':1357.2468, 'PL':862.64, 'PY':8723.85, 'FC':103020.76932}
+        testvar._optimize_data_total(numerator="This is a string", denominator=1, decimals=0)
+
+    # Test 5 - Denominator is not an integer
+    with pytest.raises(TypeError):
+        testvar  = BarWithWaterfall(test=True)
+        testvar.data_total = {'AC':1357.2468, 'PL':862.64, 'PY':8723.85, 'FC':103020.76932}
+        testvar._optimize_data_total(numerator=1, denominator="This is a string", decimals=0)
+
+    # Test 6 - Decimals is not an integer
+    with pytest.raises(TypeError):
+        testvar  = BarWithWaterfall(test=True)
+        testvar.data_total = {'AC':1357.2468, 'PL':862.64, 'PY':8723.85, 'FC':103020.76932}
+        testvar._optimize_data_total(numerator=1, denominator=1, decimals="This is a string")
+
+    # Test 7 - Data_total is not a dictionary
+    with pytest.raises(TypeError):
+        testvar  = BarWithWaterfall(test=True)
+        testvar.data_total = "This is a string"
+        testvar._optimize_data_total(numerator=1, denominator=1, decimals=1)
