@@ -554,3 +554,126 @@ def test__optimize_data_total():
         testvar  = BarWithWaterfall(test=True)
         testvar.data_total = "This is a string"
         testvar._optimize_data_total(numerator=1, denominator=1, decimals=1)
+
+
+def test__dataframe_full_category():
+    # Test 1 - good dataframe with all scenarios and a few extra categories
+    dataset  = pd.DataFrame({'Year'     : ['2021', '2021', '2021', '2021', '2021'],
+                             'Month'    : ['02', '04', '07', '08', '09'],
+                             'PY'       : [32, 38.2, 40, 39, 38],
+                             'PL'       : [33, 38.98899, 41, 40, 39],
+                             '_Category': ['Airbus', 'Boeing', 'Airbus', 'Boeing', 'Airbus'],
+                             'Type'     : ['Passenger', 'Freight', 'Freight', 'Passenger', 'Freight'],
+                             'AC'       : [35, 33, 39, 37, 36],
+                             'FC'       : [32, 38, 41, 39, 40]})
+    category_list = ['Airbus', 'Boeing', 'General Dynamics', 'Lockheed Martin']
+    testvar  = BarWithWaterfall(test=True)
+    expected = {'Year'     : ['2021', '2021', '2021', '2021', '2021', '2021', '2021'], 
+                '_Category': ['Airbus', 'Airbus', 'Airbus', 'Boeing', 'Boeing', 'General Dynamics', 'Lockheed Martin'], 
+                'Month'    : ['02', '07', '09', '04', '08', '', ''], 
+                'PY'       : [32.0, 40.0, 38.0, 38.2, 39.0, 0.0, 0.0], 
+                'PL'       : [33.0, 41.0, 39.0, 38.98899, 40.0, 0.0, 0.0], 
+                'Type'     : ['Passenger', 'Freight', 'Freight', 'Freight', 'Passenger', '', ''], 
+                'AC'       : [35.0, 39.0, 36.0, 33.0, 37.0, 0.0, 0.0], 
+                'FC'       : [32.0, 41.0, 40.0, 38.0, 39.0, 0.0, 0.0]}
+    actual   = testvar._dataframe_full_category(dataframe=dataset, category_of_interest_values=category_list)
+    actual   = actual.to_dict(orient='list')
+    message  = "Test 1 - BarWithWaterfall._dataframe_full_category returned {0} instead of {1}".format(actual, expected)
+    assert actual == expected, message
+
+    # Test 2 - empty dataframe
+    dataset  = pd.DataFrame()
+    category_list = ['Airbus', 'Boeing', 'General Dynamics', 'Lockheed Martin']
+    testvar  = BarWithWaterfall(test=True)
+    expected = {}
+    actual   = testvar._dataframe_full_category(dataframe=dataset, category_of_interest_values=category_list)
+    actual   = actual.to_dict(orient='list')
+    message  = "Test 2 - BarWithWaterfall._dataframe_full_category returned {0} instead of {1}".format(actual, expected)
+    assert actual == expected, message
+
+    # Test 3 - Good dataframe with all scenarios and a few extra categories, but with more unique category of interest entries than the related list
+    with pytest.raises(ValueError):
+        dataset  = pd.DataFrame({'Year'     : ['2021', '2021', '2021', '2021', '2021'],
+                                 'Month'    : ['02', '04', '07', '08', '09'],
+                                 'PY'       : [32, 38.2, 40, 39, 38],
+                                 'PL'       : [33, 38.98899, 41, 40, 39],
+                                 '_Category': ['Airbus', 'Boeing', 'General Dynamics', 'Lockheed Martin', 'Airbus'],
+                                 'Type'     : ['Passenger', 'Freight', 'Freight', 'Passenger', 'Freight'],
+                                 'AC'       : [35, 33, 39, 37, 36],
+                                 'FC'       : [32, 38, 41, 39, 40]})
+        category_list = ['Airbus', 'Boeing']
+        testvar  = BarWithWaterfall(test=True)
+        testvar._dataframe_full_category(dataframe=dataset, category_of_interest_values=category_list)
+
+    # Test 4 - Two different years in dataframe
+    with pytest.raises(ValueError):
+        dataset  = pd.DataFrame({'Year'     : ['2021', '2021', '2022', '2022', '2021'],
+                                 'Month'    : ['02', '04', '07', '08', '09'],
+                                 'PY'       : [32, 38.2, 40, 39, 38],
+                                 'PL'       : [33, 38.98899, 41, 40, 39],
+                                 '_Category': ['Airbus', 'Boeing', 'Airbus', 'Boeing', 'Airbus'],
+                                 'Type'     : ['Passenger', 'Freight', 'Freight', 'Passenger', 'Freight'],
+                                 'AC'       : [35, 33, 39, 37, 36],
+                                 'FC'       : [32, 38, 41, 39, 40]})
+        category_list = ['Airbus', 'Boeing']
+        testvar  = BarWithWaterfall(test=True)
+        testvar._dataframe_full_category(dataframe=dataset, category_of_interest_values=category_list)
+
+    # Test 5 - No year column in dataframe
+    with pytest.raises(ValueError):
+        dataset  = pd.DataFrame({'Month'    : ['02', '04', '07', '08', '09'],
+                                 'PY'       : [32, 38.2, 40, 39, 38],
+                                 'PL'       : [33, 38.98899, 41, 40, 39],
+                                 '_Category': ['Airbus', 'Boeing', 'Airbus', 'Boeing', 'Airbus'],
+                                 'Type'     : ['Passenger', 'Freight', 'Freight', 'Passenger', 'Freight'],
+                                 'AC'       : [35, 33, 39, 37, 36],
+                                 'FC'       : [32, 38, 41, 39, 40]})
+        category_list = ['Airbus', 'Boeing']
+        testvar  = BarWithWaterfall(test=True)
+        testvar._dataframe_full_category(dataframe=dataset, category_of_interest_values=category_list)
+
+    # Test 6 - No category column in dataframe
+    with pytest.raises(ValueError):
+        dataset  = pd.DataFrame({'Year'     : ['2021', '2021', '2021', '2021', '2021'],
+                                 'Month'    : ['02', '04', '07', '08', '09'],
+                                 'PY'       : [32, 38.2, 40, 39, 38],
+                                 'PL'       : [33, 38.98899, 41, 40, 39],
+                                 'Type'     : ['Passenger', 'Freight', 'Freight', 'Passenger', 'Freight'],
+                                 'AC'       : [35, 33, 39, 37, 36],
+                                 'FC'       : [32, 38, 41, 39, 40]})
+        category_list = ['Airbus', 'Boeing']
+        testvar  = BarWithWaterfall(test=True)
+        testvar._dataframe_full_category(dataframe=dataset, category_of_interest_values=category_list)
+
+    # Test 7 - Category of interest is not a list
+    with pytest.raises(TypeError):
+        dataset  = pd.DataFrame({'Year'     : ['2021', '2021', '2021', '2021', '2021'],
+                                 'Month'    : ['02', '04', '07', '08', '09'],
+                                 'PY'       : [32, 38.2, 40, 39, 38],
+                                 'PL'       : [33, 38.98899, 41, 40, 39],
+                                 '_Category': ['Airbus', 'Boeing', 'Airbus', 'Boeing', 'Airbus'],
+                                 'Type'     : ['Passenger', 'Freight', 'Freight', 'Passenger', 'Freight'],
+                                 'AC'       : [35, 33, 39, 37, 36],
+                                 'FC'       : [32, 38, 41, 39, 40]})
+        testvar  = BarWithWaterfall(test=True)
+        testvar._dataframe_full_category(dataframe=dataset, category_of_interest_values="this is a string")
+
+    # Test 8 - Category of interest is an empty list
+    with pytest.raises(ValueError):
+        dataset  = pd.DataFrame({'Year'     : ['2021', '2021', '2021', '2021', '2021'],
+                                 'Month'    : ['02', '04', '07', '08', '09'],
+                                 'PY'       : [32, 38.2, 40, 39, 38],
+                                 'PL'       : [33, 38.98899, 41, 40, 39],
+                                 '_Category': ['Airbus', 'Boeing', 'Airbus', 'Boeing', 'Airbus'],
+                                 'Type'     : ['Passenger', 'Freight', 'Freight', 'Passenger', 'Freight'],
+                                 'AC'       : [35, 33, 39, 37, 36],
+                                 'FC'       : [32, 38, 41, 39, 40]})
+        category_list = []
+        testvar  = BarWithWaterfall(test=True)
+        testvar._dataframe_full_category(dataframe=dataset, category_of_interest_values=category_list)
+
+    # Test 9 - No dataframe type
+    with pytest.raises(TypeError):
+        category_list = ['Airbus', 'Boeing']
+        testvar  = BarWithWaterfall(test=True)
+        testvar._dataframe_full_category(dataframe='This is a string', category_of_interest_values=category_list)
