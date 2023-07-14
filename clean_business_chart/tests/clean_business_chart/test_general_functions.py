@@ -323,6 +323,32 @@ def test_filter_lists():
         filter_lists(list1=list1)
 
 
+def list1_has_valid_elements():
+    # Test 1 - list1 is a subset of list 2
+    list1    = ['AC', 'PY']
+    list2    = ['PY', 'PL', 'AC', 'FC']
+    expected = True
+    actual   = list1_has_valid_elements(list1=list1, list2=list2)
+    message  = "Test 1 - list1_has_valid_elements returned {0} instead of {1}".format(actual, expected)
+    assert actual == expected, message
+
+    # Test 2 - list1 is not a subset of list 2
+    with pytest.raises(ValueError):
+        list1    = ['AC', 'PL']
+        list2    = ['PY', 'AC', 'FC']
+        list1_has_valid_elements(list1=list1, list2=list2)
+
+    # Test 3 - list1 is not present, expect a TypeError, for the default of list1 is None
+    with pytest.raises(TypeError):
+        list2    = ['PY', 'AC', 'FC']
+        list1_has_valid_elements(list2=list2)
+
+    # Test 4 - list2 is not present, expect a TypeError, for the default of list2 is None
+    with pytest.raises(TypeError):
+        list1    = ['PY', 'AC', 'FC']
+        list1_has_valid_elements(list1=list1)
+
+
 def test_convert_data_string_to_pandas_dataframe():
     # Test 1 - good string to pandas DataFrame conversion 
     dataset  = """

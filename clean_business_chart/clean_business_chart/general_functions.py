@@ -384,12 +384,40 @@ def filter_lists(list1=None, list2=None):
     a list of elements who are in both lists in the same order as list1
     """
     if not islist(list1):
-        raise TypeError("list1 "+str(list1)+" is not a list, but it's type is: "+str(type(list1)))
+        raise TypeError("list1 "+str(list1)+" is not a list, but is of type: "+str(type(list1)))
     if not islist(list2):
-        raise TypeError("list2 "+str(list2)+" is not a list, but it's type is: "+str(type(list2)))
+        raise TypeError("list2 "+str(list2)+" is not a list, but is of type: "+str(type(list2)))
 
     # The order of the list is important. So implementation not with intersection, but a list comprehension
     return [element for element in list1 if element in list2]
+
+
+def list1_has_valid_elements(list1=None, list2=None):
+    """
+    Checks the unique elements of list1 against the unique elements of list2. Gives an ValueError when list1 has at least one extra element.
+    If list1 or list2 (or both) are not a list a TypeError will occur.
+
+    Parameters
+    ----------
+    list1          : Can contain other elements
+                     Default: None (no list will result in a TypeError)
+    list2          : Contains the maximum of valid elements
+                     Default: None (no list will result in a TypeError)
+
+    Returns
+    -------
+    True           : all elements of list1 can be found in list2
+    """
+    if not islist(list1):
+        raise TypeError("list1 "+str(list1)+" is not a list, but is of type: "+str(type(list1)))
+    if not islist(list2):
+        raise TypeError("list2 "+str(list2)+" is not a list, but is of type: "+str(type(list2)))
+
+    # We use set operations to quickly find the other elements of list 1
+    if not set(list1).issubset(set(list2)):
+        raise ValueError("list1 "+str(list1)+" has elements "+str(set(list1).difference(set(list2)))+" not in list2 "+str(list2))
+    
+    return True
 
 
 def convert_data_string_to_pandas_dataframe(data_string, separator=','):
