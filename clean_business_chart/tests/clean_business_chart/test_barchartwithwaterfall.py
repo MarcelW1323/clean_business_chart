@@ -677,3 +677,98 @@ def test__dataframe_full_category():
         category_list = ['Airbus', 'Boeing']
         testvar  = BarWithWaterfall(test=True)
         testvar._dataframe_full_category(dataframe='This is a string', category_of_interest_values=category_list)
+
+
+def test__dataframe_handle_previous_year():
+    # Test 1 - good dataframe with previous year scenario, aggregate on _Category and Year
+    dataset  = pd.DataFrame({'Year'     : ['2021', '2021', '2021', '2022', '2022', '2022'],
+                             'PY'       : [32, 38.2, 40, 38, 32, 43],
+                             'PL'       : [33, 38.98899, 41, 40, 39, 27],
+                             '_Category': ['Airbus', 'Boeing', 'General Dynamics', 'Boeing', 'Airbus', 'General Dynamics'],
+                             'AC'       : [32, 38, 43, 34, 33.6, 39],
+                             'FC'       : [38, 32, 41, 39, 40, 37]})
+    testvar  = BarWithWaterfall(test=True)
+    expected = {'Year': ['2022', '2022', '2022'], '_Category': ['Airbus', 'Boeing', 'General Dynamics'], 
+                'PY': [32.0, 38.0, 43.0], 'PL': [39.0, 40.0, 27.0], 'AC': [33.6, 34.0, 39.0], 'FC': [40, 39, 37]}
+    actual   = testvar._dataframe_handle_previous_year(dataframe=dataset)
+    actual   = actual.to_dict(orient='list')
+    message  = "Test 1 - BarWithWaterfall._dataframe_handle_previous_year returned {0} instead of {1}".format(actual, expected)
+    assert actual == expected, message
+
+    # Test 2 - good dataframe without previous year scenario, aggregate on _Category and Year. Number of previous year values are not equal to the number of this year values
+    dataset  = pd.DataFrame({'Year'     : ['2021', '2021', '2021', '2022', '2022'],
+                             'PL'       : [33, 38.98899, 41, 40, 39],
+                             '_Category': ['Airbus', 'Boeing', 'Lockheed Martin', 'Boeing', 'Lockheed Martin'],
+                             'AC'       : [32, 38, 43, 34, 33.6],
+                             'FC'       : [38, 32, 41, 39, 40]})
+    testvar  = BarWithWaterfall(test=True)
+    expected = {'Year': ['2022', '2022', '2022'], '_Category': ['Airbus', 'Boeing', 'Lockheed Martin'],
+                'PL': [0.0, 40.0, 39.0], 'AC': [0.0, 34.0, 33.6], 'FC': [0.0, 39.0, 40.0], 'PY': [32.0, 38.0, 43.0]}
+    actual   = testvar._dataframe_handle_previous_year(dataframe=dataset)
+    actual   = actual.to_dict(orient='list')
+    message  = "Test 2 - BarWithWaterfall._dataframe_handle_previous_year returned {0} instead of {1}".format(actual, expected)
+    assert actual == expected, message
+
+    # Test 3 - good dataframe without year column
+    dataset  = pd.DataFrame({'PY'       : [32, 38.2, 40, 39, 38],
+                             'PL'       : [33, 38.98899, 41, 40, 39],
+                             '_Category': ['Airbus', 'Boeing', 'Lockheed Martin', 'Boeing', 'Lockheed Martin'],
+                             'AC'       : [32, 38, 43, 34, 33.6],
+                             'FC'       : [38, 32, 41, 39, 40]})
+    testvar  = BarWithWaterfall(test=True)
+    expected = {'_Category': ['Airbus', 'Boeing', 'Lockheed Martin', 'Boeing', 'Lockheed Martin'],
+                'PY': [32.0, 38.2, 40.0, 39.0, 38.0], 'PL': [33.0, 38.98899, 41.0, 40.0, 39.0],  
+                'AC': [32.0, 38.0, 43.0, 34.0, 33.6], 'FC': [38, 32, 41, 39, 40]}
+    actual   = testvar._dataframe_handle_previous_year(dataframe=dataset)
+    actual   = actual.to_dict(orient='list')
+    message  = "Test 2 - BarWithWaterfall._dataframe_handle_previous_year returned {0} instead of {1}".format(actual, expected)
+    assert actual == expected, message
+
+    # Test 4 - Number of columns are more than needed
+    with pytest.raises(ValueError):
+        dataset  = pd.DataFrame({'Year'     : ['2021', '2021', '2021', '2022', '2022'],
+                                 'Month'    : ['02', '04', '07', '08', '09'],
+                                 'PY'       : [32, 38.2, 40, 39, 38],
+                                 'PL'       : [33, 38.98899, 41, 40, 39],
+                                 '_Category': ['Airbus', 'Boeing', 'Airbus', 'Boeing', 'Airbus'],
+                                 'Type'     : ['Passenger', 'Freight', 'Freight', 'Passenger', 'Freight'],
+                                 'AC'       : [35, 33, 39, 37, 36],
+                                 'FC'       : [32, 38, 41, 39, 40]})
+        testvar  = BarWithWaterfall(test=True)
+        testvar._dataframe_handle_previous_year(dataframe=dataset)
+
+    # Test 5 - Dataframe with previous year scenario, aggregate on _Category and Year, Number of previous year values are not equal to the number of this year values
+    with pytest.raises(ValueError):
+        dataset  = pd.DataFrame({'Year'     : ['2021', '2021', '2021', '2022', '2022'],
+                                 'PY'       : [32, 38.2, 40, 39, 38],
+                                 'PL'       : [33, 38.98899, 41, 40, 39],
+                                 '_Category': ['Airbus', 'Boeing', 'Airbus', 'Boeing', 'Airbus'],
+                                 'AC'       : [35, 33, 39, 37, 36],
+                                 'FC'       : [32, 38, 41, 39, 40]})
+        testvar  = BarWithWaterfall(test=True)
+        testvar._dataframe_handle_previous_year(dataframe=dataset)
+
+    # Test 6 - Dataframe with previous year scenario, aggregate on _Category and Year, PY values 2022 are not equal to AC values 2021
+    with pytest.raises(ValueError):
+        dataset  = pd.DataFrame({'Year'     : ['2021', '2021', '2021', '2022', '2022', '2022'],
+                                 'PY'       : [32, 38.2, 40, 32, 38, 43],
+                                 'PL'       : [33, 38.98899, 41, 40, 39, 27],
+                                 '_Category': ['Lockheed Martin', 'Boeing', 'Airbus', 'Boeing', 'Airbus', 'Lockheed Martin'],
+                                 'AC'       : [35, 33, 39, 37, 36, 33],
+                                 'FC'       : [32, 38, 41, 39, 40, 37]})
+        testvar  = BarWithWaterfall(test=True)
+        testvar._dataframe_handle_previous_year(dataframe=dataset)
+
+    # Test 7 - Parameter dataframe is a string and not a dataframe
+    with pytest.raises(TypeError):
+        testvar  = BarWithWaterfall(test=True)
+        testvar._dataframe_handle_previous_year(dataframe="This is a string")
+
+    # Test 8 - dataframe does not contain header _Category
+    with pytest.raises(ValueError):
+        testvar  = BarWithWaterfall(test=True)
+        dataset  = pd.DataFrame({'Year'     : ['2021', '2021', '2021', '2022', '2022'],
+                                 'PL'       : [33, 38.98899, 41, 40, 39],
+                                 'AC'       : [35, 33, 39, 37, 36],
+                                 'FC'       : [32, 38, 41, 39, 40]})
+        testvar._dataframe_handle_previous_year(dataframe=dataset)

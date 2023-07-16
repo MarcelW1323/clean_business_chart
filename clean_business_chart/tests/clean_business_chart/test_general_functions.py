@@ -323,7 +323,7 @@ def test_filter_lists():
         filter_lists(list1=list1)
 
 
-def list1_has_valid_elements():
+def test_list1_has_valid_elements():
     # Test 1 - list1 is a subset of list 2
     list1    = ['AC', 'PY']
     list2    = ['PY', 'PL', 'AC', 'FC']
