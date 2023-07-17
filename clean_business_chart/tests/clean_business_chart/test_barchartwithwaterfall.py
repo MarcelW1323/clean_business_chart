@@ -772,3 +772,121 @@ def test__dataframe_handle_previous_year():
                                  'AC'       : [35, 33, 39, 37, 36],
                                  'FC'       : [32, 38, 41, 39, 40]})
         testvar._dataframe_handle_previous_year(dataframe=dataset)
+
+def test__determine_bar_layers_in_dataframe():
+    # Test 1 - Good dataframe with values for both compare-scenarios
+    dataset  = pd.DataFrame({'Year'     : ['2022', '2022', '2022', '2022'],
+                             'PY'       : [32.7, 38.2, 40, 38],
+                             'PL'       : [33, 38.98899, 41, 40.3],
+                             '_Category': ['Airbus', 'Boeing', 'General Dynamics', 'Lockheed Martin'],
+                             'AC'       : [32.25, 38, 33.6, 39],
+                             'FC'       : [38.65, 32, 41, 37.1]})
+    testvar  = BarWithWaterfall(test=True)
+    testvar.compare_scenarios = ['AC', 'FC']
+    expected = {'Year': ['2022', '2022', '2022', '2022'], 'PY': [32.7, 38.2, 40.0, 38.0], 
+                'PL': [33.0, 38.98899, 41.0, 40.3], '_Category': ['Airbus', 'Boeing', 'General Dynamics', 'Lockheed Martin'], 
+                'AC': [32.25, 38.0, 33.6, 39.0], 'FC': [38.65, 32.0, 41.0, 37.1], 
+                '_CBC_TOPLAYER': ['FC', 'FC', 'FC', 'FC']}
+    actual   = testvar._determine_bar_layers_in_dataframe(dataframe=dataset)
+    actual   = actual.to_dict(orient='list')
+    message  = "Test 1 - BarWithWaterfall._determine_bar_layers_in_dataframe returned {0} instead of {1}".format(actual, expected)
+    assert actual == expected, message
+
+    # Test 2 - Good dataframe with all zeros for 2nd compare-scenario
+    dataset  = pd.DataFrame({'Year'     : ['2022', '2022', '2022', '2022'],
+                             'PY'       : [32.7, 38.2, 40, 38],
+                             'PL'       : [33, 38.98899, 41, 40.3],
+                             '_Category': ['Airbus', 'Boeing', 'General Dynamics', 'Lockheed Martin'],
+                             'AC'       : [32.25, 38, 33.6, 39],
+                             'FC'       : [0, 0, 0, 0]})
+    testvar  = BarWithWaterfall(test=True)
+    testvar.compare_scenarios = ['AC', 'FC']
+    expected = {'Year': ['2022', '2022', '2022', '2022'], 'PY': [32.7, 38.2, 40.0, 38.0],
+                'PL': [33.0, 38.98899, 41.0, 40.3], '_Category': ['Airbus', 'Boeing', 'General Dynamics', 'Lockheed Martin'],
+                'AC': [32.25, 38.0, 33.6, 39.0], 'FC': [0, 0, 0, 0],
+                '_CBC_TOPLAYER': ['AC', 'AC', 'AC', 'AC']} 
+    actual   = testvar._determine_bar_layers_in_dataframe(dataframe=dataset)
+    actual   = actual.to_dict(orient='list')
+    message  = "Test 2 - BarWithWaterfall._determine_bar_layers_in_dataframe returned {0} instead of {1}".format(actual, expected)
+    assert actual == expected, message
+
+    # Test 3 - Good dataframe with some zeros for 2nd compare-scenario
+    dataset  = pd.DataFrame({'Year'     : ['2022', '2022', '2022', '2022'],
+                             'PY'       : [32.7, 38.2, 40, 38],
+                             'PL'       : [33, 38.98899, 41, 40.3],
+                             '_Category': ['Airbus', 'Boeing', 'General Dynamics', 'Lockheed Martin'],
+                             'AC'       : [32.25, 38, 33.6, 39],
+                             'FC'       : [38.65, 0, 0, 37.1]})
+    testvar  = BarWithWaterfall(test=True)
+    testvar.compare_scenarios = ['AC', 'FC']
+    expected = {'Year': ['2022', '2022', '2022', '2022'], 'PY': [32.7, 38.2, 40.0, 38.0], 
+                'PL': [33.0, 38.98899, 41.0, 40.3], '_Category': ['Airbus', 'Boeing', 'General Dynamics', 'Lockheed Martin'],
+                'AC': [32.25, 38.0, 33.6, 39.0], 'FC': [38.65, 0.0, 0.0, 37.1], 
+                '_CBC_TOPLAYER': ['FC', 'AC', 'AC', 'FC']}
+    actual   = testvar._determine_bar_layers_in_dataframe(dataframe=dataset)
+    actual   = actual.to_dict(orient='list')
+    message  = "Test 3 - BarWithWaterfall._determine_bar_layers_in_dataframe returned {0} instead of {1}".format(actual, expected)
+    assert actual == expected, message
+
+    # Test 4 - Good dataframe with all zeros for first compare-scenario
+    dataset  = pd.DataFrame({'Year'     : ['2022', '2022', '2022', '2022'],
+                             'PY'       : [32.7, 38.2, 40, 38],
+                             'PL'       : [33, 38.98899, 41, 40.3],
+                             '_Category': ['Airbus', 'Boeing', 'General Dynamics', 'Lockheed Martin'],
+                             'AC'       : [0, 0, 0, 0],
+                             'FC'       : [38.65, 32, 41, 37.1]})
+    testvar  = BarWithWaterfall(test=True)
+    testvar.compare_scenarios = ['AC', 'FC']
+    expected = {'Year': ['2022', '2022', '2022', '2022'], 'PY': [32.7, 38.2, 40.0, 38.0], 
+                'PL': [33.0, 38.98899, 41.0, 40.3], '_Category': ['Airbus', 'Boeing', 'General Dynamics', 'Lockheed Martin'], 
+                'AC': [0, 0, 0, 0], 'FC': [38.65, 32.0, 41.0, 37.1], 
+                '_CBC_TOPLAYER': ['FC', 'FC', 'FC', 'FC']}
+    actual   = testvar._determine_bar_layers_in_dataframe(dataframe=dataset)
+    actual   = actual.to_dict(orient='list')
+    message  = "Test 4 - BarWithWaterfall._determine_bar_layers_in_dataframe returned {0} instead of {1}".format(actual, expected)
+    assert actual == expected, message
+
+    # Test 5 - Good dataframe with some zero values for both compare-scenarios
+    dataset  = pd.DataFrame({'Year'     : ['2022', '2022', '2022', '2022'],
+                             'PY'       : [32.7, 38.2, 40, 38],
+                             'PL'       : [33, 38.98899, 41, 40.3],
+                             '_Category': ['Airbus', 'Boeing', 'General Dynamics', 'Lockheed Martin'],
+                             'AC'       : [32.25, 0, 0, 39],
+                             'FC'       : [0, 32, 0, 37.1]})
+    testvar  = BarWithWaterfall(test=True)
+    testvar.compare_scenarios = ['AC', 'FC']
+    expected = {'Year': ['2022', '2022', '2022', '2022'], 'PY': [32.7, 38.2, 40.0, 38.0], 
+                'PL': [33.0, 38.98899, 41.0, 40.3], '_Category': ['Airbus', 'Boeing', 'General Dynamics', 'Lockheed Martin'], 
+                'AC': [32.25, 0.0, 0.0, 39.0], 'FC': [0.0, 32.0, 0.0, 37.1], 
+                '_CBC_TOPLAYER': ['AC', 'FC', 'AC', 'FC']}
+    actual   = testvar._determine_bar_layers_in_dataframe(dataframe=dataset)
+    actual   = actual.to_dict(orient='list')
+    message  = "Test 5 - BarWithWaterfall._determine_bar_layers_in_dataframe returned {0} instead of {1}".format(actual, expected)
+    assert actual == expected, message
+
+    # Test 6 - String instead of dataframe
+    with pytest.raises(TypeError):
+        testvar  = BarWithWaterfall(test=True)
+        testvar.compare_scenarios = ['AC', 'FC']
+        testvar._determine_bar_layers_in_dataframe(dataframe='This is a string')
+
+    # Test 7 - Too much items in compare_scenario-list (max 2 allowed)
+    with pytest.raises(ValueError):
+        testvar  = BarWithWaterfall(test=True)
+        testvar.compare_scenarios = ['AC', 'FC', 'XC']
+        dataset  = pd.DataFrame()
+        testvar._determine_bar_layers_in_dataframe(dataframe=dataset)
+
+    # Test 8 - Too less items in compare_scenario-list (min 1 allowed)
+    with pytest.raises(ValueError):
+        testvar  = BarWithWaterfall(test=True)
+        testvar.compare_scenarios = []
+        dataset  = pd.DataFrame()
+        testvar._determine_bar_layers_in_dataframe(dataframe=dataset)
+
+    # Test 9 - String instead of list
+    with pytest.raises(TypeError):
+        testvar  = BarWithWaterfall(test=True)
+        testvar.compare_scenarios = 'This is a string'
+        dataset  = pd.DataFrame()
+        testvar._determine_bar_layers_in_dataframe(dataframe=dataset)
