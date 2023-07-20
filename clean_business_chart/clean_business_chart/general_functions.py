@@ -415,7 +415,7 @@ def list1_has_valid_elements(list1=None, list2=None):
 
     # We use set operations to quickly find the other elements of list 1
     if not set(list1).issubset(set(list2)):
-        raise ValueError("list1 "+str(list1)+" has elements "+str(set(list1).difference(set(list2)))+" not in list2 "+str(list2))
+        raise ValueError("list1 "+str(list1)+" has element(s) "+str(set(list1).difference(set(list2)))+" not in list2 "+str(list2))
     
     return True
 

@@ -890,3 +890,71 @@ def test__determine_bar_layers_in_dataframe():
         testvar.compare_scenarios = 'This is a string'
         dataset  = pd.DataFrame()
         testvar._determine_bar_layers_in_dataframe(dataframe=dataset)
+
+
+def test__add_deltavalues_to_dataframe():
+    # Test 1 - Good dataframe and one compare scenario
+    dataset  = pd.DataFrame({'Year'     : ['2022', '2022', '2022', '2022'],
+                             'PY'       : [32.7, 38.2, 40, 38],
+                             'PL'       : [33, 38.98899, 41, 40.3],
+                             '_Category': ['Airbus', 'Boeing', 'General Dynamics', 'Lockheed Martin'],
+                             'AC'       : [32.25, 38, 33.6, 39],
+                             'FC'       : [38.65, 32, 41, 37.1]})
+    testvar  = BarWithWaterfall(test=True)
+    testvar.base_scenarios = ['PL', 'PY']
+    testvar.compare_scenarios = ['AC']
+    expected = {'Year': ['2022', '2022', '2022', '2022'], 
+                'PY': [32.7, 38.2, 40.0, 38.0], 
+                'PL': [33.0, 38.98899, 41.0, 40.3], 
+                '_Category': ['Airbus', 'Boeing', 'General Dynamics', 'Lockheed Martin'], 
+                'AC': [32.25, 38.0, 33.6, 39.0], 
+                'FC': [38.65, 32.0, 41.0, 37.1], 
+                '_CBC_DELTA1': [-0.75, -0.9889900000000011, -7.399999999999999, -1.2999999999999972], 
+                '_CBC_DELTA2': [0, 0, 0, 0]}
+    actual   = testvar._add_deltavalues_to_dataframe(dataframe=dataset)
+    actual   = actual.to_dict(orient='list')
+    message  = "Test 1 - BarWithWaterfall._add_deltavalues_to_dataframe returned {0} instead of {1}".format(actual, expected)
+    assert actual == pytest.approx(expected), message
+
+    # Test 2 - Good dataframe and one compare scenario
+    dataset  = pd.DataFrame({'Year'     : ['2022', '2022', '2022', '2022'],
+                             'PY'       : [32.7, 38.2, 40, 38],
+                             'PL'       : [33, 38.98899, 41, 40.3],
+                             '_Category': ['Airbus', 'Boeing', 'General Dynamics', 'Lockheed Martin'],
+                             'AC'       : [32.25, 38, 33.6, 39],
+                             'FC'       : [38.65, 32, 41, 37.1]})
+    testvar  = BarWithWaterfall(test=True)
+    testvar.base_scenarios = ['PL', 'PY']
+    testvar.compare_scenarios = ['AC', 'FC']
+    expected = {'Year': ['2022', '2022', '2022', '2022'], 
+                'PY': [32.7, 38.2, 40.0, 38.0], 
+                'PL': [33.0, 38.98899, 41.0, 40.3], 
+                '_Category': ['Airbus', 'Boeing', 'General Dynamics', 'Lockheed Martin'], 
+                'AC': [32.25, 38.0, 33.6, 39.0], 'FC': [38.65, 32.0, 41.0, 37.1], 
+                '_CBC_DELTA1': [-0.75, -0.9889900000000011, -7.399999999999999, -1.2999999999999972], 
+                '_CBC_DELTA2': [37.9, 31.01101, 33.6, 35.800000000000004]}
+    actual   = testvar._add_deltavalues_to_dataframe(dataframe=dataset)
+    actual   = actual.to_dict(orient='list')
+    message  = "Test 2 - BarWithWaterfall._add_deltavalues_to_dataframe returned {0} instead of {1}".format(actual, expected)
+    assert actual == pytest.approx(expected), message
+
+    # Test 3 - String instead of dataframe
+    with pytest.raises(TypeError):
+        testvar  = BarWithWaterfall(test=True)
+        testvar.base_scenarios = ['PL', 'PY']
+        testvar.compare_scenarios = ['AC', 'FC']
+        testvar._add_deltavalues_to_dataframe(dataframe='This is a string')
+
+    # Test 4 - Too much column names ('Month' is too much) in dataframe
+    with pytest.raises(ValueError):
+        dataset  = pd.DataFrame({'Year'     : ['2022', '2022', '2022', '2022'],
+                                 'Month'    : ['01', '03', '07', '12'],
+                                 'PY'       : [32.7, 38.2, 40, 38],
+                                 'PL'       : [33, 38.98899, 41, 40.3],
+                                 '_Category': ['Airbus', 'Boeing', 'General Dynamics', 'Lockheed Martin'],
+                                 'AC'       : [32.25, 38, 33.6, 39],
+                                 'FC'       : [38.65, 32, 41, 37.1]})
+        testvar  = BarWithWaterfall(test=True)
+        testvar.base_scenarios = ['PL', 'PY']
+        testvar.compare_scenarios = ['AC', 'FC']
+        testvar._add_deltavalues_to_dataframe(dataframe=dataset)
