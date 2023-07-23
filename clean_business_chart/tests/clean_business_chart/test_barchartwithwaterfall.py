@@ -926,12 +926,12 @@ def test__add_deltavalues_to_dataframe():
     testvar  = BarWithWaterfall(test=True)
     testvar.base_scenarios = ['PL', 'PY']
     testvar.compare_scenarios = ['AC', 'FC']
-    expected = {'Year': ['2022', '2022', '2022', '2022'], 
-                'PY': [32.7, 38.2, 40.0, 38.0], 
-                'PL': [33.0, 38.98899, 41.0, 40.3], 
-                '_Category': ['Airbus', 'Boeing', 'General Dynamics', 'Lockheed Martin'], 
+    expected = {'Year': ['2022', '2022', '2022', '2022'],
+                'PY': [32.7, 38.2, 40.0, 38.0],
+                'PL': [33.0, 38.98899, 41.0, 40.3],
+                '_Category': ['Airbus', 'Boeing', 'General Dynamics', 'Lockheed Martin'],
                 'AC': [32.25, 38.0, 33.6, 39.0], 'FC': [38.65, 32.0, 41.0, 37.1], 
-                '_CBC_DELTA1': [-0.75, -0.9889900000000011, -7.399999999999999, -1.2999999999999972], 
+                '_CBC_DELTA1': [-0.75, -0.9889900000000011, -7.399999999999999, -1.2999999999999972],
                 '_CBC_DELTA2': [37.9, 31.01101, 33.6, 35.800000000000004]}
     actual   = testvar._add_deltavalues_to_dataframe(dataframe=dataset)
     actual   = actual.to_dict(orient='list')
@@ -958,3 +958,91 @@ def test__add_deltavalues_to_dataframe():
         testvar.base_scenarios = ['PL', 'PY']
         testvar.compare_scenarios = ['AC', 'FC']
         testvar._add_deltavalues_to_dataframe(dataframe=dataset)
+
+def test__sort_dataframe_with_other_last():
+    # Test 1 - Good dataframe, OTHER has the lowest delta-value
+    dataset  = pd.DataFrame({'Year'       : ['2022', '2022', '2022', '2022', '2022'],
+                             'PY'         : [32.7, 38.2, 40.0, 38.0, 35.0],
+                             'PL'         : [33.0, 38.9, 41.0, 40.3, 36.0],
+                             '_Category'  : ['Airbus', 'Boeing', 'OTHER', 'General Dynamics', 'Lockheed Martin'],
+                             'AC'         : [32.25, 38.0, 33.6, 39.0, 36.6],
+                             'FC'         : [38.65, 32.0, 41.0, 37.1, 35.1],
+                             '_CBC_DELTA1': [-0.75, -0.9, -7.4, -1.3, 0.6],
+                             '_CBC_DELTA2': [37.9, 31.1, 33.6, 35.8, 35.7]})
+    testvar  = BarWithWaterfall(test=True)
+    expected = {'Year'       : ['2022', '2022', '2022', '2022', '2022'],
+                'PY'         : [35.0, 32.7, 38.2, 38.0, 40.0],
+                'PL'         : [36.0, 33.0, 38.9, 40.3, 41.0],
+                '_Category'  : ['Lockheed Martin', 'Airbus', 'Boeing', 'General Dynamics', 'OTHER'],
+                'AC'         : [36.6, 32.25, 38.0, 39.0, 33.6],
+                'FC'         : [35.1, 38.65, 32.0, 37.1, 41.0],
+                '_CBC_DELTA1': [0.6, -0.75, -0.9, -1.3, -7.4],
+                '_CBC_DELTA2': [35.7, 37.9, 31.1, 35.8, 33.6]}
+    actual   = testvar._sort_dataframe_with_other_last(dataframe=dataset)
+    actual   = actual.to_dict(orient='list')
+    message  = "Test 1 - BarWithWaterfall._sort_dataframe_with_other_last returned {0} instead of {1}".format(actual, expected)
+    assert actual == pytest.approx(expected), message
+
+    # Test 2 - Good dataframe, but OTHER doesn't have the lowest delta-value
+    dataset  = pd.DataFrame({'Year'       : ['2022', '2022', '2022', '2022', '2022'],
+                             'PY'         : [32.7, 38.2, 40.0, 38.0, 35.0],
+                             'PL'         : [33.0, 38.9, 41.0, 40.3, 36.0],
+                             '_Category'  : ['Airbus', 'OTHER', 'Boeing', 'General Dynamics', 'Lockheed Martin'],
+                             'AC'         : [32.25, 38.0, 33.6, 39.0, 36.6],
+                             'FC'         : [38.65, 32.0, 41.0, 37.1, 35.1],
+                             '_CBC_DELTA1': [-0.75, -0.9, -7.4, -1.3, 0.6],
+                             '_CBC_DELTA2': [37.9, 31.1, 33.6, 35.8, 35.7]})
+    testvar  = BarWithWaterfall(test=True)
+    expected = {'Year'       : ['2022', '2022', '2022', '2022', '2022'],
+                'PY'         : [35.0, 32.7, 38.0, 40.0, 38.2],
+                'PL'         : [36.0, 33.0, 40.3, 41.0, 38.9],
+                '_Category'  : ['Lockheed Martin', 'Airbus', 'General Dynamics', 'Boeing', 'OTHER'],
+                'AC'         : [36.6, 32.25, 39.0, 33.6, 38.0],
+                'FC'         : [35.1, 38.65, 37.1, 41.0, 32.0],
+                '_CBC_DELTA1': [0.6, -0.75, -1.3, -7.4, -0.9],
+                '_CBC_DELTA2': [35.7, 37.9, 35.8, 33.6, 31.1]}
+    actual   = testvar._sort_dataframe_with_other_last(dataframe=dataset)
+    actual   = actual.to_dict(orient='list')
+    message  = "Test 2 - BarWithWaterfall._sort_dataframe_with_other_last returned {0} instead of {1}".format(actual, expected)
+    assert actual == pytest.approx(expected), message
+
+    # Test 3 - String instead of dataframe
+    with pytest.raises(TypeError):
+        testvar  = BarWithWaterfall(test=True)
+        testvar._sort_dataframe_with_other_last(dataframe='This is a string')
+
+    # Test 4 - Dataframe is missing the category-of-interest column
+    with pytest.raises(ValueError):
+        testvar  = BarWithWaterfall(test=True)
+        dataset  = pd.DataFrame({'Year'       : ['2022', '2022', '2022', '2022', '2022'],
+                                 'PY'         : [32.7, 38.2, 40.0, 38.0, 35.0],
+                                 'PL'         : [33.0, 38.9, 41.0, 40.3, 36.0],
+                                 'AC'         : [32.25, 38.0, 33.6, 39.0, 36.6],
+                                 'FC'         : [38.65, 32.0, 41.0, 37.1, 35.1],
+                                 '_CBC_DELTA1': [-0.75, -0.9, -7.4, -1.3, 0.6],
+                                 '_CBC_DELTA2': [37.9, 31.1, 33.6, 35.8, 35.7]})
+        testvar._sort_dataframe_with_other_last(dataframe=dataset)
+
+    # Test 5 - Dataframe is missing the delta1 column
+    with pytest.raises(ValueError):
+        testvar  = BarWithWaterfall(test=True)
+        dataset  = pd.DataFrame({'Year'       : ['2022', '2022', '2022', '2022', '2022'],
+                                 'PY'         : [32.7, 38.2, 40.0, 38.0, 35.0],
+                                 'PL'         : [33.0, 38.9, 41.0, 40.3, 36.0],
+                                 '_Category'  : ['Airbus', 'OTHER', 'Boeing', 'General Dynamics', 'Lockheed Martin'],
+                                 'AC'         : [32.25, 38.0, 33.6, 39.0, 36.6],
+                                 'FC'         : [38.65, 32.0, 41.0, 37.1, 35.1],
+                                 '_CBC_DELTA2': [37.9, 31.1, 33.6, 35.8, 35.7]})
+        testvar._sort_dataframe_with_other_last(dataframe=dataset)
+
+    # Test 6 - Dataframe is missing the delta2 column
+    with pytest.raises(ValueError):
+        testvar  = BarWithWaterfall(test=True)
+        dataset  = pd.DataFrame({'Year'       : ['2022', '2022', '2022', '2022', '2022'],
+                                 'PY'         : [32.7, 38.2, 40.0, 38.0, 35.0],
+                                 'PL'         : [33.0, 38.9, 41.0, 40.3, 36.0],
+                                 '_Category'  : ['Airbus', 'OTHER', 'Boeing', 'General Dynamics', 'Lockheed Martin'],
+                                 'AC'         : [32.25, 38.0, 33.6, 39.0, 36.6],
+                                 'FC'         : [38.65, 32.0, 41.0, 37.1, 35.1],
+                                 '_CBC_DELTA1': [-0.75, -0.9, -7.4, -1.3, 0.6]})
+        testvar._sort_dataframe_with_other_last(dataframe=dataset)
