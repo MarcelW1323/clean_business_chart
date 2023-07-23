@@ -36,7 +36,21 @@ def isboolean(inputvariable):
 
 def isdataframe(inputvariable):
     """Returns whether the inputvariable is a pandas DataFrame (True) or not (False)"""
-    return isinstance(inputvariable, pd.DataFrame)   
+    return isinstance(inputvariable, pd.DataFrame)
+
+def error_not_isdataframe(inputvariable, name_inputvariable_in_text=None):
+    """Returns a TypeError when thhe inputvariable is not a pandas DataFrame"""
+    if not isdataframe(inputvariable):
+        # inputvariable is not a pandas DataFrame, generate a TypeError
+        if name_inputvariable_in_text is not None:
+            # Yes, extra information is given
+            raise TypeError('Variable "'+str(name_inputvariable_in_text)+'" is not of type dataframe, but of type '+str(type(inputvariable)))
+        else:
+            # No extra information is given, use this unified message
+            raise TypeError('Variable is not of type dataframe, but of type '+str(type(inputvariable)))
+    # else:
+        # inputvariable is a pandas DataFrame, do return to caller
+    return
 
 def plot_line_accross_axes(fig, axbegin, xbegin, ybegin, axend, xend, yend, linecolor='black', arrowstyle='-', linewidth=1, endpoints=False, endpointcolor=None):
     """

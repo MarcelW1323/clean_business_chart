@@ -31,6 +31,7 @@ def test_isdictionary():
     actual   = isdictionary('not a dictionary')
     assert actual == expected, "isdictionary('not a dictionary') gives back "+str(actual)+" instead of "+str(expected)
 
+
 def test_isinteger():
     # Test with an integer
     expected = True
@@ -40,6 +41,7 @@ def test_isinteger():
     expected = False
     actual   = isinteger('not an integer')
     assert actual == expected, "isinteger('not an integer') gives back "+str(actual)+" instead of "+str(expected)
+
 
 def test_isstring():
     # Test with a string
@@ -51,6 +53,7 @@ def test_isstring():
     actual   = isstring(100)
     assert actual == expected, "isstring(100) gives back "+str(actual)+" instead of "+str(expected)
 
+
 def test_isfloat():
     # Test with a float
     expected = True
@@ -60,6 +63,7 @@ def test_isfloat():
     expected = False
     actual   = isfloat('not a float')
     assert actual == expected, "isfloat('not a float') gives back "+str(actual)+" instead of "+str(expected)
+
 
 def test_isboolean():
     # Test with a boolean
@@ -71,6 +75,7 @@ def test_isboolean():
     actual   = isboolean('not a boolean')
     assert actual == expected, "isboolean('not a boolean') gives back "+str(actual)+" instead of "+str(expected)
 
+
 def test_isdataframe():
     # Test with a DataFrame
     expected = True
@@ -80,6 +85,34 @@ def test_isdataframe():
     expected = False
     actual   = isdataframe('not a DataFrame')
     assert actual == expected, "isdataframe('not a DataFrame') gives back "+str(actual)+" instead of "+str(expected)
+
+
+def test_error_not_isdataframe():
+    # Test 1 with a DataFrame only, no error will occur
+    df = pd.DataFrame({'Column1': ['Value1', 'Value2']})
+    error_not_isdataframe(df)
+    
+    # Test 2 with a DataFrame and name of variable, no error will occur
+    error_not_isdataframe(df, name_inputvariable_in_text='df')
+
+    # Test 3 with a string 
+    with pytest.raises(TypeError) as exceptioninfo:
+        df = 'This is a string'
+        error_not_isdataframe(df)
+    assert str(exceptioninfo.value) == 'Variable is not of type dataframe, but of type '+str(type(df))
+
+    # Test 4 with a int and name of variable
+    with pytest.raises(TypeError) as exceptioninfo:
+        df = 404
+        error_not_isdataframe(df, name_inputvariable_in_text='df')
+    assert str(exceptioninfo.value) == 'Variable "df" is not of type dataframe, but of type '+str(type(df))
+
+    # Test 5 with a string and name of variable as positional argument
+    with pytest.raises(TypeError) as exceptioninfo:
+        df = 'This is a string'
+        error_not_isdataframe(df, 'df')
+    assert str(exceptioninfo.value) == 'Variable "df" is not of type dataframe, but of type '+str(type(df))
+
 
 def test_plot_line_accross_axes():
     # The function plot_line_accross_axes() draws a line in a figure object.
