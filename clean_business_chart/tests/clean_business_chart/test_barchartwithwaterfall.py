@@ -1128,3 +1128,32 @@ def test__drop_zero_lines():
         testvar.data_scenarios = list()
         dataset = pd.DataFrame()
         testvar._drop_zero_lines(dataframe=dataset)
+
+def test__optimize_data_get_big_total():
+    # Test 1 - Good dictionary. The maximum is already a positive number
+    testvar  = BarWithWaterfall(test=True)
+    testvar.data_total = {'PY': 380, 'PL': -250, 'AC':4096.8192, 'FC':-2048.256}
+    expected = 4096.8192
+    actual   = testvar._optimize_data_get_big_total()
+    message  = "Test 1 - BarWithWaterfall._optimize_data_get_big_total returned {0} instead of {1}".format(actual, expected)
+    assert actual == pytest.approx(expected), message
+
+    # Test 2 - Good dictionary. The maximum is already a positive number
+    testvar  = BarWithWaterfall(test=True)
+    testvar.data_total = {'PY': 380, 'PL': -250, 'AC':4096.8192, 'FC':-16384.32768}
+    expected = 16384.32768
+    actual   = testvar._optimize_data_get_big_total()
+    message  = "Test 2 - BarWithWaterfall._optimize_data_get_big_total returned {0} instead of {1}".format(actual, expected)
+    assert actual == pytest.approx(expected), message
+
+    # Test 3 - String instead of dictionary for data_total
+    with pytest.raises(TypeError):
+        testvar = BarWithWaterfall(test=True)
+        testvar.data_total = "This is a string"
+        testvar._optimize_data_get_big_total()
+
+    # Test 4 - Empty dictionary for data_total
+    with pytest.raises(ValueError):
+        testvar = BarWithWaterfall(test=True)
+        testvar.data_total = dict()
+        testvar._optimize_data_get_big_total()

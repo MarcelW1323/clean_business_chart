@@ -39,7 +39,7 @@ def isdataframe(inputvariable):
     return isinstance(inputvariable, pd.DataFrame)
 
 def error_not_isdataframe(inputvariable, name_inputvariable_in_text=None):
-    """Returns a TypeError when thhe inputvariable is not a pandas DataFrame"""
+    """Returns a TypeError when the inputvariable is not a pandas DataFrame"""
     if not isdataframe(inputvariable):
         # inputvariable is not a pandas DataFrame, generate a TypeError
         if name_inputvariable_in_text is not None:
