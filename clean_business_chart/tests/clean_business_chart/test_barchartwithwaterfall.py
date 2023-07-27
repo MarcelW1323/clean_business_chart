@@ -1157,3 +1157,70 @@ def test__optimize_data_get_big_total():
         testvar = BarWithWaterfall(test=True)
         testvar.data_total = dict()
         testvar._optimize_data_get_big_total()
+
+def test__optimize_data_get_big_detail():
+    # Test 1 - Good dataframe with all data_scenarios
+    dataset  = pd.DataFrame({'Year'       : ['2022', '2022', '2022', '2022', '2022'],
+                             'PY'         : [32.7, 38.2, 40.0, 38.0, 35.0],
+                             'PL'         : [33.0, 38.9, 41.0, 40.3, 36.0],
+                             '_Category'  : ['Airbus', 'Boeing', 'OTHER', 'General Dynamics', 'Lockheed Martin'],
+                             'AC'         : [32.25, 38.0, 33.6, 39.0, 36.6],
+                             'FC'         : [38.65, 32.0, 42.0, 37.1, 35.1],
+                             '_CBC_DELTA1': [-0.75, -0.9, -7.4, -1.3, 0.6],
+                             '_CBC_DELTA2': [37.9, 31.1, 34.6, 35.8, 35.7]})
+    testvar  = BarWithWaterfall(test=True)
+    testvar.data_scenarios = ['PY', 'PL', 'FC', 'AC']
+    expected = 42
+    actual   = testvar._optimize_data_get_big_detail(dataframe=dataset)
+    message  = "Test 1 - BarWithWaterfall._optimize_data_get_big_detail {0} instead of {1}".format(actual, expected)
+    assert actual == pytest.approx(expected), message
+
+    # Test 2 - Good dataframe with not all data_scenarios
+    dataset  = pd.DataFrame({'Year'       : ['2022', '2022', '2022', '2022', '2022'],
+                             'PY'         : [32.7, 38.2, 40.0, 38.0, 35.0],
+                             '_Category'  : ['Airbus', 'Boeing', 'OTHER', 'General Dynamics', 'Lockheed Martin'],
+                             'AC'         : [32.25, 38.0, 33.6, 39.0, 36.6],
+                             'FC'         : [38.65, 32.0, 42.0, 37.1, 35.1],
+                             '_CBC_DELTA2': [37.9, 31.1, 34.6, 35.8, 35.7]})
+    testvar  = BarWithWaterfall(test=True)
+    testvar.data_scenarios = ['PY', 'PL', 'FC', 'AC']
+    expected = 42
+    actual   = testvar._optimize_data_get_big_detail(dataframe=dataset)
+    message  = "Test 2 - BarWithWaterfall._optimize_data_get_big_detail {0} instead of {1}".format(actual, expected)
+    assert actual == pytest.approx(expected), message
+
+    # Test 3 - Good dataframe with all data_scenarios, big value is a minus in the delta
+    dataset  = pd.DataFrame({'Year'       : ['2022', '2022', '2022', '2022', '2022'],
+                             'PY'         : [32.7, 38.2, 40.0, 38.0, 35.0],
+                             'PL'         : [33.0, 38.9, 41.0, 40.3, 36.0],
+                             '_Category'  : ['Airbus', 'Boeing', 'OTHER', 'General Dynamics', 'Lockheed Martin'],
+                             'AC'         : [32.25, 2, 33.6, 39.0, 36.6],
+                             'FC'         : [38.65, -30.0, 42.0, 37.1, 35.1],
+                             '_CBC_DELTA1': [-0.75, -36.9, -7.4, -1.3, 0.6],
+                             '_CBC_DELTA2': [37.9, -66.9, 34.6, 35.8, 35.7]})
+    testvar  = BarWithWaterfall(test=True)
+    testvar.data_scenarios = ['PY', 'PL', 'FC', 'AC']
+    expected = 66.9
+    actual   = testvar._optimize_data_get_big_detail(dataframe=dataset)
+    message  = "Test 3 - BarWithWaterfall._optimize_data_get_big_detail {0} instead of {1}".format(actual, expected)
+    assert actual == pytest.approx(expected), message
+
+    # Test 4 - String instead of dataframe
+    with pytest.raises(TypeError):
+        testvar = BarWithWaterfall(test=True)
+        testvar.data_scenarios = ['PY', 'PL', 'FC', 'AC']
+        testvar._optimize_data_get_big_detail(dataframe='This is a string')
+
+    # Test 5 - String instead of list
+    with pytest.raises(TypeError):
+        testvar = BarWithWaterfall(test=True)
+        dataset = pd.DataFrame()
+        testvar.data_scenarios = "This is a string"
+        testvar._optimize_data_get_big_detail(dataframe=dataset)
+
+    # Test 6 - Empty list
+    with pytest.raises(ValueError):
+        testvar = BarWithWaterfall(test=True)
+        dataset = pd.DataFrame()
+        testvar.data_scenarios = list()
+        testvar._optimize_data_get_big_detail(dataframe=dataset)
