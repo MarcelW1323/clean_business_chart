@@ -2,7 +2,8 @@
 
 from clean_business_chart.barchartwithwaterfall import *
 import pandas as pd
-from pandas import Timestamp  # Needed in test__dataframe_date_to_year_and_month()
+from pandas import Timestamp                             # Needed in test__dataframe_date_to_year_and_month()
+from clean_business_chart.multiplier import Multiplier   # Needed in test__optimize_data_calculate_denominator()
 import pytest
 
 
@@ -1224,3 +1225,71 @@ def test__optimize_data_get_big_detail():
         dataset = pd.DataFrame()
         testvar.data_scenarios = list()
         testvar._optimize_data_get_big_detail(dataframe=dataset)
+
+
+def test__optimize_data_calculate_denominator():
+    # Test 1 - Good values, start with multiplier 1
+    testvar = BarWithWaterfall(test=True)
+    testvar.original_multiplier = Multiplier("1")
+    big_detail = 12345678.921
+    actual   = testvar._optimize_data_calculate_denominator(big_detail)
+    expected = 1000000
+    message  = "Test 1a - BarWithWaterfall._optimize_data_calculate_denominator {0} instead of {1}".format(actual, expected)
+    assert actual == pytest.approx(expected), message
+    actual   = testvar.multiplier.get_multiplier()
+    expected = 'm'
+    message  = "Test 1b - BarWithWaterfall._optimize_data_calculate_denominator {0} instead of {1}".format(actual, expected)
+    assert actual == expected, message
+
+    # Test 2 - Good values, start with multiplier k
+    testvar = BarWithWaterfall(test=True)
+    testvar.original_multiplier = Multiplier("k")
+    big_detail = 123478.921
+    actual   = testvar._optimize_data_calculate_denominator(big_detail)
+    expected = 1000
+    message  = "Test 2a - BarWithWaterfall._optimize_data_calculate_denominator {0} instead of {1}".format(actual, expected)
+    assert actual == pytest.approx(expected), message
+    actual   = testvar.multiplier.get_multiplier()
+    expected = 'm'
+    message  = "Test 2b - BarWithWaterfall._optimize_data_calculate_denominator {0} instead of {1}".format(actual, expected)
+    assert actual == expected, message
+
+    # Test 3 - Good values, start with multiplier m
+    testvar = BarWithWaterfall(test=True)
+    testvar.original_multiplier = Multiplier("m")
+    big_detail = 178.921
+    actual   = testvar._optimize_data_calculate_denominator(big_detail)
+    expected = 1
+    message  = "Test 3a - BarWithWaterfall._optimize_data_calculate_denominator {0} instead of {1}".format(actual, expected)
+    assert actual == pytest.approx(expected), message
+    actual   = testvar.multiplier.get_multiplier()
+    expected = 'm'
+    message  = "Test 3b - BarWithWaterfall._optimize_data_calculate_denominator {0} instead of {1}".format(actual, expected)
+    assert actual == expected, message
+
+    # Test 4 - Good values, start with multiplier 1
+    testvar = BarWithWaterfall(test=True)
+    testvar.original_multiplier = Multiplier("1")
+    big_detail = 1478.921
+    actual   = testvar._optimize_data_calculate_denominator(big_detail)
+    expected = 1000
+    message  = "Test 4a - BarWithWaterfall._optimize_data_calculate_denominator {0} instead of {1}".format(actual, expected)
+    assert actual == pytest.approx(expected), message
+    actual   = testvar.multiplier.get_multiplier()
+    expected = 'k'
+    message  = "Test 4b - BarWithWaterfall._optimize_data_calculate_denominator {0} instead of {1}".format(actual, expected)
+    assert actual == expected, message
+
+    # Test 5 - String instead of integer or float for big_detail
+    with pytest.raises(TypeError):
+        testvar = BarWithWaterfall(test=True)
+        testvar.original_multiplier = Multiplier("1")
+        big_detail = "This is a string"
+        testvar._optimize_data_calculate_denominator(big_detail)
+
+    # Test 6 - String instead of Multiplier for original_multiplier
+    with pytest.raises(TypeError):
+        testvar = BarWithWaterfall(test=True)
+        testvar.original_multiplier = "This is a string"
+        big_detail = 1
+        testvar._optimize_data_calculate_denominator(big_detail) 
