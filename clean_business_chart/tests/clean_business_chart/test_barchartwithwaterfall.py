@@ -1293,3 +1293,207 @@ def test__optimize_data_calculate_denominator():
         testvar.original_multiplier = "This is a string"
         big_detail = 1
         testvar._optimize_data_calculate_denominator(big_detail) 
+        
+def test__optimize_data_adjust_decimals():
+    # Test 1 - Good values, no decimal-influence
+    testvar = BarWithWaterfall(test=True)
+    testvar.force_zero_decimals = False
+    testvar.force_max_one_decimals = False
+    big_detail  = 12345678.921
+    big_total   = 93485273.813
+    denominator = 1000000
+    testvar._optimize_data_adjust_decimals(big_detail, big_total, denominator)
+    actual   = testvar.decimals_details
+    expected = 1
+    message  = "Test 1a - BarWithWaterfall._optimize_data_adjust_decimals {0} instead of {1}".format(actual, expected)
+    assert actual == pytest.approx(expected), message
+    actual   = testvar.decimals_totals
+    expected = 1
+    message  = "Test 1b - BarWithWaterfall._optimize_data_adjust_decimals {0} instead of {1}".format(actual, expected)
+    assert actual == pytest.approx(expected), message
+
+    # Test 2 - Good values, no decimal-influence
+    testvar = BarWithWaterfall(test=True)
+    testvar.force_zero_decimals = False
+    testvar.force_max_one_decimals = False
+    big_detail  = 12378.921
+    big_total   = 193273.813
+    denominator = 1000
+    testvar._optimize_data_adjust_decimals(big_detail, big_total, denominator)
+    actual   = testvar.decimals_details
+    expected = 1
+    message  = "Test 2a - BarWithWaterfall._optimize_data_adjust_decimals {0} instead of {1}".format(actual, expected)
+    assert actual == pytest.approx(expected), message
+    actual   = testvar.decimals_totals
+    expected = 0
+    message  = "Test 2b - BarWithWaterfall._optimize_data_adjust_decimals {0} instead of {1}".format(actual, expected)
+    assert actual == pytest.approx(expected), message
+
+    # Test 3 - Good values, no decimal-influence
+    testvar = BarWithWaterfall(test=True)
+    testvar.force_zero_decimals = False
+    testvar.force_max_one_decimals = False
+    big_detail  = 1234567.921
+    big_total   = 9348523.813
+    denominator = 1000000
+    testvar._optimize_data_adjust_decimals(big_detail, big_total, denominator)
+    actual   = testvar.decimals_details
+    expected = 2
+    message  = "Test 3a - BarWithWaterfall._optimize_data_adjust_decimals {0} instead of {1}".format(actual, expected)
+    assert actual == pytest.approx(expected), message
+    actual   = testvar.decimals_totals
+    expected = 2
+    message  = "Test 3b - BarWithWaterfall._optimize_data_adjust_decimals {0} instead of {1}".format(actual, expected)
+    assert actual == pytest.approx(expected), message
+
+    # Test 4 - Good values, no decimal-influence
+    testvar = BarWithWaterfall(test=True)
+    testvar.force_zero_decimals = False
+    testvar.force_max_one_decimals = False
+    big_detail  = 1238.921
+    big_total   = 9933.813
+    denominator = 1000
+    testvar._optimize_data_adjust_decimals(big_detail, big_total, denominator)
+    actual   = testvar.decimals_details
+    expected = 2
+    message  = "Test 4a - BarWithWaterfall._optimize_data_adjust_decimals {0} instead of {1}".format(actual, expected)
+    assert actual == pytest.approx(expected), message
+    actual   = testvar.decimals_totals
+    expected = 2
+    message  = "Test 4b - BarWithWaterfall._optimize_data_adjust_decimals {0} instead of {1}".format(actual, expected)
+    assert actual == pytest.approx(expected), message
+
+    # Test 5 - Good values, no decimal-influence
+    testvar = BarWithWaterfall(test=True)
+    testvar.force_zero_decimals = False
+    testvar.force_max_one_decimals = False
+    big_detail  = 123458.921
+    big_total   = 9934563.813
+    denominator = 1000
+    testvar._optimize_data_adjust_decimals(big_detail, big_total, denominator)
+    actual   = testvar.decimals_details
+    expected = 0
+    message  = "Test 5a - BarWithWaterfall._optimize_data_adjust_decimals {0} instead of {1}".format(actual, expected)
+    assert actual == pytest.approx(expected), message
+    actual   = testvar.decimals_totals
+    expected = 0
+    message  = "Test 5b - BarWithWaterfall._optimize_data_adjust_decimals {0} instead of {1}".format(actual, expected)
+    assert actual == pytest.approx(expected), message
+
+    # Test 6 - Good values, force_zero_decimals = True, force_max_one_decimals = False
+    testvar = BarWithWaterfall(test=True)
+    testvar.force_zero_decimals = True
+    testvar.force_max_one_decimals = False
+    big_detail  = 12345678.921
+    big_total   = 93485273.813
+    denominator = 1000000
+    testvar._optimize_data_adjust_decimals(big_detail, big_total, denominator)
+    actual   = testvar.decimals_details
+    expected = 0
+    message  = "Test 6a - BarWithWaterfall._optimize_data_adjust_decimals {0} instead of {1}".format(actual, expected)
+    assert actual == pytest.approx(expected), message
+    actual   = testvar.decimals_totals
+    expected = 0
+    message  = "Test 6b - BarWithWaterfall._optimize_data_adjust_decimals {0} instead of {1}".format(actual, expected)
+    assert actual == pytest.approx(expected), message
+
+    # Test 7 - Good values, force_zero_decimals = True, force_max_one_decimals = True
+    testvar = BarWithWaterfall(test=True)
+    testvar.force_zero_decimals = True
+    testvar.force_max_one_decimals = True
+    big_detail  = 1238.921
+    big_total   = 9933.813
+    denominator = 1000
+    testvar._optimize_data_adjust_decimals(big_detail, big_total, denominator)
+    actual   = testvar.decimals_details
+    expected = 0
+    message  = "Test 7a - BarWithWaterfall._optimize_data_adjust_decimals {0} instead of {1}".format(actual, expected)
+    assert actual == pytest.approx(expected), message
+    actual   = testvar.decimals_totals
+    expected = 0
+    message  = "Test 7b - BarWithWaterfall._optimize_data_adjust_decimals {0} instead of {1}".format(actual, expected)
+    assert actual == pytest.approx(expected), message
+
+    # Test 8 - Good values, force_zero_decimals = False, force_max_one_decimals = True
+    testvar = BarWithWaterfall(test=True)
+    testvar.force_zero_decimals = False
+    testvar.force_max_one_decimals = True
+    big_detail  = 1238.921
+    big_total   = 9933.813
+    denominator = 1000
+    testvar._optimize_data_adjust_decimals(big_detail, big_total, denominator)
+    actual   = testvar.decimals_details
+    expected = 1
+    message  = "Test 8a - BarWithWaterfall._optimize_data_adjust_decimals {0} instead of {1}".format(actual, expected)
+    assert actual == pytest.approx(expected), message
+    actual   = testvar.decimals_totals
+    expected = 1
+    message  = "Test 8b - BarWithWaterfall._optimize_data_adjust_decimals {0} instead of {1}".format(actual, expected)
+    assert actual == pytest.approx(expected), message
+
+    # Test 9 - Good values, force_zero_decimals = False, force_max_one_decimals = True
+    testvar = BarWithWaterfall(test=True)
+    testvar.force_zero_decimals = False
+    testvar.force_max_one_decimals = True
+    big_detail  = 12345678.921
+    big_total   = 93485273.813
+    denominator = 1000000
+    testvar._optimize_data_adjust_decimals(big_detail, big_total, denominator)
+    actual   = testvar.decimals_details
+    expected = 1
+    message  = "Test 9a - BarWithWaterfall._optimize_data_adjust_decimals {0} instead of {1}".format(actual, expected)
+    assert actual == pytest.approx(expected), message
+    actual   = testvar.decimals_totals
+    expected = 1
+    message  = "Test 9b - BarWithWaterfall._optimize_data_adjust_decimals {0} instead of {1}".format(actual, expected)
+    assert actual == pytest.approx(expected), message
+
+    # Test 10 - String instead of integer or float for big_detail
+    with pytest.raises(TypeError):
+        testvar = BarWithWaterfall(test=True)
+        testvar.force_zero_decimals = False
+        testvar.force_max_one_decimals = False
+        big_detail  = "This is a string"
+        big_total   = 1
+        denominator = 1
+        testvar._optimize_data_adjust_decimals(big_detail, big_total, denominator)
+
+    # Test 11 - String instead of integer or float for big_total
+    with pytest.raises(TypeError):
+        testvar = BarWithWaterfall(test=True)
+        testvar.force_zero_decimals = False
+        testvar.force_max_one_decimals = False
+        big_detail  = 1
+        big_total   = "This is a string"
+        denominator = 1
+        testvar._optimize_data_adjust_decimals(big_detail, big_total, denominator)
+
+    # Test 12 - String instead of integer or float for denominator
+    with pytest.raises(TypeError):
+        testvar = BarWithWaterfall(test=True)
+        testvar.force_zero_decimals = False
+        testvar.force_max_one_decimals = False
+        big_detail  = 1
+        big_total   = 1
+        denominator = "This is a string"
+        testvar._optimize_data_adjust_decimals(big_detail, big_total, denominator)
+
+    # Test 13 - String instead of boolean for force_zero_decimals
+    with pytest.raises(TypeError):
+        testvar = BarWithWaterfall(test=True)
+        testvar.force_zero_decimals = "This is a string"
+        testvar.force_max_one_decimals = False
+        big_detail  = 1
+        big_total   = 1
+        denominator = 1
+        testvar._optimize_data_adjust_decimals(big_detail, big_total, denominator)
+
+    # Test 14 - String instead of boolean for force_max_one_decimals
+    with pytest.raises(TypeError):
+        testvar = BarWithWaterfall(test=True)
+        testvar.force_zero_decimals = False
+        testvar.force_max_one_decimals = "This is a string"
+        big_detail  = 1
+        big_total   = 1
+        denominator = 1
+        testvar._optimize_data_adjust_decimals(big_detail, big_total, denominator)
