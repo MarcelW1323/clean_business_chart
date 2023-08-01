@@ -4,6 +4,10 @@ from clean_business_chart.barchartwithwaterfall import *
 import pandas as pd
 from pandas import Timestamp                             # Needed in test__dataframe_date_to_year_and_month()
 from clean_business_chart.multiplier import Multiplier   # Needed in test__optimize_data_calculate_denominator()
+import io                                                # Needed in test_BarWithWaterfall()
+import hashlib                                           # Needed in test_BarWithWaterfall()
+import requests                                          # Needed in test_BarWithWaterfall()
+
 import pytest
 
 
@@ -1173,7 +1177,7 @@ def test__optimize_data_get_big_detail():
     testvar.data_scenarios = ['PY', 'PL', 'FC', 'AC']
     expected = 42
     actual   = testvar._optimize_data_get_big_detail(dataframe=dataset)
-    message  = "Test 1 - BarWithWaterfall._optimize_data_get_big_detail {0} instead of {1}".format(actual, expected)
+    message  = "Test 1 - BarWithWaterfall._optimize_data_get_big_detail returned {0} instead of {1}".format(actual, expected)
     assert actual == pytest.approx(expected), message
 
     # Test 2 - Good dataframe with not all data_scenarios
@@ -1187,7 +1191,7 @@ def test__optimize_data_get_big_detail():
     testvar.data_scenarios = ['PY', 'PL', 'FC', 'AC']
     expected = 42
     actual   = testvar._optimize_data_get_big_detail(dataframe=dataset)
-    message  = "Test 2 - BarWithWaterfall._optimize_data_get_big_detail {0} instead of {1}".format(actual, expected)
+    message  = "Test 2 - BarWithWaterfall._optimize_data_get_big_detail returned {0} instead of {1}".format(actual, expected)
     assert actual == pytest.approx(expected), message
 
     # Test 3 - Good dataframe with all data_scenarios, big value is a minus in the delta
@@ -1203,7 +1207,7 @@ def test__optimize_data_get_big_detail():
     testvar.data_scenarios = ['PY', 'PL', 'FC', 'AC']
     expected = 66.9
     actual   = testvar._optimize_data_get_big_detail(dataframe=dataset)
-    message  = "Test 3 - BarWithWaterfall._optimize_data_get_big_detail {0} instead of {1}".format(actual, expected)
+    message  = "Test 3 - BarWithWaterfall._optimize_data_get_big_detail returned {0} instead of {1}".format(actual, expected)
     assert actual == pytest.approx(expected), message
 
     # Test 4 - String instead of dataframe
@@ -1234,11 +1238,11 @@ def test__optimize_data_calculate_denominator():
     big_detail = 12345678.921
     actual   = testvar._optimize_data_calculate_denominator(big_detail)
     expected = 1000000
-    message  = "Test 1a - BarWithWaterfall._optimize_data_calculate_denominator {0} instead of {1}".format(actual, expected)
+    message  = "Test 1a - BarWithWaterfall._optimize_data_calculate_denominator returned {0} instead of {1}".format(actual, expected)
     assert actual == pytest.approx(expected), message
     actual   = testvar.multiplier.get_multiplier()
     expected = 'm'
-    message  = "Test 1b - BarWithWaterfall._optimize_data_calculate_denominator {0} instead of {1}".format(actual, expected)
+    message  = "Test 1b - BarWithWaterfall._optimize_data_calculate_denominator returned {0} instead of {1}".format(actual, expected)
     assert actual == expected, message
 
     # Test 2 - Good values, start with multiplier k
@@ -1247,11 +1251,11 @@ def test__optimize_data_calculate_denominator():
     big_detail = 123478.921
     actual   = testvar._optimize_data_calculate_denominator(big_detail)
     expected = 1000
-    message  = "Test 2a - BarWithWaterfall._optimize_data_calculate_denominator {0} instead of {1}".format(actual, expected)
+    message  = "Test 2a - BarWithWaterfall._optimize_data_calculate_denominator returned {0} instead of {1}".format(actual, expected)
     assert actual == pytest.approx(expected), message
     actual   = testvar.multiplier.get_multiplier()
     expected = 'm'
-    message  = "Test 2b - BarWithWaterfall._optimize_data_calculate_denominator {0} instead of {1}".format(actual, expected)
+    message  = "Test 2b - BarWithWaterfall._optimize_data_calculate_denominator returned {0} instead of {1}".format(actual, expected)
     assert actual == expected, message
 
     # Test 3 - Good values, start with multiplier m
@@ -1260,11 +1264,11 @@ def test__optimize_data_calculate_denominator():
     big_detail = 178.921
     actual   = testvar._optimize_data_calculate_denominator(big_detail)
     expected = 1
-    message  = "Test 3a - BarWithWaterfall._optimize_data_calculate_denominator {0} instead of {1}".format(actual, expected)
+    message  = "Test 3a - BarWithWaterfall._optimize_data_calculate_denominator returned {0} instead of {1}".format(actual, expected)
     assert actual == pytest.approx(expected), message
     actual   = testvar.multiplier.get_multiplier()
     expected = 'm'
-    message  = "Test 3b - BarWithWaterfall._optimize_data_calculate_denominator {0} instead of {1}".format(actual, expected)
+    message  = "Test 3b - BarWithWaterfall._optimize_data_calculate_denominator returned {0} instead of {1}".format(actual, expected)
     assert actual == expected, message
 
     # Test 4 - Good values, start with multiplier 1
@@ -1273,11 +1277,11 @@ def test__optimize_data_calculate_denominator():
     big_detail = 1478.921
     actual   = testvar._optimize_data_calculate_denominator(big_detail)
     expected = 1000
-    message  = "Test 4a - BarWithWaterfall._optimize_data_calculate_denominator {0} instead of {1}".format(actual, expected)
+    message  = "Test 4a - BarWithWaterfall._optimize_data_calculate_denominator returned {0} instead of {1}".format(actual, expected)
     assert actual == pytest.approx(expected), message
     actual   = testvar.multiplier.get_multiplier()
     expected = 'k'
-    message  = "Test 4b - BarWithWaterfall._optimize_data_calculate_denominator {0} instead of {1}".format(actual, expected)
+    message  = "Test 4b - BarWithWaterfall._optimize_data_calculate_denominator returned {0} instead of {1}".format(actual, expected)
     assert actual == expected, message
 
     # Test 5 - String instead of integer or float for big_detail
@@ -1305,11 +1309,11 @@ def test__optimize_data_adjust_decimals():
     testvar._optimize_data_adjust_decimals(big_detail, big_total, denominator)
     actual   = testvar.decimals_details
     expected = 1
-    message  = "Test 1a - BarWithWaterfall._optimize_data_adjust_decimals {0} instead of {1}".format(actual, expected)
+    message  = "Test 1a - BarWithWaterfall._optimize_data_adjust_decimals returned {0} instead of {1}".format(actual, expected)
     assert actual == pytest.approx(expected), message
     actual   = testvar.decimals_totals
     expected = 1
-    message  = "Test 1b - BarWithWaterfall._optimize_data_adjust_decimals {0} instead of {1}".format(actual, expected)
+    message  = "Test 1b - BarWithWaterfall._optimize_data_adjust_decimals returned {0} instead of {1}".format(actual, expected)
     assert actual == pytest.approx(expected), message
 
     # Test 2 - Good values, no decimal-influence
@@ -1322,11 +1326,11 @@ def test__optimize_data_adjust_decimals():
     testvar._optimize_data_adjust_decimals(big_detail, big_total, denominator)
     actual   = testvar.decimals_details
     expected = 1
-    message  = "Test 2a - BarWithWaterfall._optimize_data_adjust_decimals {0} instead of {1}".format(actual, expected)
+    message  = "Test 2a - BarWithWaterfall._optimize_data_adjust_decimals returned {0} instead of {1}".format(actual, expected)
     assert actual == pytest.approx(expected), message
     actual   = testvar.decimals_totals
     expected = 0
-    message  = "Test 2b - BarWithWaterfall._optimize_data_adjust_decimals {0} instead of {1}".format(actual, expected)
+    message  = "Test 2b - BarWithWaterfall._optimize_data_adjust_decimals returned {0} instead of {1}".format(actual, expected)
     assert actual == pytest.approx(expected), message
 
     # Test 3 - Good values, no decimal-influence
@@ -1339,11 +1343,11 @@ def test__optimize_data_adjust_decimals():
     testvar._optimize_data_adjust_decimals(big_detail, big_total, denominator)
     actual   = testvar.decimals_details
     expected = 2
-    message  = "Test 3a - BarWithWaterfall._optimize_data_adjust_decimals {0} instead of {1}".format(actual, expected)
+    message  = "Test 3a - BarWithWaterfall._optimize_data_adjust_decimals returned {0} instead of {1}".format(actual, expected)
     assert actual == pytest.approx(expected), message
     actual   = testvar.decimals_totals
     expected = 2
-    message  = "Test 3b - BarWithWaterfall._optimize_data_adjust_decimals {0} instead of {1}".format(actual, expected)
+    message  = "Test 3b - BarWithWaterfall._optimize_data_adjust_decimals returned {0} instead of {1}".format(actual, expected)
     assert actual == pytest.approx(expected), message
 
     # Test 4 - Good values, no decimal-influence
@@ -1356,11 +1360,11 @@ def test__optimize_data_adjust_decimals():
     testvar._optimize_data_adjust_decimals(big_detail, big_total, denominator)
     actual   = testvar.decimals_details
     expected = 2
-    message  = "Test 4a - BarWithWaterfall._optimize_data_adjust_decimals {0} instead of {1}".format(actual, expected)
+    message  = "Test 4a - BarWithWaterfall._optimize_data_adjust_decimals returned {0} instead of {1}".format(actual, expected)
     assert actual == pytest.approx(expected), message
     actual   = testvar.decimals_totals
     expected = 2
-    message  = "Test 4b - BarWithWaterfall._optimize_data_adjust_decimals {0} instead of {1}".format(actual, expected)
+    message  = "Test 4b - BarWithWaterfall._optimize_data_adjust_decimals returned {0} instead of {1}".format(actual, expected)
     assert actual == pytest.approx(expected), message
 
     # Test 5 - Good values, no decimal-influence
@@ -1373,11 +1377,11 @@ def test__optimize_data_adjust_decimals():
     testvar._optimize_data_adjust_decimals(big_detail, big_total, denominator)
     actual   = testvar.decimals_details
     expected = 0
-    message  = "Test 5a - BarWithWaterfall._optimize_data_adjust_decimals {0} instead of {1}".format(actual, expected)
+    message  = "Test 5a - BarWithWaterfall._optimize_data_adjust_decimals returned {0} instead of {1}".format(actual, expected)
     assert actual == pytest.approx(expected), message
     actual   = testvar.decimals_totals
     expected = 0
-    message  = "Test 5b - BarWithWaterfall._optimize_data_adjust_decimals {0} instead of {1}".format(actual, expected)
+    message  = "Test 5b - BarWithWaterfall._optimize_data_adjust_decimals returned {0} instead of {1}".format(actual, expected)
     assert actual == pytest.approx(expected), message
 
     # Test 6 - Good values, force_zero_decimals = True, force_max_one_decimals = False
@@ -1390,11 +1394,11 @@ def test__optimize_data_adjust_decimals():
     testvar._optimize_data_adjust_decimals(big_detail, big_total, denominator)
     actual   = testvar.decimals_details
     expected = 0
-    message  = "Test 6a - BarWithWaterfall._optimize_data_adjust_decimals {0} instead of {1}".format(actual, expected)
+    message  = "Test 6a - BarWithWaterfall._optimize_data_adjust_decimals returned {0} instead of {1}".format(actual, expected)
     assert actual == pytest.approx(expected), message
     actual   = testvar.decimals_totals
     expected = 0
-    message  = "Test 6b - BarWithWaterfall._optimize_data_adjust_decimals {0} instead of {1}".format(actual, expected)
+    message  = "Test 6b - BarWithWaterfall._optimize_data_adjust_decimals returned {0} instead of {1}".format(actual, expected)
     assert actual == pytest.approx(expected), message
 
     # Test 7 - Good values, force_zero_decimals = True, force_max_one_decimals = True
@@ -1407,11 +1411,11 @@ def test__optimize_data_adjust_decimals():
     testvar._optimize_data_adjust_decimals(big_detail, big_total, denominator)
     actual   = testvar.decimals_details
     expected = 0
-    message  = "Test 7a - BarWithWaterfall._optimize_data_adjust_decimals {0} instead of {1}".format(actual, expected)
+    message  = "Test 7a - BarWithWaterfall._optimize_data_adjust_decimals returned {0} instead of {1}".format(actual, expected)
     assert actual == pytest.approx(expected), message
     actual   = testvar.decimals_totals
     expected = 0
-    message  = "Test 7b - BarWithWaterfall._optimize_data_adjust_decimals {0} instead of {1}".format(actual, expected)
+    message  = "Test 7b - BarWithWaterfall._optimize_data_adjust_decimals returned {0} instead of {1}".format(actual, expected)
     assert actual == pytest.approx(expected), message
 
     # Test 8 - Good values, force_zero_decimals = False, force_max_one_decimals = True
@@ -1424,11 +1428,11 @@ def test__optimize_data_adjust_decimals():
     testvar._optimize_data_adjust_decimals(big_detail, big_total, denominator)
     actual   = testvar.decimals_details
     expected = 1
-    message  = "Test 8a - BarWithWaterfall._optimize_data_adjust_decimals {0} instead of {1}".format(actual, expected)
+    message  = "Test 8a - BarWithWaterfall._optimize_data_adjust_decimals returned {0} instead of {1}".format(actual, expected)
     assert actual == pytest.approx(expected), message
     actual   = testvar.decimals_totals
     expected = 1
-    message  = "Test 8b - BarWithWaterfall._optimize_data_adjust_decimals {0} instead of {1}".format(actual, expected)
+    message  = "Test 8b - BarWithWaterfall._optimize_data_adjust_decimals returned {0} instead of {1}".format(actual, expected)
     assert actual == pytest.approx(expected), message
 
     # Test 9 - Good values, force_zero_decimals = False, force_max_one_decimals = True
@@ -1441,11 +1445,11 @@ def test__optimize_data_adjust_decimals():
     testvar._optimize_data_adjust_decimals(big_detail, big_total, denominator)
     actual   = testvar.decimals_details
     expected = 1
-    message  = "Test 9a - BarWithWaterfall._optimize_data_adjust_decimals {0} instead of {1}".format(actual, expected)
+    message  = "Test 9a - BarWithWaterfall._optimize_data_adjust_decimals returned {0} instead of {1}".format(actual, expected)
     assert actual == pytest.approx(expected), message
     actual   = testvar.decimals_totals
     expected = 1
-    message  = "Test 9b - BarWithWaterfall._optimize_data_adjust_decimals {0} instead of {1}".format(actual, expected)
+    message  = "Test 9b - BarWithWaterfall._optimize_data_adjust_decimals returned {0} instead of {1}".format(actual, expected)
     assert actual == pytest.approx(expected), message
 
     # Test 10 - String instead of integer or float for big_detail
@@ -1497,3 +1501,42 @@ def test__optimize_data_adjust_decimals():
         big_total   = 1
         denominator = 1
         testvar._optimize_data_adjust_decimals(big_detail, big_total, denominator)
+
+
+def test_BarWithWaterfall():
+    # Test barchart_001
+    dataset =  { 'HEADERS'      : ['PY','PL','AC','FC'],  # Special keyword 'HEADERS' to indicate the scenario of the value columns
+                 'Spain'        : [ 30 , 33 , 53 ,  0 ],
+                 'Greece'       : [ 38 , 33 , 39 ,  0 ],
+                 'Sweden'       : [ 38 , 35 , 40 ,  0 ],
+                 'Germany'      : [ 90 , 89 , 93 , 25 ],
+                 'Russia'       : [ 60 , 56 , 60 ,  0 ],
+                 'Italy'        : [ 15 , 12 , 14 ,  4 ],
+                 'Great Britain': [ 15 , 13 , 15 ,  0 ],
+                 'Slovenia'     : [  4 ,  5 ,  4 ,  0 ],
+                 'Denmark'      : [ 29 , 35 , 33 , 10 ],
+                 'Netherlands'  : [ 39 , 42 , 38 , 15 ],
+                 'France'       : [ 60 , 77 , 63 ,  0 ],
+                 'OTHER'        : [ 40 , 37 , 44 , 15 ]}  # Special keyword 'OTHERS' to indicate the row with the remaining values
+    title_dict = dict()
+    title_dict['Reporting_unit']   = 'ACME inc.'          # Name of the company or the department
+    title_dict['Business_measure'] = 'Net sales'          # Name of the business measure
+    title_dict['Unit']             = 'mEUR'               # Unit: USD or EUR (monetary) or # (count)
+    title_dict['Time']             = '2022'               # More specific information about the time selection
+    buf = io.BytesIO()                                    # Declare a buffer to put the chart-output in
+    testchart = BarWithWaterfall(data=dataset, title=title_dict, compare_scenarios='AC', 
+                                 total_text="Europe", force_zero_decimals=True,
+                                 filename=buf, other="Rest of Europe", do_not_show=True)
+    buf.seek(0)
+    sha256_hash = hashlib.sha256()                        # Initialize sha256
+    for byte_block in iter(lambda: buf.read(4096),b""):
+        sha256_hash.update(byte_block)
+    actual=sha256_hash.hexdigest()
+    buf.close()
+    url = "https://raw.githubusercontent.com/MarcelW1323/clean_business_chart/main/test_charts/barchart_001.png"
+    sha256_hash = hashlib.sha256()                        # Initialize sha256
+    response = requests.get(url)
+    sha256_hash.update(response.content)
+    expected=sha256_hash.hexdigest()
+    message  = "Test barchart_001.png - BarWithWaterfall returned {0} instead of {1}".format(actual, expected)
+    assert actual == expected, message
