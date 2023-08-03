@@ -1654,3 +1654,40 @@ def test_BarWithWaterfall():
     expected=sha256_hash.hexdigest()
     message  = "Test barchart_001.png - BarWithWaterfall returned {0} instead of {1}".format(actual, expected)
     assert actual == expected, message
+
+    # Test barchart_002
+    dataset =  { 'HEADERS'      : ['PY','PL','AC','FC'],  # Special keyword 'HEADERS' to indicate the scenario of the value columns
+                 'Spain'        : [ 30 , 33 , 53 ,  0 ],
+                 'Greece'       : [ 38 , 33 , 39 ,  0 ],
+                 'Sweden'       : [ 38 , 35 , 40 ,  0 ],
+                 'Germany'      : [ 90 , 89 , 93 , 25 ],
+                 'Russia'       : [ 60 , 56 , 60 ,  0 ],
+                 'Italy'        : [ 15 , 12 , 14 ,  4 ],
+                 'Great Britain': [ 15 , 13 , 15 ,  0 ],
+                 'Slovenia'     : [  4 ,  5 ,  4 ,  0 ],
+                 'Denmark'      : [ 29 , 35 , 33 , 10 ],
+                 'Netherlands'  : [ 39 , 42 , 38 , 15 ],
+                 'France'       : [ 60 , 77 , 63 ,  0 ],
+                 'OTHER'        : [ 40 , 37 , 44 , 15 ]}  # Special keyword 'OTHERS' to indicate the row with the remaining values
+    title_dict = dict()
+    title_dict['Reporting_unit']   = 'ACME inc.'          # Name of the company or the department
+    title_dict['Business_measure'] = 'Net sales'          # Name of the business measure
+    title_dict['Unit']             = 'mEUR'               # Unit: USD or EUR (monetary) or # (count)
+    title_dict['Time']             = '2022'               # More specific information about the time selection
+    buf = io.BytesIO()                                    # Declare a buffer to put the chart-output in
+    testchart = BarWithWaterfall(data=dataset, title=title_dict, base_scenarios=['PY', 'PL'], compare_scenarios='AC', 
+                                 total_text="Europe", force_zero_decimals=True,
+                                 filename=buf, other="Rest of Europe", do_not_show=True)
+    buf.seek(0)
+    sha256_hash = hashlib.sha256()                        # Initialize sha256
+    for byte_block in iter(lambda: buf.read(4096),b""):
+        sha256_hash.update(byte_block)
+    actual=sha256_hash.hexdigest()
+    buf.close()
+    url = "https://raw.githubusercontent.com/MarcelW1323/clean_business_chart/main/test_charts/barchart_002.png"
+    sha256_hash = hashlib.sha256()                        # Initialize sha256
+    response = requests.get(url)
+    sha256_hash.update(response.content)
+    expected=sha256_hash.hexdigest()
+    message  = "Test barchart_002.png - BarWithWaterfall returned {0} instead of {1}".format(actual, expected)
+    assert actual == expected, message
