@@ -1617,6 +1617,41 @@ def test__optimize_data_dataframe_details():
         testvar._optimize_data_dataframe_details(dataframe=dataset)
 
 
+def test__optimize_data():
+    # Just a test to see if all components still work. Those components are tested in their own test-function.
+    # Test 1 - Good dataframe with all data_scenarios and a normal denominator and 2 decimals
+    dataset  = pd.DataFrame({'Year'       : ['2022', '2022', '2022', '2022', '2022'],
+                             'PY'         : [39364.4, 39710.1, 40165.2, 38875.8, 38539.8],
+                             'PL'         : [39846.8, 41769.6, 40615.4, 39770.7, 38879.1],
+                             '_Category'  : ['Airbus', 'Boeing', 'OTHER', 'General Dynamics', 'Lockheed Martin'],
+                             'AC'         : [40299.2, 39443.1, 41702.8, 40331.9, 41207.3],
+                             'FC'         : [38389.8, 41972.8, 41420.2, 39889.2, 40879.4],
+                             '_CBC_DELTA1': [  452.4, -2326.5,  1087.4,   561.2,  2328.2],     # FYI: Delta1 is AC-PL
+                             '_CBC_DELTA2': [38842.2, 39646.3, 42507.6, 40450.4, 43207.6]})    # FYI: Delta2 is Delta1+FC
+    testvar  = BarWithWaterfall(test=True)
+    testvar.data_scenarios = ['PY', 'PL', 'FC', 'AC']
+    testvar.data_total = {'PY':196655.3, 'PL':200881.6, 'AC':202984.3, 'FC':202551.4}
+    testvar.original_multiplier = Multiplier("1")
+    testvar.multiplier = None
+    testvar.multiplier_denominator = None
+    testvar.decimals_details = 0
+    testvar.decimals_totals = 0
+    testvar.force_zero_decimals = False
+    testvar.force_max_one_decimals = False
+    expected =  {'Year'       : ['2022', '2022', '2022', '2022', '2022'],
+                 'PY'         : [39.4, 39.7, 40.2, 38.9, 38.5],
+                 'PL'         : [39.8, 41.8, 40.6, 39.8, 38.9],
+                 '_Category'  : ['Airbus', 'Boeing', 'OTHER', 'General Dynamics', 'Lockheed Martin'],
+                 'AC'         : [40.3, 39.4, 41.7, 40.3, 41.2],
+                 'FC'         : [38.4, 42.0, 41.4, 39.9, 40.9],
+                 '_CBC_DELTA1': [0.5, -2.3, 1.1, 0.6, 2.3],
+                 '_CBC_DELTA2': [38.8, 39.6, 42.5, 40.5, 43.2]}
+    actual   = testvar._optimize_data(dataframe=dataset)
+    actual   = actual.to_dict(orient='list')
+    message  = "Test 1 - BarWithWaterfall._optimize_data returned {0} instead of {1}".format(actual, expected)
+    assert actual == pytest.approx(expected), message
+
+
 def test_BarWithWaterfall():
     # Test barchart_001
     dataset =  { 'HEADERS'      : ['PY','PL','AC','FC'],  # Special keyword 'HEADERS' to indicate the scenario of the value columns
