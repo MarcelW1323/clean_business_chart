@@ -2,7 +2,10 @@
 
 from clean_business_chart.columnchartwithwaterfall import *
 import pandas as pd
-from pandas import Timestamp  # Needed in test__dataframe_date_to_year_and_month()
+from pandas import Timestamp                                # Needed in test__dataframe_date_to_year_and_month()
+import io                                                   # Needed in test_ColumnWithWaterfall()
+import hashlib                                              # Needed in test_ColumnWithWaterfall()
+import requests                                             # Needed in test_ColumnWithWaterfall()
 import pytest
         
 
@@ -194,3 +197,34 @@ def test__dataframe_to_dictionary():
     with pytest.raises(TypeError):
         testvar = ColumnWithWaterfall(test=True)
         testvar._dataframe_to_dictionary("This is a string")
+
+
+def test_ColumnWithWaterfall():
+    # Test columnchart_001
+    dataset =  {'PY'  : [14, 16, 14, 17, 19, 17, 19, 22, 16, 17, 16, 22],
+                'PL'  : [11, 10, 10, 10, 10, 10, 15, 14, 15, 15, 15, 19],
+                'AC'  : [15, 13, 16,  7,  5,  6, 17, 11],
+                'FC'  : [ 0,  0,  0,  0,  0,  0,  0,  0, 26, 22, 13, 29],
+                'Year': 2021}
+    title_dict = dict()
+    title_dict['Reporting_unit']   = 'ACME inc.'          # Name of the company or the department
+    title_dict['Business_measure'] = 'Net sales'          # Name of the business measure
+    title_dict['Unit']             = 'USD'                # Unit: USD or EUR (monetary) or # (count)
+    title_dict['Time']             = '2021'               # More specific information about the time selection
+    buf = io.BytesIO()                                    # Declare a buffer to put the chart-output in
+    testchart = ColumnWithWaterfall(data=dataset, preferred_base_scenario='PL', title=title_dict, 
+                                 multiplier='m', force_zero_decimals=True,
+                                 filename=buf, do_not_show=True)
+    buf.seek(0)
+    sha256_hash = hashlib.sha256()                        # Initialize sha256
+    for byte_block in iter(lambda: buf.read(4096),b""):
+        sha256_hash.update(byte_block)
+    actual=sha256_hash.hexdigest()
+    buf.close()
+    url = "https://raw.githubusercontent.com/MarcelW1323/clean_business_chart/main/test_charts/columnchart_001.png"
+    sha256_hash = hashlib.sha256()                        # Initialize sha256
+    response = requests.get(url)
+    sha256_hash.update(response.content)
+    expected=sha256_hash.hexdigest()
+    message  = "Test columnchart_001.png - ColumnWithWaterfall returned {0} instead of {1}".format(actual, expected)
+    assert actual == expected, message

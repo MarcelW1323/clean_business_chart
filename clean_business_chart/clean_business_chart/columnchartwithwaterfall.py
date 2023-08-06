@@ -65,7 +65,7 @@ class ColumnWithWaterfall(GeneralChart):
     """
 
     def __init__(self, data=None, positive_is_good=True, preferred_base_scenario=None, title=None, measure=True, multiplier='1', filename=None, 
-                 force_pl_is_zero=False, force_zero_decimals=False, force_max_one_decimals=False, translate_headers=None, test=False):
+                 force_pl_is_zero=False, force_zero_decimals=False, force_max_one_decimals=False, translate_headers=None, test=False, do_not_show=False):
         """
         This is the first function that will be called automatically. Here you'll find all the possible parameters to customize your experience.
         """
@@ -108,7 +108,10 @@ class ColumnWithWaterfall(GeneralChart):
         if self.filename is not None:
             plt.savefig(self.filename, bbox_inches='tight', dpi=150)
         
-        plt.show()
+        # For automatic testing of complete images of chart
+        if not do_not_show:
+            # No, no automatic testing of complete images of chart -> show the chart
+            plt.show()
         
 
     def _other_columnwithwaterfall_variables(self):
