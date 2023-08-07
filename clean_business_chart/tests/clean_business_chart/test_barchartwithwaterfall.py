@@ -1618,7 +1618,7 @@ def test__optimize_data_dataframe_details():
 
 
 def test__optimize_data():
-    # Just a test to see if all components still work. Those components are tested in their own test-function.
+    # Just a test to see if all components still work. Those components are tested in their own test-functions.
     # Test 1 - Good dataframe with all data_scenarios and a normal denominator and 2 decimals
     dataset  = pd.DataFrame({'Year'       : ['2022', '2022', '2022', '2022', '2022'],
                              'PY'         : [39364.4, 39710.1, 40165.2, 38875.8, 38539.8],
@@ -1650,6 +1650,103 @@ def test__optimize_data():
     actual   = actual.to_dict(orient='list')
     message  = "Test 1 - BarWithWaterfall._optimize_data returned {0} instead of {1}".format(actual, expected)
     assert actual == pytest.approx(expected), message
+
+
+def test__add_yvalues_to_dataframe():
+    # Test 1 - Good dataframe with all data_scenarios and category OTHER
+    dataset  = pd.DataFrame({'Year'       : ['2022', '2022', '2022', '2022', '2022'],
+                             'PY'         : [39364.4, 39710.1, 40165.2, 38875.8, 38539.8],
+                             'PL'         : [39846.8, 41769.6, 40615.4, 39770.7, 38879.1],
+                             '_Category'  : ['Airbus', 'Boeing', 'General Dynamics', 'Lockheed Martin', 'OTHER'],
+                             'AC'         : [40299.2, 39443.1, 41702.8, 40331.9, 41207.3],
+                             'FC'         : [38389.8, 41972.8, 41420.2, 39889.2, 40879.4],
+                             '_CBC_DELTA1': [  452.4, -2326.5,  1087.4,   561.2,  2328.2],     # FYI: Delta1 is AC-PL
+                             '_CBC_DELTA2': [38842.2, 39646.3, 42507.6, 40450.4, 43207.6]})    # FYI: Delta2 is Delta1+FC
+    testvar  = BarWithWaterfall(test=True)
+    testvar.barshift = 0.2
+    testvar.barwidth = 0.5
+    expected =  {'Year'       : ['2022', '2022', '2022', '2022', '2022'],
+                 'PY'         : [39364.4, 39710.1, 40165.2, 38875.8, 38539.8],
+                 'PL'         : [39846.8, 41769.6, 40615.4, 39770.7, 38879.1],
+                 '_Category'  : ['Airbus', 'Boeing', 'General Dynamics', 'Lockheed Martin', 'OTHER'],
+                 'AC'         : [40299.2, 39443.1, 41702.8, 40331.9, 41207.3],
+                 'FC'         : [38389.8, 41972.8, 41420.2, 39889.2, 40879.4],
+                 '_CBC_DELTA1': [452.4, -2326.5, 1087.4, 561.2, 2328.2],
+                 '_CBC_DELTA2': [38842.2, 39646.3, 42507.6, 40450.4, 43207.6],
+                 '_CBC_Y'     : [0, -1, -2, -3, -4.5],
+                 '_CBC_Y1'    : [0.1, -0.9, -1.9, -2.9, -4.4],
+                 '_CBC_Y2'    : [-0.1, -1.1, -2.1, -3.1, -4.6]}
+    actual   = testvar._add_yvalues_to_dataframe(dataframe=dataset)
+    actual   = actual.to_dict(orient='list')
+    message  = "Test 1 - BarWithWaterfall._add_yvalues_to_dataframe returned {0} instead of {1}".format(actual, expected)
+    assert actual == pytest.approx(expected), message
+
+    # Test 2 - Good dataframe with all data_scenarios without category OTHER
+    dataset  = pd.DataFrame({'Year'       : ['2022', '2022', '2022', '2022', '2022'],
+                             'PY'         : [39364.4, 39710.1, 40165.2, 38875.8, 38539.8],
+                             'PL'         : [39846.8, 41769.6, 40615.4, 39770.7, 38879.1],
+                             '_Category'  : ['Airbus', 'Boeing', 'General Dynamics', 'Lockheed Martin', 'Fokker'],
+                             'AC'         : [40299.2, 39443.1, 41702.8, 40331.9, 41207.3],
+                             'FC'         : [38389.8, 41972.8, 41420.2, 39889.2, 40879.4],
+                             '_CBC_DELTA1': [  452.4, -2326.5,  1087.4,   561.2,  2328.2],     # FYI: Delta1 is AC-PL
+                             '_CBC_DELTA2': [38842.2, 39646.3, 42507.6, 40450.4, 43207.6]})    # FYI: Delta2 is Delta1+FC
+    testvar  = BarWithWaterfall(test=True)
+    testvar.barshift = 0.2
+    testvar.barwidth = 0.5
+    expected =  {'Year'       : ['2022', '2022', '2022', '2022', '2022'],
+                 'PY'         : [39364.4, 39710.1, 40165.2, 38875.8, 38539.8],
+                 'PL'         : [39846.8, 41769.6, 40615.4, 39770.7, 38879.1],
+                 '_Category'  : ['Airbus', 'Boeing', 'General Dynamics', 'Lockheed Martin', 'Fokker'],
+                 'AC'         : [40299.2, 39443.1, 41702.8, 40331.9, 41207.3],
+                 'FC'         : [38389.8, 41972.8, 41420.2, 39889.2, 40879.4],
+                 '_CBC_DELTA1': [452.4, -2326.5, 1087.4, 561.2, 2328.2],
+                 '_CBC_DELTA2': [38842.2, 39646.3, 42507.6, 40450.4, 43207.6],
+                 '_CBC_Y'     : [0, -1, -2, -3, -4],
+                 '_CBC_Y1'    : [0.1, -0.9, -1.9, -2.9, -3.9],
+                 '_CBC_Y2'    : [-0.1, -1.1, -2.1, -3.1, -4.1]}
+    actual   = testvar._add_yvalues_to_dataframe(dataframe=dataset)
+    actual   = actual.to_dict(orient='list')
+    message  = "Test 2 - BarWithWaterfall._add_yvalues_to_dataframe returned {0} instead of {1}".format(actual, expected)
+    assert actual == pytest.approx(expected), message
+
+    # Test 3 - Good dataframe with all data_scenarios but category OTHER not on the last spot in the column
+    with pytest.raises(ValueError):
+        dataset  = pd.DataFrame({'Year'       : ['2022', '2022', '2022', '2022', '2022'],
+                                 'PY'         : [39364.4, 39710.1, 40165.2, 38875.8, 38539.8],
+                                 'PL'         : [39846.8, 41769.6, 40615.4, 39770.7, 38879.1],
+                                 '_Category'  : ['Airbus', 'Boeing', 'OTHER', 'General Dynamics', 'Lockheed Martin'],
+                                 'AC'         : [40299.2, 39443.1, 41702.8, 40331.9, 41207.3],
+                                 'FC'         : [38389.8, 41972.8, 41420.2, 39889.2, 40879.4],
+                                 '_CBC_DELTA1': [  452.4, -2326.5,  1087.4,   561.2,  2328.2],     # FYI: Delta1 is AC-PL
+                                 '_CBC_DELTA2': [38842.2, 39646.3, 42507.6, 40450.4, 43207.6]})    # FYI: Delta2 is Delta1+FC
+        testvar  = BarWithWaterfall(test=True)
+        testvar.barshift = 0.2
+        testvar.barwidth = 0.5
+        testvar._add_yvalues_to_dataframe(dataframe=dataset)
+
+    # Test 4 - String instead of DataFrame
+    with pytest.raises(TypeError):
+        dataset  = "This is a string"
+        testvar  = BarWithWaterfall(test=True)
+        testvar.barshift = 0.2
+        testvar.barwidth = 0.5
+        testvar._add_yvalues_to_dataframe(dataframe=dataset)
+
+    # Test 5 - String instead of integer or float
+    with pytest.raises(TypeError):
+        dataset  = pd.DataFrame()
+        testvar  = BarWithWaterfall(test=True)
+        testvar.barshift = "This is a string"
+        testvar.barwidth = 0.5
+        testvar._add_yvalues_to_dataframe(dataframe=dataset)
+
+    # Test 6 - String instead of integer or float
+    with pytest.raises(TypeError):
+        dataset  = pd.DataFrame()
+        testvar  = BarWithWaterfall(test=True)
+        testvar.barshift = 0.2
+        testvar.barwidth = "This is a string"
+        testvar._add_yvalues_to_dataframe(dataframe=dataset)
 
 
 def test_BarWithWaterfall():
