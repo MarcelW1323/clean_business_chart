@@ -1632,10 +1632,6 @@ def test__optimize_data():
     testvar.data_scenarios = ['PY', 'PL', 'FC', 'AC']
     testvar.data_total = {'PY':196655.3, 'PL':200881.6, 'AC':202984.3, 'FC':202551.4}
     testvar.original_multiplier = Multiplier("1")
-    testvar.multiplier = None
-    testvar.multiplier_denominator = None
-    testvar.decimals_details = 0
-    testvar.decimals_totals = 0
     testvar.force_zero_decimals = False
     testvar.force_max_one_decimals = False
     expected =  {'Year'       : ['2022', '2022', '2022', '2022', '2022'],
@@ -1747,6 +1743,43 @@ def test__add_yvalues_to_dataframe():
         testvar.barshift = 0.2
         testvar.barwidth = "This is a string"
         testvar._add_yvalues_to_dataframe(dataframe=dataset)
+
+
+def test__process_dataframe():
+    # Just a test to see if all components still work. Those components are tested in their own test-functions.
+    # Test 1 - Good dataframe with all data_scenarios
+    dataset  = pd.DataFrame({'Year'       : ['2022', '2022', '2022', '2022', '2022'],
+                             'PY'         : [39364.4, 39710.1, 40165.2, 38875.8, 38539.8],
+                             'PL'         : [39846.8, 41769.6, 40615.4, 39770.7, 38879.1],
+                             '_Category'  : ['Airbus', 'Boeing', 'OTHER', 'General Dynamics', 'Lockheed Martin'],
+                             'AC'         : [40299.2, 39443.1, 41702.8, 40331.9, 41207.3],
+                             'FC'         : [38389.8, 41972.8, 41420.2, 39889.2, 40879.4]})
+    testvar  = BarWithWaterfall(test=True)
+    testvar.base_scenarios = ['PL', 'PY']
+    testvar.compare_scenarios = ['AC']
+    testvar.remove_lines_with_zeros = False
+    testvar.barwidth = 0.5
+    testvar.data_scenarios = ['PY', 'PL', 'FC', 'AC']
+    testvar.data_total = {'PY':196655.3, 'PL':200881.6, 'AC':202984.3, 'FC':202551.4}
+    testvar.original_multiplier = Multiplier("1")
+    testvar.force_zero_decimals = False
+    testvar.force_max_one_decimals = False
+    expected = {'Year': ['2022', '2022', '2022', '2022', '2022'],
+                'PY': [38.5, 38.9, 39.4, 39.7, 40.2],
+                'PL': [38.9, 39.8, 39.8, 41.8, 40.6],
+                '_Category': ['Lockheed Martin', 'General Dynamics', 'Airbus', 'Boeing', 'OTHER'],
+                'AC': [41.2, 40.3, 40.3, 39.4, 41.7],
+                'FC': [40.9, 39.9, 38.4, 42.0, 41.4],
+                '_CBC_TOPLAYER': ['AC', 'AC', 'AC', 'AC', 'AC'],
+                '_CBC_DELTA1': [2.3, 0.6, 0.5, -2.3, 1.1],
+                '_CBC_DELTA2': [0.0, 0.0, 0.0, 0.0, 0.0],
+                '_CBC_Y': [0.0, -1.0, -2.0, -3.0, -4.5],
+                '_CBC_Y1': [0.0625, -0.9375, -1.9375, -2.9375, -4.4375],
+                '_CBC_Y2': [-0.0625, -1.0625, -2.0625, -3.0625, -4.5625]}
+    actual   = testvar._process_dataframe(dataframe=dataset)
+    actual   = actual.to_dict(orient='list')
+    message  = "Test 1 - BarWithWaterfall._process_dataframe returned {0} instead of {1}".format(actual, expected)
+    assert actual == pytest.approx(expected), message
 
 
 def test_BarWithWaterfall():
