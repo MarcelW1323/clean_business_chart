@@ -1782,6 +1782,138 @@ def test__process_dataframe():
     assert actual == pytest.approx(expected), message
 
 
+def test__check_and_process_data():
+    # Test 1 - Good dataframe with all data_scenarios
+    dataset  = pd.DataFrame({'Year'       : ['2022', '2022', '2022', '2022', '2022'],
+                             'PY'         : [39364.4, 39710.1, 40165.2, 38875.8, 38539.8],
+                             'PL'         : [39846.8, 41769.6, 40615.4, 39770.7, 38879.1],
+                             '_Category'  : ['Airbus', 'Boeing', 'OTHER', 'General Dynamics', 'Lockheed Martin'],
+                             'AC'         : [40299.2, 39443.1, 41702.8, 40331.9, 41207.3],
+                             'FC'         : [38389.8, 41972.8, 41420.2, 39889.2, 40879.4]})
+    testvar  = BarWithWaterfall(test=True)
+    testvar.translate_headers=None
+    testvar.category=None
+    testvar.base_scenarios = ['PL', 'PY']
+    testvar.compare_scenarios = ['AC']
+    testvar.remove_lines_with_zeros = False
+    testvar.barwidth = 0.5
+    testvar.data_scenarios = ['PY', 'PL', 'FC', 'AC']
+    testvar.data_total = {'PY':196655.3, 'PL':200881.6, 'AC':202984.3, 'FC':202551.4}
+    testvar.original_multiplier = Multiplier("1")
+    testvar.force_zero_decimals = False
+    testvar.force_max_one_decimals = False
+    expected = {'Year': ['2022', '2022', '2022', '2022', '2022'],
+                'PY': [38.5, 38.9, 39.4, 39.7, 40.2],
+                'PL': [38.9, 39.8, 39.8, 41.8, 40.6],
+                '_Category': ['Lockheed Martin', 'General Dynamics', 'Airbus', 'Boeing', 'OTHER'],
+                'AC': [41.2, 40.3, 40.3, 39.4, 41.7],
+                'FC': [40.9, 39.9, 38.4, 42.0, 41.4],
+                '_CBC_TOPLAYER': ['AC', 'AC', 'AC', 'AC', 'AC'],
+                '_CBC_DELTA1': [2.3, 0.6, 0.5, -2.3, 1.1],
+                '_CBC_DELTA2': [0.0, 0.0, 0.0, 0.0, 0.0],
+                '_CBC_Y': [0.0, -1.0, -2.0, -3.0, -4.5],
+                '_CBC_Y1': [0.0625, -0.9375, -1.9375, -2.9375, -4.4375],
+                '_CBC_Y2': [-0.0625, -1.0625, -2.0625, -3.0625, -4.5625]}
+    testvar._check_and_process_data(data=dataset)
+    actual   = testvar.data
+    actual   = actual.to_dict(orient='list')
+    message  = "Test 1 - BarWithWaterfall._check_and_process_data returned {0} instead of {1}".format(actual, expected)
+    assert actual == pytest.approx(expected), message
+
+    # Test 2 - Dictionary
+    dataset =  { 'HEADERS'      : ['PY','PL','AC','FC'],  # Special keyword 'HEADERS' to indicate the scenario of the value columns
+                 'Spain'        : [ 30 , 33 , 53 ,  0 ],
+                 'Greece'       : [ 38 , 33 , 39 ,  0 ],
+                 'Sweden'       : [ 38 , 35 , 40 ,  0 ],
+                 'Germany'      : [ 90 , 89 , 93 , 25 ],
+                 'Russia'       : [ 60 , 56 , 60 ,  0 ],
+                 'Italy'        : [ 15 , 12 , 14 ,  4 ],
+                 'Great Britain': [ 15 , 13 , 15 ,  0 ],
+                 'Slovenia'     : [  4 ,  5 ,  4 ,  0 ],
+                 'Denmark'      : [ 29 , 35 , 33 , 10 ],
+                 'Netherlands'  : [ 39 , 42 , 38 , 15 ],
+                 'France'       : [ 60 , 77 , 63 ,  0 ],
+                 'OTHER'        : [ 40 , 37 , 44 , 15 ]}  # Special keyword 'OTHERS' to indicate the row with the remaining values
+    testvar  = BarWithWaterfall(test=True)
+    testvar.translate_headers=None
+    testvar.category=None
+    testvar.base_scenarios = ['PL', 'PY']
+    testvar.compare_scenarios = ['AC']
+    testvar.remove_lines_with_zeros = False
+    testvar.barwidth = 0.5
+    testvar.data_scenarios = ['PY', 'PL', 'FC', 'AC']
+    testvar.data_total = {'PY':196655.3, 'PL':200881.6, 'AC':202984.3, 'FC':202551.4}
+    testvar.original_multiplier = Multiplier("1")
+    testvar.force_zero_decimals = False
+    testvar.force_max_one_decimals = False
+    expected = {'_Category': ['Spain', 'Greece', 'Sweden', 'Germany', 'Russia', 'Great Britain', 'Italy', 'Slovenia', 'Denmark', 'Netherlands', 'France', 'OTHER'],
+                'PY': [30.0, 38.0, 38.0, 90.0, 60.0, 15.0, 15.0, 4.0, 29.0, 39.0, 60.0, 40.0],
+                'PL': [33.0, 33.0, 35.0, 89.0, 56.0, 13.0, 12.0, 5.0, 35.0, 42.0, 77.0, 37.0],
+                'AC': [53.0, 39.0, 40.0, 93.0, 60.0, 15.0, 14.0, 4.0, 33.0, 38.0, 63.0, 44.0],
+                'FC': [0.0, 0.0, 0.0, 25.0, 0.0, 0.0, 4.0, 0.0, 10.0, 15.0, 0.0, 15.0],
+                '_CBC_TOPLAYER': ['AC', 'AC', 'AC', 'AC', 'AC', 'AC', 'AC', 'AC', 'AC', 'AC', 'AC', 'AC'],
+                '_CBC_DELTA1': [20.0, 6.0, 5.0, 4.0, 4.0, 2.0, 2.0, -1.0, -2.0, -4.0, -14.0, 7.0],
+                '_CBC_DELTA2': [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+                '_CBC_Y': [0.0, -1.0, -2.0, -3.0, -4.0, -5.0, -6.0, -7.0, -8.0, -9.0, -10.0, -11.5],
+                '_CBC_Y1': [0.0625, -0.9375, -1.9375, -2.9375, -3.9375, -4.9375, -5.9375, -6.9375, -7.9375, -8.9375, -9.9375, -11.4375],
+                '_CBC_Y2': [-0.0625, -1.0625, -2.0625, -3.0625, -4.0625, -5.0625, -6.0625, -7.0625, -8.0625, -9.0625, -10.0625, -11.5625]}
+    testvar._check_and_process_data(data=dataset)
+    actual   = testvar.data
+    actual   = actual.to_dict(orient='list')
+    message  = "Test 2 - BarWithWaterfall._check_and_process_data returned {0} instead of {1}".format(actual, expected)
+    assert actual == pytest.approx(expected), message
+
+    # Test 3 - String
+    dataset =  """
+
+HEADERS,PY,PL,AC,FC
+Spain,30 , 33 , 53 ,  0 
+Greece, 38 , 33 , 39 ,  0 
+Sweden, 38 , 35 , 40 ,  0 
+Germany, 90 , 89 , 93 , 25 
+
+
+Russia, 60 , 56 , 60 ,  0 
+Italy,15 , 12 , 14 ,  4 
+Great Britain, 15 , 13 , 15 ,  0
+Slovenia, 4 ,  5 ,  4 ,  0
+Denmark, 29 , 35 , 33 , 10
+Netherlands, 39 , 42 , 38 , 15
+France, 60 , 77 , 63 ,  0
+OTHER, 40 , 37 , 44 , 15 
+
+    
+"""
+    testvar  = BarWithWaterfall(test=True)
+    testvar.translate_headers=None
+    testvar.category=None
+    testvar.base_scenarios = ['PL', 'PY']
+    testvar.compare_scenarios = ['AC']
+    testvar.remove_lines_with_zeros = False
+    testvar.barwidth = 0.5
+    testvar.data_scenarios = ['PY', 'PL', 'FC', 'AC']
+    testvar.data_total = {'PY':196655.3, 'PL':200881.6, 'AC':202984.3, 'FC':202551.4}
+    testvar.original_multiplier = Multiplier("1")
+    testvar.force_zero_decimals = False
+    testvar.force_max_one_decimals = False
+    expected = {'_Category': ['Spain', 'Greece', 'Sweden', 'Germany', 'Russia', 'Great Britain', 'Italy', 'Slovenia', 'Denmark', 'Netherlands', 'France', 'OTHER'],
+                'PY': [30.0, 38.0, 38.0, 90.0, 60.0, 15.0, 15.0, 4.0, 29.0, 39.0, 60.0, 40.0],
+                'PL': [33.0, 33.0, 35.0, 89.0, 56.0, 13.0, 12.0, 5.0, 35.0, 42.0, 77.0, 37.0],
+                'AC': [53.0, 39.0, 40.0, 93.0, 60.0, 15.0, 14.0, 4.0, 33.0, 38.0, 63.0, 44.0],
+                'FC': [0.0, 0.0, 0.0, 25.0, 0.0, 0.0, 4.0, 0.0, 10.0, 15.0, 0.0, 15.0],
+                '_CBC_TOPLAYER': ['AC', 'AC', 'AC', 'AC', 'AC', 'AC', 'AC', 'AC', 'AC', 'AC', 'AC', 'AC'],
+                '_CBC_DELTA1': [20.0, 6.0, 5.0, 4.0, 4.0, 2.0, 2.0, -1.0, -2.0, -4.0, -14.0, 7.0],
+                '_CBC_DELTA2': [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+                '_CBC_Y': [0.0, -1.0, -2.0, -3.0, -4.0, -5.0, -6.0, -7.0, -8.0, -9.0, -10.0, -11.5],
+                '_CBC_Y1': [0.0625, -0.9375, -1.9375, -2.9375, -3.9375, -4.9375, -5.9375, -6.9375, -7.9375, -8.9375, -9.9375, -11.4375],
+                '_CBC_Y2': [-0.0625, -1.0625, -2.0625, -3.0625, -4.0625, -5.0625, -6.0625, -7.0625, -8.0625, -9.0625, -10.0625, -11.5625]}
+    testvar._check_and_process_data(data=dataset)
+    actual   = testvar.data
+    actual   = actual.to_dict(orient='list')
+    message  = "Test 2 - BarWithWaterfall._check_and_process_data returned {0} instead of {1}".format(actual, expected)
+    assert actual == pytest.approx(expected), message
+
+
 def test_BarWithWaterfall():
     # Test barchart_001
     dataset =  { 'HEADERS'      : ['PY','PL','AC','FC'],  # Special keyword 'HEADERS' to indicate the scenario of the value columns
@@ -1856,3 +1988,5 @@ def test_BarWithWaterfall():
     expected=sha256_hash.hexdigest()
     message  = "Test barchart_002.png - BarWithWaterfall returned {0} instead of {1}".format(actual, expected)
     assert actual == expected, message
+
+
