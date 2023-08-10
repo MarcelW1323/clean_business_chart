@@ -499,6 +499,39 @@ def convert_data_list_of_lists_to_pandas_dataframe(data_list):
     return export_dataframe
 
 
+def convert_dataframe_scenario_columns_to_value(dataframe, scenariolist):
+    """
+    Convert columns in the dataframe in the scenariolist into integers or floats.
+
+    Parameters
+    ----------
+    dataframe        : pandas DataFrame containing columns from scenariolist.
+    scenariolist     : list of scenarios to convert from string to integer or float
+
+    Returns
+    -------
+    export_dataframe : pandas DataFrame
+    """
+    # Check if the scenariolist is a list
+    if not islist(scenariolist):
+        # No, it is not a list
+        raise TypeError(str(scenariolist)+" is not a list.")
+
+    # Check dataframe
+    error_not_isdataframe(dataframe, "dataframe")
+
+    # Check scenariolist in DataFrame, error when not in DataFrame column-names
+    dataframe_search_for_headers(dataframe, search_for_headers=scenariolist, error_not_found=True)
+
+    export_dataframe = dataframe.copy()
+    for scenario in scenariolist:
+        valuelist = list(export_dataframe[scenario])
+        newvaluelist = string_to_value(valuelist)
+        export_dataframe[scenario] = newvaluelist
+
+    return export_dataframe
+
+
 def dataframe_translate_field_headers(dataframe, translate_headers=None):
     """
     If the variable translate_headers is filled with a dictionary, we can use it for translating the field headers.

@@ -415,26 +415,20 @@ def test_convert_data_string_to_pandas_dataframe():
                2022,11,45,0,44,39
                2022,12,40,0,44,31
                """
-    expected = {'Year': {0: '2021', 1: '2021', 2: '2021', 3: '2021', 4: '2021', 5: '2021', 6: '2021', 7: '2021', 8: '2021', 9: '2021', 
-                         10: '2021', 11: '2021', 12: '2020', 13: '2020', 14: '2020', 15: '2022', 16: '2022', 17: '2022', 18: '2022', 19: '2022', 
-                         20: '2022', 21: '2022', 22: '2022', 23: '2022', 24: '2022', 25: '2022', 26: '2022'}, 
-                'Month': {0: '1', 1: '5', 2: '6', 3: '7', 4: '2', 5: '3', 6: '4', 7: '8', 8: '9', 9: '10',
-                          10: '11', 11: '12', 12: '10', 13: '11', 14: '12', 15: '1', 16: '2', 17: '3', 18: '4', 19: '5', 
-                          20: '6', 21: '7', 22: '8', 23: '9', 24: '10', 25: '11', 26: '12'}, 
-                'PL': {0: '0', 1: '0', 2: '0', 3: '0', 4: '0', 5: '0', 6: '0', 7: '0', 8: '0', 9: '0', 
-                       10: '0', 11: '24', 12: '0', 13: '0', 14: '0', 15: '33', 16: '35', 17: '37', 18: '40', 19: '38', 
-                       20: '36', 21: '35', 22: '40', 23: '45.0328', 24: '50.8000', 25: '45', 26: '40'}, 
-                'AC': {0: '32', 1: '41', 2: '37', 3: '33', 4: '38', 5: '29', 6: '35', 7: '38', 8: '42', 9: '44', 
-                       10: '39', 11: '31', 12: '44', 13: '39', 14: '31', 15: '35', 16: '33', 17: '41', 18: '41', 19: '37', 
-                       20: '37', 21: '0', 22: '0', 23: '0', 24: '0', 25: '0', 26: '0'}, 
-                'FC': {0: '0', 1: '0', 2: '0', 3: '0', 4: '0', 5: '0', 6: '0', 7: '0', 8: '0', 9: '0', 
-                       10: '0', 11: '48', 12: '0', 13: '0', 14: '0', 15: '0', 16: '0', 17: '0', 18: '0', 19: '0', 
-                       20: '0', 21: '38', 22: '44', 23: '46', 24: '48', 25: '44', 26: '44'}, 
-                'PY': {0: '0', 1: '0', 2: '0', 3: '0', 4: '0', 5: '0', 6: '0', 7: '0', 8: '0', 9: '0', 
-                       10: '0', 11: '0', 12: '0', 13: '0', 14: '0', 15: '32', 16: '38', 17: '29', 18: '35', 19: '41', 
-                       20: '37', 21: '33', 22: '38', 23: '42', 24: '44', 25: '39', 26: '31'}}
+    expected = {'Year' : ['2021', '2021', '2021', '2021', '2021', '2021', '2021', '2021', '2021', '2021', '2021', '2021', '2020', '2020',
+                          '2020', '2022', '2022', '2022', '2022', '2022', '2022', '2022', '2022', '2022', '2022', '2022', '2022'],
+                'Month': ['1', '5', '6', '7', '2', '3', '4', '8', '9', '10', '11', '12', '10', '11', '12',
+                          '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'],
+                'PL'   : ['0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '24', '0', '0', '0',
+                          '33', '35', '37', '40', '38', '36', '35', '40', '45.0328', '50.8000', '45', '40'],
+                'AC'   : ['32', '41', '37', '33', '38', '29', '35', '38', '42', '44', '39', '31', '44',
+                          '39', '31', '35', '33', '41', '41', '37', '37', '0', '0', '0', '0', '0', '0'],
+                'FC'   : ['0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '48', '0', '0', '0', '0',
+                          '0', '0', '0', '0', '0', '38', '44', '46', '48', '44', '44'],
+                'PY'   : ['0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
+                          '32', '38', '29', '35', '41', '37', '33', '38', '42', '44', '39', '31']}
     actual   = convert_data_string_to_pandas_dataframe(dataset)
-    actual   = actual.to_dict()
+    actual   = actual.to_dict(orient='list')
     message  = "Test 1 - convert_data_string_to_pandas_dataframe returned {0} instead of {1}".format(actual, expected)
     assert actual == expected, message
 
@@ -757,6 +751,42 @@ def test_dataframe_convert_year_month_to_string():
     # Test 3 - only dataframe supported
     with pytest.raises(TypeError):
         dataframe_convert_year_month_to_string("This is a string", wanted_headers=['Year', 'Month'], year_field=['Year'], month_field=['Month'])
+
+
+def test_convert_dataframe_scenario_columns_to_value():
+    # Test 1 - good dataframe with string year values and integer and float values
+    dataset = pd.DataFrame({'Year' : [2022.0, '2021', '2018', 2019],
+                            'Month': ['02', 4, '07', 8.0],
+                            'AC'   : [351, '332.6238', 317.8, 341],
+                            'PY'   : ['203.47', '178', 195, 201.1],
+                            'PL'   : ['223', '199', '215', '185']})
+    expected = {'Year' : [2022.0, '2021', '2018', 2019],
+                'Month': ['02', 4, '07', 8.0],
+                'AC'   : [351.0, 332.6238, 317.8, 341.0],
+                'PY'   : [203.47, 178.0, 195.0, 201.1],
+                'PL'   : [223, 199, 215, 185]}
+    wanted_headers = ['Year', 'Month']
+    actual   = convert_dataframe_scenario_columns_to_value(dataset, ['AC', 'PY', 'PL'])
+    actual   = actual.to_dict(orient='list')
+    message  = "Test 1 - dataframe_convert_year_month_to_string returned {0} instead of {1}".format(actual, expected)
+    assert actual == expected, message
+
+    # Test 2 - string instead of dataframe
+    with pytest.raises(TypeError):
+        convert_dataframe_scenario_columns_to_value(dataframe="This is a string", scenariolist=['AC', 'PL'])
+
+    # Test 3 - string instead of list
+    with pytest.raises(TypeError):
+        convert_dataframe_scenario_columns_to_value(dataframe=pd.DataFrame(), scenariolist="This is a string")
+
+    # Test 4 - list has more scenarios than available in dataframe
+    with pytest.raises(ValueError):
+        dataset = pd.DataFrame({'Year' : [2022.0, '2021', '2018', 2019],
+                                'Month': ['02', 4, '07', 8.0],
+                                'AC'   : [351, '332.6238', 317.8, 341],
+                                'PY'   : ['203.47', '178', 195, 201.1],
+                                'PL'   : ['223', '199', '215', '185']})
+        convert_dataframe_scenario_columns_to_value(dataframe=dataset, scenariolist=['AC', 'PY', 'PL', 'FC'])
 
 
 #### Need to add more test-functions for automatic testing
