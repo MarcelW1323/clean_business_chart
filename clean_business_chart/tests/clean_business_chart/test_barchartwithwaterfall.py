@@ -1914,6 +1914,33 @@ OTHER, 40 , 37 , 44 , 15
     assert actual == pytest.approx(expected), message
 
 
+def test__convert_data_dictionary_to_pandas_dataframe():
+    # Test 1 - Dictionary with 'HEADERS'
+    dataset =  { 'HEADERS' : ['PY','PL','AC','FC'],  # Special keyword 'HEADERS' to indicate the scenario of the value columns
+                 'Spain'   : [ 30 , 33 , 53 ,  0 ],
+                 'Greece'  : [ 38 , 33 , 39 ,  0 ]}
+
+    testvar  = BarWithWaterfall(test=True)
+    expected = {'index': ['Spain', 'Greece'], 'PY': [30, 38], 'PL': [33, 33], 'AC': [53, 39], 'FC': [0, 0]}
+    actual   = testvar._convert_data_dictionary_to_pandas_dataframe(data=dataset)
+    actual   = actual.to_dict(orient='list')
+    message  = "Test 1 - BarWithWaterfall._convert_data_dictionary_to_pandas_dataframe returned {0} instead of {1}".format(actual, expected)
+    assert actual == pytest.approx(expected), message
+
+    # Test 2 - String instead of dictionary
+    with pytest.raises(TypeError):
+        dataset  = "This is a string"
+        testvar  = BarWithWaterfall(test=True)
+        testvar._convert_data_dictionary_to_pandas_dataframe(data=dataset)
+
+    # Test 3 - Dictionary without 'HEADERS'
+    with pytest.raises(ValueError):
+        dataset  = { 'Spain'   : [ 30 , 33 , 53 ,  0 ],
+                     'Germany' : [ 90 , 89 , 93 , 25 ]}
+        testvar2  = BarWithWaterfall(test=True)
+        testvar2._convert_data_dictionary_to_pandas_dataframe(data=dataset)
+
+
 def test_BarWithWaterfall():
     # Test barchart_001
     dataset =  { 'HEADERS'      : ['PY','PL','AC','FC'],  # Special keyword 'HEADERS' to indicate the scenario of the value columns
