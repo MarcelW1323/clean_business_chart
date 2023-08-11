@@ -38,6 +38,20 @@ def isdataframe(inputvariable):
     """Returns whether the inputvariable is a pandas DataFrame (True) or not (False)"""
     return isinstance(inputvariable, pd.DataFrame)
 
+def error_not_isdictionary(inputvariable, name_inputvariable_in_text=None):
+    """Returns a TypeError when the inputvariable is not a dictionary"""
+    if not isdictionary(inputvariable):
+        # inputvariable is not a dictionary, generate a TypeError
+        if name_inputvariable_in_text is not None:
+            # Yes, extra information is given
+            raise TypeError('Variable "'+str(name_inputvariable_in_text)+'" is not of type dictionary, but of type '+str(type(inputvariable)))
+        else:
+            # No extra information is given, use this unified message
+            raise TypeError('Variable is not of type dictionary, but of type '+str(type(inputvariable)))
+    # else:
+        # inputvariable is a dictionary, do return to caller
+    return
+
 def error_not_isdataframe(inputvariable, name_inputvariable_in_text=None):
     """Returns a TypeError when the inputvariable is not a pandas DataFrame"""
     if not isdataframe(inputvariable):

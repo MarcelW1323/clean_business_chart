@@ -87,12 +87,41 @@ def test_isdataframe():
     assert actual == expected, "isdataframe('not a DataFrame') gives back "+str(actual)+" instead of "+str(expected)
 
 
+def test_error_not_isdictionary():
+    # Test 1 with a dictionary only, no error will occur
+    dict1 = {'Label1':'Value1', 'Label2':'Value2'}
+    error_not_isdictionary(dict1)
+
+    # Test 2 with a dictionary and name of variable, no error will occur
+    dict1 = {'Label1':'Value1', 'Label2':'Value2'}
+    error_not_isdictionary(dict1, name_inputvariable_in_text='dict1')
+
+    # Test 3 with a string
+    with pytest.raises(TypeError) as exceptioninfo:
+        dict1 = 'This is a string'
+        error_not_isdictionary(dict1)
+    assert str(exceptioninfo.value) == 'Variable is not of type dictionary, but of type '+str(type(dict1))
+
+    # Test 4 with a int and name of variable
+    with pytest.raises(TypeError) as exceptioninfo:
+        dict1 = 404
+        error_not_isdictionary(dict1, name_inputvariable_in_text='dict1')
+    assert str(exceptioninfo.value) == 'Variable "dict1" is not of type dictionary, but of type '+str(type(dict1))
+
+    # Test 5 with a string and name of variable as positional argument
+    with pytest.raises(TypeError) as exceptioninfo:
+        dict1 = 'This is a string'
+        error_not_isdictionary(dict1, 'dict1')
+    assert str(exceptioninfo.value) == 'Variable "dict1" is not of type dictionary, but of type '+str(type(dict1))
+
+
 def test_error_not_isdataframe():
     # Test 1 with a DataFrame only, no error will occur
     df = pd.DataFrame({'Column1': ['Value1', 'Value2']})
     error_not_isdataframe(df)
     
     # Test 2 with a DataFrame and name of variable, no error will occur
+    df = pd.DataFrame({'Column1': ['Value1', 'Value2']})
     error_not_isdataframe(df, name_inputvariable_in_text='df')
 
     # Test 3 with a string 
