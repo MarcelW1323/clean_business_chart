@@ -1941,6 +1941,52 @@ def test__convert_data_dictionary_to_pandas_dataframe():
         testvar2._convert_data_dictionary_to_pandas_dataframe(data=dataset)
 
 
+def test__make_subplots():
+    # Test 1 - Dataframe with 5 rows
+    dataset  = pd.DataFrame({'Year'       : ['2022', '2022', '2022', '2022', '2022'],
+                             'PY'         : [39364.4, 39710.1, 40165.2, 38875.8, 38539.8],
+                             'PL'         : [39846.8, 41769.6, 40615.4, 39770.7, 38879.1],
+                             '_Category'  : ['Airbus', 'Boeing', 'OTHER', 'General Dynamics', 'Lockheed Martin'],
+                             'AC'         : [40299.2, 39443.1, 41702.8, 40331.9, 41207.3],
+                             'FC'         : [38389.8, 41972.8, 41420.2, 39889.2, 40879.4]})
+    testvar  = BarWithWaterfall(test=True)
+    testvar.data = dataset
+    testvar._make_subplots()
+    expected = [8, 4.5]
+    actual   = list(testvar.fig.get_size_inches())
+    message  = "Test 1a - BarWithWaterfall._make_subplots returned {0} instead of {1}".format(actual, expected)
+    assert actual == pytest.approx(expected), message
+    expected = 72
+    actual   = testvar.fig.dpi
+    message  = "Test 1b - BarWithWaterfall._make_subplots returned {0} instead of {1}".format(actual, expected)
+    assert actual == pytest.approx(expected), message
+
+    # Test 2 - Dataframe with 3 rows
+    dataset  = pd.DataFrame({'Year'       : ['2022', '2022', '2022'],
+                             'PY'         : [39364.4, 39710.1, 40165.2],
+                             'PL'         : [39846.8, 41769.6, 40615.4],
+                             '_Category'  : ['Airbus', 'Boeing', 'OTHER'],
+                             'AC'         : [40299.2, 39443.1, 41702.8],
+                             'FC'         : [38389.8, 41972.8, 41420.2]})
+    testvar  = BarWithWaterfall(test=True)
+    testvar.data = dataset
+    testvar._make_subplots()
+    expected = [8, 3.5]
+    actual   = list(testvar.fig.get_size_inches())
+    message  = "Test 2a - BarWithWaterfall._make_subplots returned {0} instead of {1}".format(actual, expected)
+    assert actual == pytest.approx(expected), message
+    expected = 72
+    actual   = testvar.fig.dpi
+    message  = "Test 2b - BarWithWaterfall._make_subplots returned {0} instead of {1}".format(actual, expected)
+    assert actual == pytest.approx(expected), message
+
+    # Test 3 - String instead of dictionary
+    with pytest.raises(TypeError):
+        testvar  = BarWithWaterfall(test=True)
+        testvar.data = "This is a string"
+        testvar._make_subplots()
+
+
 def test_BarWithWaterfall():
     # Test barchart_001
     dataset =  { 'HEADERS'      : ['PY','PL','AC','FC'],  # Special keyword 'HEADERS' to indicate the scenario of the value columns
@@ -2015,5 +2061,4 @@ def test_BarWithWaterfall():
     expected=sha256_hash.hexdigest()
     message  = "Test barchart_002.png - BarWithWaterfall returned {0} instead of {1}".format(actual, expected)
     assert actual == expected, message
-
 
