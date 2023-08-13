@@ -38,16 +38,32 @@ def isdataframe(inputvariable):
     """Returns whether the inputvariable is a pandas DataFrame (True) or not (False)"""
     return isinstance(inputvariable, pd.DataFrame)
 
+def error_not_islist(inputvariable, name_inputvariable_in_text=None):
+    """Returns a TypeError when the inputvariable is not a list"""
+    if not islist(inputvariable):
+        # inputvariable is not a list, construct message and generate a TypeError
+        if name_inputvariable_in_text is not None:
+            # Yes, extra information is given
+            message = 'Variable "'+str(name_inputvariable_in_text)+'" is not of type list, but of type '+str(type(inputvariable))
+        else:
+            # No extra information is given, use this unified message
+            message = 'Variable is not of type list, but of type '+str(type(inputvariable))
+        raise TypeError(message)
+    # else:
+        # inputvariable is a list, do return to caller
+    return
+
 def error_not_isdictionary(inputvariable, name_inputvariable_in_text=None):
     """Returns a TypeError when the inputvariable is not a dictionary"""
     if not isdictionary(inputvariable):
-        # inputvariable is not a dictionary, generate a TypeError
+        # inputvariable is not a dictionary, construct message and generate a TypeError
         if name_inputvariable_in_text is not None:
             # Yes, extra information is given
-            raise TypeError('Variable "'+str(name_inputvariable_in_text)+'" is not of type dictionary, but of type '+str(type(inputvariable)))
+            message = 'Variable "'+str(name_inputvariable_in_text)+'" is not of type dictionary, but of type '+str(type(inputvariable))
         else:
             # No extra information is given, use this unified message
-            raise TypeError('Variable is not of type dictionary, but of type '+str(type(inputvariable)))
+            message = 'Variable is not of type dictionary, but of type '+str(type(inputvariable))
+        raise TypeError(message)
     # else:
         # inputvariable is a dictionary, do return to caller
     return
@@ -55,13 +71,14 @@ def error_not_isdictionary(inputvariable, name_inputvariable_in_text=None):
 def error_not_isdataframe(inputvariable, name_inputvariable_in_text=None):
     """Returns a TypeError when the inputvariable is not a pandas DataFrame"""
     if not isdataframe(inputvariable):
-        # inputvariable is not a pandas DataFrame, generate a TypeError
+        # inputvariable is not a pandas DataFrame, construct message and generate a TypeError
         if name_inputvariable_in_text is not None:
             # Yes, extra information is given
-            raise TypeError('Variable "'+str(name_inputvariable_in_text)+'" is not of type dataframe, but of type '+str(type(inputvariable)))
+            message = 'Variable "'+str(name_inputvariable_in_text)+'" is not of type dataframe, but of type '+str(type(inputvariable))
         else:
             # No extra information is given, use this unified message
-            raise TypeError('Variable is not of type dataframe, but of type '+str(type(inputvariable)))
+            message = 'Variable is not of type dataframe, but of type '+str(type(inputvariable))
+        raise TypeError(message)
     # else:
         # inputvariable is a pandas DataFrame, do return to caller
     return

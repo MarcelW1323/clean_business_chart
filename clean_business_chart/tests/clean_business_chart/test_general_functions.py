@@ -87,6 +87,34 @@ def test_isdataframe():
     assert actual == expected, "isdataframe('not a DataFrame') gives back "+str(actual)+" instead of "+str(expected)
 
 
+def test_error_not_islist():
+    # Test 1 with a list only, no error will occur
+    list1 = [ 'Value1', 'Value2']
+    error_not_islist(list1)
+
+    # Test 2 with a dictionary and name of variable, no error will occur
+    list1 = [ 'Value1', 'Value2']
+    error_not_islist(list1, name_inputvariable_in_text='list1')
+
+    # Test 3 with a string
+    with pytest.raises(TypeError) as exceptioninfo:
+        list1 = 'This is a string'
+        error_not_islist(list1)
+    assert str(exceptioninfo.value) == 'Variable is not of type list, but of type '+str(type(list1))
+
+    # Test 4 with a int and name of variable
+    with pytest.raises(TypeError) as exceptioninfo:
+        list1 = 404
+        error_not_islist(list1, name_inputvariable_in_text='list1')
+    assert str(exceptioninfo.value) == 'Variable "list1" is not of type list, but of type '+str(type(list1))
+
+    # Test 5 with a string and name of variable as positional argument
+    with pytest.raises(TypeError) as exceptioninfo:
+        list1 = 'This is a string'
+        error_not_islist(list1, 'list1')
+    assert str(exceptioninfo.value) == 'Variable "list1" is not of type list, but of type '+str(type(list1))
+
+
 def test_error_not_isdictionary():
     # Test 1 with a dictionary only, no error will occur
     dict1 = {'Label1':'Value1', 'Label2':'Value2'}
