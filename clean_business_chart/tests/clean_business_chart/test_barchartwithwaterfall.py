@@ -1987,6 +1987,112 @@ def test__make_subplots():
         testvar._make_subplots()
 
 
+def test__check_base_scenario_totals():
+    # Test 1 - Two base scenarios, PY < PL
+    testvar  = BarWithWaterfall(test=True)
+    testvar.all_scenarios = ['PY', 'PL', 'AC', 'FC']
+    testvar.base_scenarios = ['PL', 'PY']
+    testvar.data_total = {'PY': 220, 'PL': 250, 'AC': 235, 'FC': 30}
+    testvar.barshift_value = 2.5
+    expected1 = ['PY', 'PL']
+    expected2 = 2.5
+    expected3 = True
+    expected4 = False
+    actual1, actual2, actual3, actual4 = testvar._check_base_scenario_totals()
+    message  = "Test 1a - BarWithWaterfall._check_base_scenario_totals() returned {0} instead of {1}".format(actual1, expected1)
+    assert actual1 == pytest.approx(expected1), message
+    message  = "Test 1b - BarWithWaterfall._check_base_scenario_totals() returned {0} instead of {1}".format(actual2, expected2)
+    assert actual2 == pytest.approx(expected2), message
+    message  = "Test 1c - BarWithWaterfall._check_base_scenario_totals() returned {0} instead of {1}".format(actual3, expected3)
+    assert actual3 == pytest.approx(expected3), message
+    message  = "Test 1d - BarWithWaterfall._check_base_scenario_totals() returned {0} instead of {1}".format(actual4, expected4)
+    assert actual4 == pytest.approx(expected4), message
+
+    # Test 2 - Two base scenarios, PY > PL*1.1
+    testvar  = BarWithWaterfall(test=True)
+    testvar.all_scenarios = ['PY', 'PL', 'AC', 'FC']
+    testvar.base_scenarios = ['PL', 'PY']
+    testvar.data_total = {'PY': 250, 'PL': 220, 'AC': 235, 'FC': 30}
+    testvar.barshift_value = 3.5
+    expected1 = ['PY', 'PL']
+    expected2 = 3.5
+    expected3 = False
+    expected4 = True
+    actual1, actual2, actual3, actual4 = testvar._check_base_scenario_totals()
+    message  = "Test 2a - BarWithWaterfall._check_base_scenario_totals() returned {0} instead of {1}".format(actual1, expected1)
+    assert actual1 == pytest.approx(expected1), message
+    message  = "Test 2b - BarWithWaterfall._check_base_scenario_totals() returned {0} instead of {1}".format(actual2, expected2)
+    assert actual2 == pytest.approx(expected2), message
+    message  = "Test 2c - BarWithWaterfall._check_base_scenario_totals() returned {0} instead of {1}".format(actual3, expected3)
+    assert actual3 == pytest.approx(expected3), message
+    message  = "Test 2d - BarWithWaterfall._check_base_scenario_totals() returned {0} instead of {1}".format(actual4, expected4)
+    assert actual4 == pytest.approx(expected4), message
+
+    # Test 3 - Two base scenarios, PY > PL AND PY < PL*1.1
+    testvar  = BarWithWaterfall(test=True)
+    testvar.all_scenarios = ['PY', 'PL', 'AC', 'FC']
+    testvar.base_scenarios = ['PL', 'PY']
+    testvar.data_total = {'PY': 250, 'PL': 230, 'AC': 235, 'FC': 30}
+    testvar.barshift_value = 0.235
+    expected1 = ['PY', 'PL']
+    expected2 = 0.235
+    expected3 = True
+    expected4 = True
+    actual1, actual2, actual3, actual4 = testvar._check_base_scenario_totals()
+    message  = "Test 3a - BarWithWaterfall._check_base_scenario_totals() returned {0} instead of {1}".format(actual1, expected1)
+    assert actual1 == pytest.approx(expected1), message
+    message  = "Test 3b - BarWithWaterfall._check_base_scenario_totals() returned {0} instead of {1}".format(actual2, expected2)
+    assert actual2 == pytest.approx(expected2), message
+    message  = "Test 3c - BarWithWaterfall._check_base_scenario_totals() returned {0} instead of {1}".format(actual3, expected3)
+    assert actual3 == pytest.approx(expected3), message
+    message  = "Test 3d - BarWithWaterfall._check_base_scenario_totals() returned {0} instead of {1}".format(actual4, expected4)
+    assert actual4 == pytest.approx(expected4), message
+
+    # Test 4 - One base scenarios
+    testvar  = BarWithWaterfall(test=True)
+    testvar.all_scenarios = ['PY', 'PL', 'AC', 'FC']
+    testvar.base_scenarios = ['FC']
+    testvar.data_total = {'PY': 220, 'PL': 250, 'AC': 235, 'FC': 30}
+    testvar.barshift_value = 1.5
+    expected1 = ['FC']
+    expected2 = 0
+    expected3 = False
+    expected4 = True
+    actual1, actual2, actual3, actual4 = testvar._check_base_scenario_totals()
+    message  = "Test 4a - BarWithWaterfall._check_base_scenario_totals() returned {0} instead of {1}".format(actual1, expected1)
+    assert actual1 == pytest.approx(expected1), message
+    message  = "Test 4b - BarWithWaterfall._check_base_scenario_totals() returned {0} instead of {1}".format(actual2, expected2)
+    assert actual2 == pytest.approx(expected2), message
+    message  = "Test 4c - BarWithWaterfall._check_base_scenario_totals() returned {0} instead of {1}".format(actual3, expected3)
+    assert actual3 == pytest.approx(expected3), message
+    message  = "Test 4d - BarWithWaterfall._check_base_scenario_totals() returned {0} instead of {1}".format(actual4, expected4)
+    assert actual4 == pytest.approx(expected4), message
+
+    # Test 5 - String instead of list of all scenarios
+    with pytest.raises(TypeError):
+        testvar = BarWithWaterfall(test=True)
+        testvar.all_scenarios = "This is a string"
+        testvar.base_scenarios = ['PL']
+        testvar.data_total = {'PY': 220, 'PL': 250, 'AC': 235, 'FC': 30}
+        testvar._check_base_scenario_totals()
+ 
+    # Test 6 - String instead of list of base scenarios
+    with pytest.raises(TypeError):
+        testvar = BarWithWaterfall(test=True)
+        testvar.all_scenarios = ['PY', 'PL', 'AC', 'FC']
+        testvar.base_scenarios = "This is a string"
+        testvar.data_total = {'PY': 220, 'PL': 250, 'AC': 235, 'FC': 30}
+        testvar._check_base_scenario_totals()
+
+    # Test 7 - String instead of dictionary
+    with pytest.raises(TypeError):
+        testvar = BarWithWaterfall(test=True)
+        testvar.all_scenarios = ['PY', 'PL', 'AC', 'FC']
+        testvar.base_scenarios = ['PY']
+        testvar.data_total = "This is a string"
+        testvar._check_base_scenario_totals()
+
+
 def test_BarWithWaterfall():
     # Test barchart_001
     dataset =  { 'HEADERS'      : ['PY','PL','AC','FC'],  # Special keyword 'HEADERS' to indicate the scenario of the value columns
