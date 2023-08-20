@@ -143,6 +143,34 @@ def test_error_not_isdictionary():
     assert str(exceptioninfo.value) == 'Variable "dict1" is not of type dictionary, but of type '+str(type(dict1))
 
 
+def test_error_not_isboolean():
+    # Test 1 with a boolean only, no error will occur
+    bool1 = True
+    error_not_isboolean(bool1)
+
+    # Test 2 with a boolean and name of variable, no error will occur
+    bool1 = False
+    error_not_isboolean(bool1, name_inputvariable_in_text='bool')
+
+    # Test 3 with a string
+    with pytest.raises(TypeError) as exceptioninfo:
+        bool1 = 'This is a string'
+        error_not_isboolean(bool1)
+    assert str(exceptioninfo.value) == 'Variable is not of type boolean, but of type '+str(type(bool1))
+
+    # Test 4 with a int and name of variable
+    with pytest.raises(TypeError) as exceptioninfo:
+        bool1 = 404
+        error_not_isboolean(bool1, name_inputvariable_in_text='bool1')
+    assert str(exceptioninfo.value) == 'Variable "bool1" is not of type boolean, but of type '+str(type(bool1))
+
+    # Test 5 with a string and name of variable as positional argument
+    with pytest.raises(TypeError) as exceptioninfo:
+        bool1 = 'This is a string'
+        error_not_isboolean(bool1, 'bool1')
+    assert str(exceptioninfo.value) == 'Variable "bool1" is not of type boolean, but of type '+str(type(bool1))
+
+
 def test_error_not_isdataframe():
     # Test 1 with a DataFrame only, no error will occur
     df = pd.DataFrame({'Column1': ['Value1', 'Value2']})

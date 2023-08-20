@@ -68,6 +68,21 @@ def error_not_isdictionary(inputvariable, name_inputvariable_in_text=None):
         # inputvariable is a dictionary, do return to caller
     return
 
+def error_not_isboolean(inputvariable, name_inputvariable_in_text=None):
+    """Returns a TypeError when the inputvariable is not a boolean"""
+    if not isboolean(inputvariable):
+        # inputvariable is not a boolean, construct message and generate a TypeError
+        if name_inputvariable_in_text is not None:
+            # Yes, extra information is given
+            message = 'Variable "'+str(name_inputvariable_in_text)+'" is not of type boolean, but of type '+str(type(inputvariable))
+        else:
+            # No extra information is given, use this unified message
+            message = 'Variable is not of type boolean, but of type '+str(type(inputvariable))
+        raise TypeError(message)
+    # else:
+        # inputvariable is a boolean, do return to caller
+    return
+
 def error_not_isdataframe(inputvariable, name_inputvariable_in_text=None):
     """Returns a TypeError when the inputvariable is not a pandas DataFrame"""
     if not isdataframe(inputvariable):
