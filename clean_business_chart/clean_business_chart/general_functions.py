@@ -38,6 +38,10 @@ def isdataframe(inputvariable):
     """Returns whether the inputvariable is a pandas DataFrame (True) or not (False)"""
     return isinstance(inputvariable, pd.DataFrame)
 
+def isaxes(inputvariable):
+    """Returns whether the inputvariable is a matplotlib Axes (True) or not (False)"""
+    return isinstance(inputvariable, plt.Axes)
+
 def error_not_islist(inputvariable, name_inputvariable_in_text=None):
     """Returns a TypeError when the inputvariable is not a list"""
     if not islist(inputvariable):
@@ -68,6 +72,21 @@ def error_not_isdictionary(inputvariable, name_inputvariable_in_text=None):
         # inputvariable is a dictionary, do return to caller
     return
 
+def error_not_isstring(inputvariable, name_inputvariable_in_text=None):
+    """Returns a TypeError when the inputvariable is not a string"""
+    if not isstring(inputvariable):
+        # inputvariable is not a string, construct message and generate a TypeError
+        if name_inputvariable_in_text is not None:
+            # Yes, extra information is given
+            message = 'Variable "'+str(name_inputvariable_in_text)+'" is not of type string, but of type '+str(type(inputvariable))
+        else:
+            # No extra information is given, use this unified message
+            message = 'Variable is not of type string, but of type '+str(type(inputvariable))
+        raise TypeError(message)
+    # else:
+        # inputvariable is a string, do return to caller
+    return
+
 def error_not_isboolean(inputvariable, name_inputvariable_in_text=None):
     """Returns a TypeError when the inputvariable is not a boolean"""
     if not isboolean(inputvariable):
@@ -96,6 +115,21 @@ def error_not_isdataframe(inputvariable, name_inputvariable_in_text=None):
         raise TypeError(message)
     # else:
         # inputvariable is a pandas DataFrame, do return to caller
+    return
+
+def error_not_isaxes(inputvariable, name_inputvariable_in_text=None):
+    """Returns a TypeError when the inputvariable is not a matplotlib Axes-object"""
+    if not isaxes(inputvariable):
+        # inputvariable is not a matplotlib Axes, construct message and generate a TypeError
+        if name_inputvariable_in_text is not None:
+            # Yes, extra information is given
+            message = 'Variable "'+str(name_inputvariable_in_text)+'" is not of type Axes, but of type '+str(type(inputvariable))
+        else:
+            # No extra information is given, use this unified message
+            message = 'Variable is not of type Axes, but of type '+str(type(inputvariable))
+        raise TypeError(message)
+    # else:
+        # inputvariable is a matplotlib Axes, do return to caller
     return
 
 def plot_line_accross_axes(fig, axbegin, xbegin, ybegin, axend, xend, yend, linecolor='black', arrowstyle='-', linewidth=1, endpoints=False, endpointcolor=None):

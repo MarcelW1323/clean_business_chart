@@ -143,6 +143,34 @@ def test_error_not_isdictionary():
     assert str(exceptioninfo.value) == 'Variable "dict1" is not of type dictionary, but of type '+str(type(dict1))
 
 
+def test_error_not_isstring():
+    # Test 1 with a string only, no error will occur
+    string1 = 'This is a string'
+    error_not_isstring(string1)
+
+    # Test 2 with a string and name of variable, no error will occur
+    string1 = 'This is a string'
+    error_not_isstring(string1, name_inputvariable_in_text='string1')
+
+    # Test 3 with a list
+    with pytest.raises(TypeError) as exceptioninfo:
+        string1 = ['This', 'is', 'a', 'list', 'of', 'strings']
+        error_not_isstring(string1)
+    assert str(exceptioninfo.value) == 'Variable is not of type string, but of type '+str(type(string1))
+
+    # Test 4 with a int and name of variable
+    with pytest.raises(TypeError) as exceptioninfo:
+        string1 = 404
+        error_not_isstring(string1, name_inputvariable_in_text='string1')
+    assert str(exceptioninfo.value) == 'Variable "string1" is not of type string, but of type '+str(type(string1))
+
+    # Test 5 with a string and name of variable as positional argument
+    with pytest.raises(TypeError) as exceptioninfo:
+        string1 = ['This', 'is', 'a', 'list', 'of', 'strings']
+        error_not_isstring(string1, 'string1')
+    assert str(exceptioninfo.value) == 'Variable "string1" is not of type string, but of type '+str(type(string1))
+
+
 def test_error_not_isboolean():
     # Test 1 with a boolean only, no error will occur
     bool1 = True
@@ -197,6 +225,34 @@ def test_error_not_isdataframe():
         df = 'This is a string'
         error_not_isdataframe(df, 'df')
     assert str(exceptioninfo.value) == 'Variable "df" is not of type dataframe, but of type '+str(type(df))
+
+
+def test_error_not_isaxes():
+    # Test 1 with a axes only, no error will occur
+    _, axes1 = plt.subplots()
+    error_not_isaxes(axes1)
+
+    # Test 2 with a axes and name of variable, no error will occur
+    _, axes1 = plt.subplots()
+    error_not_isaxes(axes1, name_inputvariable_in_text='axes1')
+
+    # Test 3 with a list
+    with pytest.raises(TypeError) as exceptioninfo:
+        axes1 = 'This is a string'
+        error_not_isaxes(axes1)
+    assert str(exceptioninfo.value) == 'Variable is not of type Axes, but of type '+str(type(axes1))
+
+    # Test 4 with a int and name of variable
+    with pytest.raises(TypeError) as exceptioninfo:
+        axes1 = 404
+        error_not_isaxes(axes1, name_inputvariable_in_text='axes1')
+    assert str(exceptioninfo.value) == 'Variable "axes1" is not of type Axes, but of type '+str(type(axes1))
+
+    # Test 5 with a axes and name of variable as positional argument
+    with pytest.raises(TypeError) as exceptioninfo:
+        axes1 = 'This is a string'
+        error_not_isaxes(axes1, 'axes1')
+    assert str(exceptioninfo.value) == 'Variable "axes1" is not of type Axes, but of type '+str(type(axes1))
 
 
 def test_plot_line_accross_axes():
