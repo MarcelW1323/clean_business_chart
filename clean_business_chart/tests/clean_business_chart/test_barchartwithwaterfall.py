@@ -2093,6 +2093,73 @@ def test__check_base_scenario_totals():
         testvar._check_base_scenario_totals()
 
 
+def test__fill_ax_bar_label():
+    # Test 1 - Dataframe with 4 rows, 2 decimals and no total indicator
+    dataset  = pd.DataFrame({'Year'       : ['2021', '2021', '2021', '2021'],
+                             '_Category'  : ['Car', 'Bike', 'Boat', 'Plane'],
+                             'AC'         : [350.506, 275.497, 425, 335.987654]})
+    testvar  = BarWithWaterfall(test=True)
+    testvar.data = dataset   # data is necessary for the make_subplots
+    testvar._make_subplots() # make_subplots is necessary to have an "ax"-object
+    testvar.data_scenarios = ['AC']
+    testvar.ax.barh(y=list(dataset['_Category']), width=list(dataset['AC']), left=0)
+    testvar.data_text['AC'] = len(testvar.ax.containers)-1
+    testvar.decimals_details = 2
+    actual   = testvar._fill_ax_bar_label('AC')
+    expected = ["350.51", "275.50", "425.00", "335.99"]
+    for item, actual_item, expected_item in zip(["a", "b", "c", "d"], actual, expected):
+        message  = "Test 1{0} - BarWithWaterfall._check_base_scenario_totals() returned {1} instead of {2}".format(item, actual_item._text, expected_item)
+        assert actual_item._text == pytest.approx(expected_item), message
+
+    # Test 2 - Dataframe with 4 rows, 1 decimal and total indicator
+    dataset  = pd.DataFrame({'Year'       : ['2021', '2021', '2021', '2021'],
+                             '_Category'  : ['Car', 'Bike', 'Boat', 'Plane'],
+                             'AC'         : [350.506, 275.497, 425, 335.987654]})
+    testvar  = BarWithWaterfall(test=True)
+    testvar.data = dataset   # data is necessary for the make_subplots
+    testvar._make_subplots() # make_subplots is necessary to have an "ax"-object
+    testvar.data_scenarios = ['AC']
+    testvar.ax.barh(y=list(dataset['_Category']), width=list(dataset['AC']), left=0)
+    testvar.data_text['ACTOT'] = len(testvar.ax.containers)-1
+    testvar.decimals_totals = 1
+    actual   = testvar._fill_ax_bar_label('AC', total=True)
+    expected = ["350.5", "275.5", "425.0", "336.0"]
+    for item, actual_item, expected_item in zip(["a", "b", "c", "d"], actual, expected):
+        message  = "Test 2{0} - BarWithWaterfall._check_base_scenario_totals() returned {1} instead of {2}".format(item, actual_item._text, expected_item)
+        assert actual_item._text == pytest.approx(expected_item), message
+
+    # Test 3 - None as Axes-object
+    with pytest.raises(TypeError):
+        testvar = BarWithWaterfall(test=True)
+        testvar.ax = None
+        testvar.data_scenarios = ['AC']
+        testvar._fill_ax_bar_label('AC', total=True)
+
+    # Test 4 - Integer as scenario
+    with pytest.raises(TypeError):
+        testvar = BarWithWaterfall(test=True)
+        testvar.data = pd.DataFrame()
+        testvar._make_subplots() # make_subplots is necessary to have an "ax"-object
+        testvar.data_scenarios = ['AC']
+        testvar._fill_ax_bar_label(scenario=404, total=True)
+
+    # Test 5 - String not in list
+    with pytest.raises(ValueError):
+        testvar = BarWithWaterfall(test=True)
+        testvar.data = pd.DataFrame()
+        testvar._make_subplots() # make_subplots is necessary to have an "ax"-object
+        testvar.data_scenarios = ['AC']
+        testvar._fill_ax_bar_label(scenario='PY', total=False)
+
+    # Test 6 - Integer instead of boolean
+    with pytest.raises(TypeError):
+        testvar = BarWithWaterfall(test=True)
+        testvar.data = pd.DataFrame()
+        testvar._make_subplots() # make_subplots is necessary to have an "ax"-object
+        testvar.data_scenarios = ['AC']
+        testvar._fill_ax_bar_label(scenario='AC', total=404)
+
+
 def test_BarWithWaterfall():
     # Test barchart_001
     dataset =  { 'HEADERS'      : ['PY','PL','AC','FC'],  # Special keyword 'HEADERS' to indicate the scenario of the value columns
@@ -2167,4 +2234,3 @@ def test_BarWithWaterfall():
     expected=sha256_hash.hexdigest()
     message  = "Test barchart_002.png - BarWithWaterfall returned {0} instead of {1}".format(actual, expected)
     assert actual == expected, message
-
