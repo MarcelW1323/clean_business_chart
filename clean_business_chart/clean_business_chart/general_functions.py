@@ -4,6 +4,7 @@
 import matplotlib.pyplot as plt                   # for most graphics
 from matplotlib.patches import ConnectionPatch    # for lines between subplots (used in the function "plot_line_accross_axes")
 import pandas as pd                               # for easy pandas support
+from clean_business_chart.exceptions import *     # for custom errors/exceptions
 
 
 #####################    
@@ -52,7 +53,7 @@ def error_not_islist(inputvariable, name_inputvariable_in_text=None):
         else:
             # No extra information is given, use this unified message
             message = 'Variable is not of type list, but of type '+str(type(inputvariable))
-        raise TypeError(message)
+        raise TypeListError(message)
     # else:
         # inputvariable is a list, do return to caller
     return
@@ -112,7 +113,7 @@ def error_not_isdataframe(inputvariable, name_inputvariable_in_text=None):
         else:
             # No extra information is given, use this unified message
             message = 'Variable is not of type dataframe, but of type '+str(type(inputvariable))
-        raise TypeError(message)
+        raise TypeDataFrameError(message)
     # else:
         # inputvariable is a pandas DataFrame, do return to caller
     return
@@ -127,7 +128,7 @@ def error_not_isaxes(inputvariable, name_inputvariable_in_text=None):
         else:
             # No extra information is given, use this unified message
             message = 'Variable is not of type Axes, but of type '+str(type(inputvariable))
-        raise TypeError(message)
+        raise TypeAxesError(message)
     # else:
         # inputvariable is a matplotlib Axes, do return to caller
     return

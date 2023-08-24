@@ -46,7 +46,7 @@ def test__simple_first_check_scenario_parameters_one_variable():
     assert actual == expected, message
 
     # Test 4 - default_scenariolist is integer (not a list)
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeListError):
         scenarios              = None
         default_scenariolist   = 15
         technical_scenariolist = ['PY', 'PL', 'AC', 'FC']
@@ -55,7 +55,7 @@ def test__simple_first_check_scenario_parameters_one_variable():
                                                                      technical_scenariolist=technical_scenariolist)
 
     # Test 5 - technical_scenariolist is string (not a list)
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeListError):
         scenarios              = None
         default_scenariolist   = ['PL', 'PY']
         technical_scenariolist = 'I am a string'
@@ -260,7 +260,7 @@ def test__fill_data_scenarios():
     assert actual == expected, message
     
     # Test 3 - parameter is a string and not a dataframe
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeDataFrameError):
         testvar = BarWithWaterfall(test=True)
         testvar.all_scenarios = ['PY', 'PL', 'AC', 'FC']
         testvar._fill_data_scenarios(dataframe="This is a string")
@@ -328,7 +328,7 @@ def test__fill_data_total():
     assert actual == expected, message
 
     # Test 5 - parameter dataframe is a string and not a dataframe
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeDataFrameError):
         testvar = BarWithWaterfall(test=True)
         testvar.data_scenarios = ['PY', 'PL', 'AC', 'FC']
         testvar._fill_data_total(dataframe="This is a string")  # Default parameter decimals is None and that is supported
@@ -423,7 +423,7 @@ def test__dataframe_find_category_of_interest():
         testvar._dataframe_find_category_of_interest(dataframe=dataset)
 
     # Test 6 - parameter is a string and not a dataframe
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeDataFrameError):
         testvar  = BarWithWaterfall(test=True)
         testvar.all_scenarios = ['Month', 'Date', 'Year', 'PY', 'PL', 'AC', 'FC']
         testvar.category = None
@@ -678,7 +678,7 @@ def test__dataframe_full_category():
         testvar._dataframe_full_category(dataframe=dataset, category_of_interest_values=category_list)
 
     # Test 9 - No dataframe type
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeDataFrameError):
         category_list = ['Airbus', 'Boeing']
         testvar  = BarWithWaterfall(test=True)
         testvar._dataframe_full_category(dataframe='This is a string', category_of_interest_values=category_list)
@@ -870,7 +870,7 @@ def test__determine_bar_layers_in_dataframe():
     assert actual == expected, message
 
     # Test 6 - String instead of dataframe
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeDataFrameError):
         testvar  = BarWithWaterfall(test=True)
         testvar.compare_scenarios = ['AC', 'FC']
         testvar._determine_bar_layers_in_dataframe(dataframe='This is a string')
@@ -944,7 +944,7 @@ def test__add_deltavalues_to_dataframe():
     assert actual == pytest.approx(expected), message
 
     # Test 3 - String instead of dataframe
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeDataFrameError):
         testvar  = BarWithWaterfall(test=True)
         testvar.base_scenarios = ['PL', 'PY']
         testvar.compare_scenarios = ['AC', 'FC']
@@ -1012,7 +1012,7 @@ def test__sort_dataframe_with_other_last():
     assert actual == pytest.approx(expected), message
 
     # Test 3 - String instead of dataframe
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeDataFrameError):
         testvar = BarWithWaterfall(test=True)
         testvar._sort_dataframe_with_other_last(dataframe='This is a string')
 
@@ -1104,7 +1104,7 @@ def test__drop_zero_lines():
     assert actual == pytest.approx(expected), message
 
     # Test 3 - String instead of dataframe
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeDataFrameError):
         testvar = BarWithWaterfall(test=True)
         testvar.remove_lines_with_zeros = True
         testvar.data_scenarios = ['PY', 'PL', 'FC', 'AC']
@@ -1211,7 +1211,7 @@ def test__optimize_data_get_big_detail():
     assert actual == pytest.approx(expected), message
 
     # Test 4 - String instead of dataframe
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeDataFrameError):
         testvar = BarWithWaterfall(test=True)
         testvar.data_scenarios = ['PY', 'PL', 'FC', 'AC']
         testvar._optimize_data_get_big_detail(dataframe='This is a string')
@@ -1581,7 +1581,7 @@ def test__optimize_data_dataframe_details():
     assert actual == pytest.approx(expected), message
 
     # Test 4 - String instead of DataFrame
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeDataFrameError):
         dataset  = "This is a string"
         testvar  = BarWithWaterfall(test=True)
         testvar.data_scenarios = ['PY', 'PL', 'FC', 'AC']
@@ -1721,7 +1721,7 @@ def test__add_yvalues_to_dataframe():
         testvar._add_yvalues_to_dataframe(dataframe=dataset)
 
     # Test 4 - String instead of DataFrame
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeDataFrameError):
         dataset  = "This is a string"
         testvar  = BarWithWaterfall(test=True)
         testvar.barshift = 0.2
@@ -1980,8 +1980,8 @@ def test__make_subplots():
     message  = "Test 2b - BarWithWaterfall._make_subplots returned {0} instead of {1}".format(actual, expected)
     assert actual == pytest.approx(expected), message
 
-    # Test 3 - String instead of dictionary
-    with pytest.raises(TypeError):
+    # Test 3 - String instead of dataframe
+    with pytest.raises(TypeDataFrameError):
         testvar  = BarWithWaterfall(test=True)
         testvar.data = "This is a string"
         testvar._make_subplots()
@@ -2069,7 +2069,7 @@ def test__check_base_scenario_totals():
     assert actual4 == pytest.approx(expected4), message
 
     # Test 5 - String instead of list of all scenarios
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeListError):
         testvar = BarWithWaterfall(test=True)
         testvar.all_scenarios = "This is a string"
         testvar.base_scenarios = ['PL']
@@ -2077,7 +2077,7 @@ def test__check_base_scenario_totals():
         testvar._check_base_scenario_totals()
  
     # Test 6 - String instead of list of base scenarios
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeListError):
         testvar = BarWithWaterfall(test=True)
         testvar.all_scenarios = ['PY', 'PL', 'AC', 'FC']
         testvar.base_scenarios = "This is a string"
@@ -2129,7 +2129,7 @@ def test__fill_ax_bar_label():
         assert actual_item._text == pytest.approx(expected_item), message
 
     # Test 3 - None as Axes-object
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeAxesError):
         testvar = BarWithWaterfall(test=True)
         testvar.ax = None
         testvar.data_scenarios = ['AC']

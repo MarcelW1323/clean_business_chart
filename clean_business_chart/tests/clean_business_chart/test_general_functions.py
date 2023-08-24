@@ -97,19 +97,19 @@ def test_error_not_islist():
     error_not_islist(list1, name_inputvariable_in_text='list1')
 
     # Test 3 with a string
-    with pytest.raises(TypeError) as exceptioninfo:
+    with pytest.raises(TypeListError) as exceptioninfo:
         list1 = 'This is a string'
         error_not_islist(list1)
     assert str(exceptioninfo.value) == 'Variable is not of type list, but of type '+str(type(list1))
 
     # Test 4 with a int and name of variable
-    with pytest.raises(TypeError) as exceptioninfo:
+    with pytest.raises(TypeListError) as exceptioninfo:
         list1 = 404
         error_not_islist(list1, name_inputvariable_in_text='list1')
     assert str(exceptioninfo.value) == 'Variable "list1" is not of type list, but of type '+str(type(list1))
 
     # Test 5 with a string and name of variable as positional argument
-    with pytest.raises(TypeError) as exceptioninfo:
+    with pytest.raises(TypeListError) as exceptioninfo:
         list1 = 'This is a string'
         error_not_islist(list1, 'list1')
     assert str(exceptioninfo.value) == 'Variable "list1" is not of type list, but of type '+str(type(list1))
@@ -209,19 +209,19 @@ def test_error_not_isdataframe():
     error_not_isdataframe(df, name_inputvariable_in_text='df')
 
     # Test 3 with a string 
-    with pytest.raises(TypeError) as exceptioninfo:
+    with pytest.raises(TypeDataFrameError) as exceptioninfo:
         df = 'This is a string'
         error_not_isdataframe(df)
     assert str(exceptioninfo.value) == 'Variable is not of type dataframe, but of type '+str(type(df))
 
     # Test 4 with a int and name of variable
-    with pytest.raises(TypeError) as exceptioninfo:
+    with pytest.raises(TypeDataFrameError) as exceptioninfo:
         df = 404
         error_not_isdataframe(df, name_inputvariable_in_text='df')
     assert str(exceptioninfo.value) == 'Variable "df" is not of type dataframe, but of type '+str(type(df))
 
     # Test 5 with a string and name of variable as positional argument
-    with pytest.raises(TypeError) as exceptioninfo:
+    with pytest.raises(TypeDataFrameError) as exceptioninfo:
         df = 'This is a string'
         error_not_isdataframe(df, 'df')
     assert str(exceptioninfo.value) == 'Variable "df" is not of type dataframe, but of type '+str(type(df))
@@ -237,19 +237,19 @@ def test_error_not_isaxes():
     error_not_isaxes(axes1, name_inputvariable_in_text='axes1')
 
     # Test 3 with a list
-    with pytest.raises(TypeError) as exceptioninfo:
+    with pytest.raises(TypeAxesError) as exceptioninfo:
         axes1 = 'This is a string'
         error_not_isaxes(axes1)
     assert str(exceptioninfo.value) == 'Variable is not of type Axes, but of type '+str(type(axes1))
 
     # Test 4 with a int and name of variable
-    with pytest.raises(TypeError) as exceptioninfo:
+    with pytest.raises(TypeAxesError) as exceptioninfo:
         axes1 = 404
         error_not_isaxes(axes1, name_inputvariable_in_text='axes1')
     assert str(exceptioninfo.value) == 'Variable "axes1" is not of type Axes, but of type '+str(type(axes1))
 
     # Test 5 with a axes and name of variable as positional argument
-    with pytest.raises(TypeError) as exceptioninfo:
+    with pytest.raises(TypeAxesError) as exceptioninfo:
         axes1 = 'This is a string'
         error_not_isaxes(axes1, 'axes1')
     assert str(exceptioninfo.value) == 'Variable "axes1" is not of type Axes, but of type '+str(type(axes1))
@@ -913,7 +913,7 @@ def test_convert_dataframe_scenario_columns_to_value():
     assert actual == expected, message
 
     # Test 2 - string instead of dataframe
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeDataFrameError):
         convert_dataframe_scenario_columns_to_value(dataframe="This is a string", scenariolist=['AC', 'PL'])
 
     # Test 3 - string instead of list
