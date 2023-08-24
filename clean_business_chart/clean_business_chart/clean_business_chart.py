@@ -95,7 +95,7 @@ class GeneralChart:
         self.ax_order         = ["left", "PY", "PL", "main", "sum", "average", "comment"]  #### Order of the subplots. Not all subplots are in every chart available
         
         self.data_text        = dict()      # A dictionary with the number of the matplotllib-ax-containers of the bar-data including the texts of the bars
-        self.barwidth         = 0           # A float with the width of the bars for measure of ratio
+        self.barwidth         = 0           # A float with the width of the bars for measure or ratio
         
 
     def _fill_default_colors(self):
