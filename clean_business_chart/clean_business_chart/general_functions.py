@@ -68,7 +68,7 @@ def error_not_isdictionary(inputvariable, name_inputvariable_in_text=None):
         else:
             # No extra information is given, use this unified message
             message = 'Variable is not of type dictionary, but of type '+str(type(inputvariable))
-        raise TypeError(message)
+        raise TypeDictionaryError(message)
     # else:
         # inputvariable is a dictionary, do return to caller
     return
@@ -83,7 +83,7 @@ def error_not_isstring(inputvariable, name_inputvariable_in_text=None):
         else:
             # No extra information is given, use this unified message
             message = 'Variable is not of type string, but of type '+str(type(inputvariable))
-        raise TypeError(message)
+        raise TypeStringError(message)
     # else:
         # inputvariable is a string, do return to caller
     return
@@ -98,7 +98,7 @@ def error_not_isboolean(inputvariable, name_inputvariable_in_text=None):
         else:
             # No extra information is given, use this unified message
             message = 'Variable is not of type boolean, but of type '+str(type(inputvariable))
-        raise TypeError(message)
+        raise TypeBooleanError(message)
     # else:
         # inputvariable is a boolean, do return to caller
     return

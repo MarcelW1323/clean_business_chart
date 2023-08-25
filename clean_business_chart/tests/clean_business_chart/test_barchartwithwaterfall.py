@@ -1928,7 +1928,7 @@ def test__convert_data_dictionary_to_pandas_dataframe():
     assert actual == pytest.approx(expected), message
 
     # Test 2 - String instead of dictionary
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeDictionaryError):
         dataset  = "This is a string"
         testvar  = BarWithWaterfall(test=True)
         testvar._convert_data_dictionary_to_pandas_dataframe(data=dataset)
@@ -2085,7 +2085,7 @@ def test__check_base_scenario_totals():
         testvar._check_base_scenario_totals()
 
     # Test 7 - String instead of dictionary
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeDictionaryError):
         testvar = BarWithWaterfall(test=True)
         testvar.all_scenarios = ['PY', 'PL', 'AC', 'FC']
         testvar.base_scenarios = ['PY']
@@ -2136,7 +2136,7 @@ def test__fill_ax_bar_label():
         testvar._fill_ax_bar_label('AC', total=True)
 
     # Test 4 - Integer as scenario
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeStringError):
         testvar = BarWithWaterfall(test=True)
         testvar.data = pd.DataFrame()
         testvar._make_subplots() # make_subplots is necessary to have an "ax"-object
@@ -2152,7 +2152,7 @@ def test__fill_ax_bar_label():
         testvar._fill_ax_bar_label(scenario='PY', total=False)
 
     # Test 6 - Integer instead of boolean
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeBooleanError):
         testvar = BarWithWaterfall(test=True)
         testvar.data = pd.DataFrame()
         testvar._make_subplots() # make_subplots is necessary to have an "ax"-object

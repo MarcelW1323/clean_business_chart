@@ -125,19 +125,19 @@ def test_error_not_isdictionary():
     error_not_isdictionary(dict1, name_inputvariable_in_text='dict1')
 
     # Test 3 with a string
-    with pytest.raises(TypeError) as exceptioninfo:
+    with pytest.raises(TypeDictionaryError) as exceptioninfo:
         dict1 = 'This is a string'
         error_not_isdictionary(dict1)
     assert str(exceptioninfo.value) == 'Variable is not of type dictionary, but of type '+str(type(dict1))
 
     # Test 4 with a int and name of variable
-    with pytest.raises(TypeError) as exceptioninfo:
+    with pytest.raises(TypeDictionaryError) as exceptioninfo:
         dict1 = 404
         error_not_isdictionary(dict1, name_inputvariable_in_text='dict1')
     assert str(exceptioninfo.value) == 'Variable "dict1" is not of type dictionary, but of type '+str(type(dict1))
 
     # Test 5 with a string and name of variable as positional argument
-    with pytest.raises(TypeError) as exceptioninfo:
+    with pytest.raises(TypeDictionaryError) as exceptioninfo:
         dict1 = 'This is a string'
         error_not_isdictionary(dict1, 'dict1')
     assert str(exceptioninfo.value) == 'Variable "dict1" is not of type dictionary, but of type '+str(type(dict1))
@@ -153,19 +153,19 @@ def test_error_not_isstring():
     error_not_isstring(string1, name_inputvariable_in_text='string1')
 
     # Test 3 with a list
-    with pytest.raises(TypeError) as exceptioninfo:
+    with pytest.raises(TypeStringError) as exceptioninfo:
         string1 = ['This', 'is', 'a', 'list', 'of', 'strings']
         error_not_isstring(string1)
     assert str(exceptioninfo.value) == 'Variable is not of type string, but of type '+str(type(string1))
 
     # Test 4 with a int and name of variable
-    with pytest.raises(TypeError) as exceptioninfo:
+    with pytest.raises(TypeStringError) as exceptioninfo:
         string1 = 404
         error_not_isstring(string1, name_inputvariable_in_text='string1')
     assert str(exceptioninfo.value) == 'Variable "string1" is not of type string, but of type '+str(type(string1))
 
-    # Test 5 with a string and name of variable as positional argument
-    with pytest.raises(TypeError) as exceptioninfo:
+    # Test 5 with a list of strings and name of variable as positional argument
+    with pytest.raises(TypeStringError) as exceptioninfo:
         string1 = ['This', 'is', 'a', 'list', 'of', 'strings']
         error_not_isstring(string1, 'string1')
     assert str(exceptioninfo.value) == 'Variable "string1" is not of type string, but of type '+str(type(string1))
@@ -181,19 +181,19 @@ def test_error_not_isboolean():
     error_not_isboolean(bool1, name_inputvariable_in_text='bool')
 
     # Test 3 with a string
-    with pytest.raises(TypeError) as exceptioninfo:
+    with pytest.raises(TypeBooleanError) as exceptioninfo:
         bool1 = 'This is a string'
         error_not_isboolean(bool1)
     assert str(exceptioninfo.value) == 'Variable is not of type boolean, but of type '+str(type(bool1))
 
     # Test 4 with a int and name of variable
-    with pytest.raises(TypeError) as exceptioninfo:
+    with pytest.raises(TypeBooleanError) as exceptioninfo:
         bool1 = 404
         error_not_isboolean(bool1, name_inputvariable_in_text='bool1')
     assert str(exceptioninfo.value) == 'Variable "bool1" is not of type boolean, but of type '+str(type(bool1))
 
     # Test 5 with a string and name of variable as positional argument
-    with pytest.raises(TypeError) as exceptioninfo:
+    with pytest.raises(TypeBooleanError) as exceptioninfo:
         bool1 = 'This is a string'
         error_not_isboolean(bool1, 'bool1')
     assert str(exceptioninfo.value) == 'Variable "bool1" is not of type boolean, but of type '+str(type(bool1))
