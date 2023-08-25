@@ -125,6 +125,7 @@ class GeneralChart:
         self.colors['highlight'] = '#0064FF'
         self.colors['endpoint']  = ('#FFFFFF', '#000000')  # index 0= outercircle color, 1= innercirclecolor
         self.colors['zeroline']  = '#000000'
+        self.colors['totalline'] = '#000000'
 
         
     def _fill_month(self, language="EN"):
