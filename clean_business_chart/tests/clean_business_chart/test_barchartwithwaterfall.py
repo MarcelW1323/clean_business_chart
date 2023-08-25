@@ -890,7 +890,7 @@ def test__determine_bar_layers_in_dataframe():
         testvar._determine_bar_layers_in_dataframe(dataframe=dataset)
 
     # Test 9 - String instead of list
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeListError):
         testvar  = BarWithWaterfall(test=True)
         testvar.compare_scenarios = 'This is a string'
         dataset  = pd.DataFrame()
