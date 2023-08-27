@@ -2160,6 +2160,96 @@ def test__fill_ax_bar_label():
         testvar._fill_ax_bar_label(scenario='AC', total=404)
 
 
+def test__prepare_delta_bar():
+    # Test 1 - Complete dataframe with delta-columns
+    dataset =  pd.DataFrame({'_Category'    : ['Spain', 'Greece', 'Sweden', 'Germany', 'Russia', 'Great Britain', 'Italy', 'Slovenia', 'Denmark', 'Netherlands', 'France', 'OTHER'],
+                             'PY'           : [30, 38, 38, 90, 60, 15, 15, 4, 29, 39, 60, 40],
+                             'PL'           : [33, 33, 35, 89, 56, 13, 12, 5, 35, 42, 77, 37],
+                             'AC'           : [53, 39, 40, 93, 60, 15, 14, 4, 33, 38, 63, 44],
+                             'FC'           : [0, 0, 0, 25, 0, 0, 4, 0, 10, 15, 0, 15],
+                             '_CBC_TOPLAYER': ['AC', 'AC', 'AC', 'AC', 'AC', 'AC', 'AC', 'AC', 'AC', 'AC', 'AC', 'AC'],
+                             '_CBC_DELTA1'  : [20, 6, 5, 4, 4, 2, 2, -1, -2, -4, -14, 7],
+                             '_CBC_DELTA2'  : [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                             '_CBC_Y'       : [0.0, -1.0, -2.0, -3.0, -4.0, -5.0, -6.0, -7.0, -8.0, -9.0, -10.0, -11.5],
+                             '_CBC_Y1'      : [0.08125, -0.91875, -1.91875, -2.91875, -3.91875, -4.91875, -5.91875, -6.91875, -7.91875, -8.91875, -9.91875, -11.41875],
+                             '_CBC_Y2'      : [-0.08125, -1.08125, -2.08125, -3.08125, -4.08125, -5.08125, -6.08125, -7.08125, -8.08125, -9.08125, -10.08125, -11.58125]})
+    testvar  = BarWithWaterfall(test=True)
+    testvar.base_scenarios = ['PL', 'PY']
+    testvar.dict_totals = {'PL':{'total':467}}
+    expected = {'_Category'    : ['Spain', 'Greece', 'Sweden', 'Germany', 'Russia', 'Great Britain', 'Italy', 'Slovenia', 'Denmark', 'Netherlands', 'France', 'OTHER'],
+                'PY'           : [30, 38, 38, 90, 60, 15, 15, 4, 29, 39, 60, 40],
+                'PL'           : [33, 33, 35, 89, 56, 13, 12, 5, 35, 42, 77, 37],
+                'AC'           : [53, 39, 40, 93, 60, 15, 14, 4, 33, 38, 63, 44],
+                'FC'           : [0, 0, 0, 25, 0, 0, 4, 0, 10, 15, 0, 15],
+                '_CBC_TOPLAYER': ['AC', 'AC', 'AC', 'AC', 'AC', 'AC', 'AC', 'AC', 'AC', 'AC', 'AC', 'AC'],
+                '_CBC_DELTA1'  : [20, 6, 5, 4, 4, 2, 2, -1, -2, -4, -14, 7],
+                '_CBC_DELTA2'  : [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                '_CBC_Y'       : [0.0, -1.0, -2.0, -3.0, -4.0, -5.0, -6.0, -7.0, -8.0, -9.0, -10.0, -11.5],
+                '_CBC_Y1'      : [0.08125, -0.91875, -1.91875, -2.91875, -3.91875, -4.91875, -5.91875, -6.91875, -7.91875, -8.91875, -9.91875, -11.41875],
+                '_CBC_Y2'      : [-0.08125, -1.08125, -2.08125, -3.08125, -4.08125, -5.08125, -6.08125, -7.08125, -8.08125, -9.08125, -10.08125, -11.58125],
+                '_CBC_BASE'    : [487.0, 493.0, 498.0, 502.0, 506.0, 508.0, 510.0, 509.0, 507.0, 503.0, 489.0, 496.0]}
+    actual   = testvar._prepare_delta_bar(dataframe=dataset)
+    actual   = actual.to_dict(orient='list')
+    message  = "Test 1 - BarWithWaterfall._prepare_delta_bar returned {0} instead of {1}".format(actual, expected)
+    assert actual == pytest.approx(expected), message
+
+    # Test 2 - String instead of DataFrame
+    with pytest.raises(TypeDataFrameError):
+        testvar = BarWithWaterfall(test=True)
+        testvar.base_scenarios = ['PL', 'PY']
+        testvar.dict_totals = {'PL':{'total':250}}
+        testvar._prepare_delta_bar(dataframe='This is a string')
+
+    # Test 3 - DataFrame with missing delta2
+    with pytest.raises(ValueError):
+        dataset =  pd.DataFrame({'_Category'    : ['Spain', 'Greece'],
+                                 'PY'           : [30, 38],
+                                 'PL'           : [33, 33],
+                                 'AC'           : [53, 39],
+                                 'FC'           : [0, 0],
+                                 '_CBC_TOPLAYER': ['AC', 'AC'],
+                                 '_CBC_DELTA1'  : [20, 6],
+                                 '_CBC_Y'       : [0.0, -1.0],
+                                 '_CBC_Y1'      : [0.08125, -0.91875],
+                                 '_CBC_Y2'      : [-0.08125, -1.08125]})
+        testvar = BarWithWaterfall(test=True)
+        testvar.base_scenarios = ['PL', 'PY']
+        testvar.dict_totals = {'PL':{'total':66}}
+        testvar._prepare_delta_bar(dataframe=dataset)
+
+    # Test 4 - String instead of list base scenario
+    with pytest.raises(TypeListError):
+        dataset = pd.DataFrame({'_CBC_DELTA1':[10, 15], '_CBC_DELTA2':[20,25]})
+        testvar = BarWithWaterfall(test=True)
+        testvar.base_scenarios = 'This is a string'
+        testvar.dict_totals = {'PL':{'total':250}}
+        testvar._prepare_delta_bar(dataframe=dataset)
+
+    # Test 5 - List base scenario is empty
+    with pytest.raises(ValueError):
+        dataset = pd.DataFrame({'_CBC_DELTA1':[10, 15], '_CBC_DELTA2':[20,25]})
+        testvar = BarWithWaterfall(test=True)
+        testvar.base_scenarios = []
+        testvar.dict_totals = {'PL':{'total':250}}
+        testvar._prepare_delta_bar(dataframe=dataset)
+
+    # Test 6 - String instead of dictionary
+    with pytest.raises(TypeDictionaryError):
+        dataset = pd.DataFrame({'_CBC_DELTA1':[10, 15], '_CBC_DELTA2':[20,25]})
+        testvar = BarWithWaterfall(test=True)
+        testvar.base_scenarios = ['PL', 'PY']
+        testvar.dict_totals = 'This is a string'
+        testvar._prepare_delta_bar(dataframe=dataset)
+
+    # Test 7 - Dictionary missing values
+    with pytest.raises(ValueError):
+        dataset = pd.DataFrame({'_CBC_DELTA1':[10, 15], '_CBC_DELTA2':[20,25]})
+        testvar = BarWithWaterfall(test=True)
+        testvar.base_scenarios = ['PL', 'PY']
+        testvar.dict_totals = {'AC':{'total':250}}
+        testvar._prepare_delta_bar(dataframe=dataset)
+
+
 def test_BarWithWaterfall():
     # Test barchart_001
     dataset =  { 'HEADERS'      : ['PY','PL','AC','FC'],  # Special keyword 'HEADERS' to indicate the scenario of the value columns
@@ -2234,3 +2324,4 @@ def test_BarWithWaterfall():
     expected=sha256_hash.hexdigest()
     message  = "Test barchart_002.png - BarWithWaterfall returned {0} instead of {1}".format(actual, expected)
     assert actual == expected, message
+
