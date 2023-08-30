@@ -2250,6 +2250,127 @@ def test__prepare_delta_bar():
         testvar._prepare_delta_bar(dataframe=dataset)
 
 
+def test__determine_y_ax_category_labels():
+    # Test 1 - Dataframe with needed-columns and no replacement-text
+    dataset =  pd.DataFrame({'_Category' : ['Spain', 'Greece', 'Sweden', 'Germany', 'Russia', 'Great Britain', 'Italy', 'Slovenia', 'Denmark', 'Netherlands', 'France', 'OTHER'],
+                             '_CBC_Y2'   : [-0.08125, -1.08125, -2.08125, -3.08125, -4.08125, -5.08125, -6.08125, -7.08125, -8.08125, -9.08125, -10.08125, -11.58125]})
+    testvar  = BarWithWaterfall(test=True)
+    testvar.other_text = None
+    expected1 = [-0.08125, -1.08125, -2.08125, -3.08125, -4.08125, -5.08125, -6.08125, -7.08125, -8.08125, -9.08125, -10.08125, -11.58125]
+    expected2 = ['Spain', 'Greece', 'Sweden', 'Germany', 'Russia', 'Great Britain', 'Italy', 'Slovenia', 'Denmark', 'Netherlands', 'France', 'OTHER']
+    actual1, actual2   = testvar._determine_y_ax_category_labels(dataframe=dataset)
+    message  = "Test 1a - BarWithWaterfall._determine_y_ax_category_labels returned {0} instead of {1}".format(actual1, expected1)
+    assert actual1 == pytest.approx(expected1), message
+    message  = "Test 1b - BarWithWaterfall._determine_y_ax_category_labels returned {0} instead of {1}".format(actual2, expected2)
+    assert actual2 == pytest.approx(expected2), message
+
+    # Test 2 - Dataframe with needed-columns with replacement-text
+    dataset =  pd.DataFrame({'_Category' : ['Spain', 'Greece', 'Sweden', 'Germany', 'Russia', 'Great Britain', 'Italy', 'Slovenia', 'Denmark', 'Netherlands', 'France', 'OTHER'],
+                             '_CBC_Y2'   : [-0.08125, -1.08125, -2.08125, -3.08125, -4.08125, -5.08125, -6.08125, -7.08125, -8.08125, -9.08125, -10.08125, -11.58125]})
+    testvar  = BarWithWaterfall(test=True)
+    testvar.other_text = "Rest of Europe"
+    expected1 = [-0.08125, -1.08125, -2.08125, -3.08125, -4.08125, -5.08125, -6.08125, -7.08125, -8.08125, -9.08125, -10.08125, -11.58125]
+    expected2 = ['Spain', 'Greece', 'Sweden', 'Germany', 'Russia', 'Great Britain', 'Italy', 'Slovenia', 'Denmark', 'Netherlands', 'France', 'Rest of Europe']
+    actual1, actual2   = testvar._determine_y_ax_category_labels(dataframe=dataset)
+    message  = "Test 2a - BarWithWaterfall._determine_y_ax_category_labels returned {0} instead of {1}".format(actual1, expected1)
+    assert actual1 == pytest.approx(expected1), message
+    message  = "Test 2b - BarWithWaterfall._determine_y_ax_category_labels returned {0} instead of {1}".format(actual2, expected2)
+    assert actual2 == pytest.approx(expected2), message
+
+    # Test 3 - DataFrame with one column missing
+    with pytest.raises(ValueError):
+        dataset = pd.DataFrame({'_Category':['A', 'B'], '_CBC_Y1':[20, 25]})
+        testvar = BarWithWaterfall(test=True)
+        testvar.other_text = None
+        testvar._determine_y_ax_category_labels(dataframe=dataset)
+
+    # Test 4 - String instead of DataFrame
+    with pytest.raises(TypeDataFrameError):
+        dataset = 'This is a string'
+        testvar = BarWithWaterfall(test=True)
+        testvar.other_text = None
+        testvar._determine_y_ax_category_labels(dataframe=dataset)
+
+    # Test 5 - Other_text not of type string (but list in this case)
+    with pytest.raises(TypeStringError):
+        dataset = pd.DataFrame({'_Category':['A', 'B'], '_CBC_Y2':[20, 25]})
+        testvar = BarWithWaterfall(test=True)
+        testvar.other_text = [ 10.1 ]
+        testvar._determine_y_ax_category_labels(dataframe=dataset)
+
+
+def test__determine_y_ax_total_labels():
+    # Test 1 - No replacement-text
+    testvar  = BarWithWaterfall(test=True)
+    testvar.total_text = None
+    testvar.base_scenarios = ['PL', 'PY']
+    testvar.compare_scenarios = ['AC']
+    testvar.dict_totals = {'PY': {'yvalue': 2.125, 'total': 24.6}, 'PL': {'yvalue': 1.875, 'total': 27.3}, 'AC': {'yvalue': -15.58125, 'total': 26.0}}
+    expected1 = [1.875, -15.58125]
+    expected2 = ['Total', 'Total']
+    expected3 = [2.125, 1.875, -15.58125]
+    actual1, actual2, actual3   = testvar._determine_y_ax_total_labels()
+    message  = "Test 1a - BarWithWaterfall._determine_y_ax_total_labels returned {0} instead of {1}".format(actual1, expected1)
+    assert actual1 == pytest.approx(expected1), message
+    message  = "Test 1b - BarWithWaterfall._determine_y_ax_total_labels returned {0} instead of {1}".format(actual2, expected2)
+    assert actual2 == pytest.approx(expected2), message
+    message  = "Test 1c - BarWithWaterfall._determine_y_ax_total_labels returned {0} instead of {1}".format(actual3, expected3)
+    assert actual3 == pytest.approx(expected3), message
+
+    # Test 2 - Replacement-text
+    testvar  = BarWithWaterfall(test=True)
+    testvar.total_text = "Europe"
+    testvar.base_scenarios = ['PL', 'PY']
+    testvar.compare_scenarios = ['AC']
+    testvar.dict_totals = {'PY': {'yvalue': 2.125, 'total': 24.6}, 'PL': {'yvalue': 1.875, 'total': 27.3}, 'AC': {'yvalue': -15.58125, 'total': 26.0}}
+    expected1 = [1.875, -15.58125]
+    expected2 = ['Europe', 'Europe']
+    expected3 = [2.125, 1.875, -15.58125]
+    actual1, actual2, actual3   = testvar._determine_y_ax_total_labels()
+    message  = "Test 2a - BarWithWaterfall._determine_y_ax_total_labels returned {0} instead of {1}".format(actual1, expected1)
+    assert actual1 == pytest.approx(expected1), message
+    message  = "Test 2b - BarWithWaterfall._determine_y_ax_total_labels returned {0} instead of {1}".format(actual2, expected2)
+    assert actual2 == pytest.approx(expected2), message
+    message  = "Test 2c - BarWithWaterfall._determine_y_ax_total_labels returned {0} instead of {1}".format(actual3, expected3)
+    assert actual3 == pytest.approx(expected3), message
+
+    # Test 3 - Base scenario is a string instead of list
+    with pytest.raises(TypeListError):
+        testvar = BarWithWaterfall(test=True)
+        testvar.total_text = None
+        testvar.base_scenarios = 'This is a string'
+        testvar.compare_scenarios = ['AC']
+        testvar.dict_totals = {'PY': {'yvalue': 2.125, 'total': 24.6}, 'PL': {'yvalue': 1.875, 'total': 27.3}, 'AC': {'yvalue': -15.58125, 'total': 26.0}}
+        testvar._determine_y_ax_total_labels()
+
+    # Test 4 - Compare scenario is a string instead of list
+    with pytest.raises(TypeListError):
+        testvar = BarWithWaterfall(test=True)
+        testvar.total_text = None
+        testvar.base_scenarios = ['PL', 'PY']
+        testvar.compare_scenarios = 'This is a string'
+        testvar.dict_totals = {'PY': {'yvalue': 2.125, 'total': 24.6}, 'PL': {'yvalue': 1.875, 'total': 27.3}, 'AC': {'yvalue': -15.58125, 'total': 26.0}}
+        testvar._determine_y_ax_total_labels()
+
+    # Test 5 - Dictionary of totals is a string instead of a dictionary
+    with pytest.raises(TypeDictionaryError):
+        testvar = BarWithWaterfall(test=True)
+        testvar.total_text = None
+        testvar.base_scenarios = ['PL', 'PY']
+        testvar.compare_scenarios = ['AC']
+        testvar.dict_totals = 'This is a string'
+        testvar._determine_y_ax_total_labels()
+
+    # Test 6 - Total text is a list instead of a string
+    with pytest.raises(TypeStringError):
+        testvar = BarWithWaterfall(test=True)
+        testvar.total_text = ['This', 'is', 'a', 'list']
+        testvar.base_scenarios = ['PL', 'PY']
+        testvar.compare_scenarios = ['AC']
+        testvar.dict_totals = {'PY': {'yvalue': 2.125, 'total': 24.6}, 'PL': {'yvalue': 1.875, 'total': 27.3}, 'AC': {'yvalue': -15.58125, 'total': 26.0}}
+        testvar._determine_y_ax_total_labels()
+
+
 def test_BarWithWaterfall():
     # Test barchart_001
     dataset =  { 'HEADERS'      : ['PY','PL','AC','FC'],  # Special keyword 'HEADERS' to indicate the scenario of the value columns
