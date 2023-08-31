@@ -507,18 +507,20 @@ def test_list1_has_valid_elements():
     assert actual == expected, message
 
     # Test 2 - list1 is not a subset of list 2
-    with pytest.raises(ValueError):
-        list1    = ['AC', 'PL']
-        list2    = ['PY', 'AC', 'FC']
-        list1_has_valid_elements(list1=list1, list2=list2)
+    list1    = ['AC', 'PL']
+    list2    = ['PY', 'AC', 'FC']
+    expected = False
+    actual   = list1_has_valid_elements(list1=list1, list2=list2)
+    message  = "Test 2 - list1_has_valid_elements returned {0} instead of {1}".format(actual, expected)
+    assert actual == expected, message
 
     # Test 3 - list1 is not present, expect a TypeError, for the default of list1 is None
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeListError):
         list2    = ['PY', 'AC', 'FC']
         list1_has_valid_elements(list2=list2)
 
     # Test 4 - list2 is not present, expect a TypeError, for the default of list2 is None
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeListError):
         list1    = ['PY', 'AC', 'FC']
         list1_has_valid_elements(list1=list1)
 

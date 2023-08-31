@@ -489,7 +489,7 @@ def filter_lists(list1=None, list2=None):
 
 def list1_has_valid_elements(list1=None, list2=None):
     """
-    Checks the unique elements of list1 against the unique elements of list2. Gives an ValueError when list1 has at least one extra element.
+    Checks the unique elements of list1 against the unique elements of list2. Gives true when all elements of list1 can be found in list2
     If list1 or list2 (or both) are not a list a TypeError will occur.
 
     Parameters
@@ -501,18 +501,15 @@ def list1_has_valid_elements(list1=None, list2=None):
 
     Returns
     -------
-    True           : all elements of list1 can be found in list2
+    returnvalue    : True, all elements of list1 can be found in list2,
+                     False, not all elements of list1 can be found in list2
     """
-    if not islist(list1):
-        raise TypeError("list1 "+str(list1)+" is not a list, but is of type: "+str(type(list1)))
-    if not islist(list2):
-        raise TypeError("list2 "+str(list2)+" is not a list, but is of type: "+str(type(list2)))
+    # Check parameters
+    error_not_islist(list1)
+    error_not_islist(list2)
 
     # We use set operations to quickly find the other elements of list 1
-    if not set(list1).issubset(set(list2)):
-        raise ValueError("list1 "+str(list1)+" has element(s) "+str(set(list1).difference(set(list2)))+" not in list2 "+str(list2))
-    
-    return True
+    return set(list1).issubset(set(list2))
 
 
 def convert_data_string_to_pandas_dataframe(data_string, separator=','):
