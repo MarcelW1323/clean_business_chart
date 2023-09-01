@@ -487,7 +487,7 @@ def filter_lists(list1=None, list2=None):
     return [element for element in list1 if element in list2]
 
 
-def list1_has_valid_elements(list1=None, list2=None):
+def list1_is_subset_list2(list1=None, list2=None):
     """
     Checks the unique elements of list1 against the unique elements of list2. Gives true when all elements of list1 can be found in list2
     If list1 or list2 (or both) are not a list a TypeError will occur.
