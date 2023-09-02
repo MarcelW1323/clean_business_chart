@@ -465,12 +465,12 @@ def test__dataframe_aggregate():
     assert actual == expected, message
 
     # Test 3 - parameter dataframe is a string and not a dataframe
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeDataFrameError):
         testvar  = BarWithWaterfall(test=True)
         testvar._dataframe_aggregate(dataframe="This is a string", wanted_headers=['list-item 1', 'list-item 2'])
 
     # Test 4 - parameter wanted_headers is a string and not a list
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeListError):
         testvar  = BarWithWaterfall(test=True)
         dataset  = pd.DataFrame({'Year'     : ['2021', '2021', '2021', '2022', '2022'],
                                  'Month'    : ['02', '04', '07', '08', '09'],
