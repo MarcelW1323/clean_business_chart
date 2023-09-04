@@ -555,7 +555,7 @@ def test__optimize_data_total():
         testvar._optimize_data_total(numerator=1, denominator=1, decimals="This is a string")
 
     # Test 7 - Data_total is not a dictionary
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeDictionaryError):
         testvar  = BarWithWaterfall(test=True)
         testvar.data_total = "This is a string"
         testvar._optimize_data_total(numerator=1, denominator=1, decimals=1)
@@ -651,7 +651,7 @@ def test__dataframe_full_category():
         testvar._dataframe_full_category(dataframe=dataset, category_of_interest_values=category_list)
 
     # Test 7 - Category of interest is not a list
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeListError):
         dataset  = pd.DataFrame({'Year'     : ['2021', '2021', '2021', '2021', '2021'],
                                  'Month'    : ['02', '04', '07', '08', '09'],
                                  'PY'       : [32, 38.2, 40, 39, 38],
