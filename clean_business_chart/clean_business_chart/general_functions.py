@@ -73,6 +73,21 @@ def error_not_isdictionary(inputvariable, name_inputvariable_in_text=None):
         # inputvariable is a dictionary, do return to caller
     return
 
+def error_not_isinteger(inputvariable, name_inputvariable_in_text=None):
+    """Returns a TypeError when the inputvariable is not a integer"""
+    if not isinteger(inputvariable):
+        # inputvariable is not an integer, construct message and generate a TypeError
+        if name_inputvariable_in_text is not None:
+            # Yes, extra information is given
+            message = 'Variable "'+str(name_inputvariable_in_text)+'" is not of type integer, but of type '+str(type(inputvariable))
+        else:
+            # No extra information is given, use this unified message
+            message = 'Variable is not of type integer, but of type '+str(type(inputvariable))
+        raise TypeIntegerError(message)
+    # else:
+        # inputvariable is an integer, do return to caller
+    return
+
 def error_not_isstring(inputvariable, name_inputvariable_in_text=None):
     """Returns a TypeError when the inputvariable is not a string"""
     if not isstring(inputvariable):

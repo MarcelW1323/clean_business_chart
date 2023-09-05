@@ -92,7 +92,7 @@ def test_error_not_islist():
     list1 = [ 'Value1', 'Value2']
     error_not_islist(list1)
 
-    # Test 2 with a dictionary and name of variable, no error will occur
+    # Test 2 with a list and name of variable, no error will occur
     list1 = [ 'Value1', 'Value2']
     error_not_islist(list1, name_inputvariable_in_text='list1')
 
@@ -102,7 +102,7 @@ def test_error_not_islist():
         error_not_islist(list1)
     assert str(exceptioninfo.value) == 'Variable is not of type list, but of type '+str(type(list1))
 
-    # Test 4 with a int and name of variable
+    # Test 4 with an integer and name of variable
     with pytest.raises(TypeListError) as exceptioninfo:
         list1 = 404
         error_not_islist(list1, name_inputvariable_in_text='list1')
@@ -141,6 +141,34 @@ def test_error_not_isdictionary():
         dict1 = 'This is a string'
         error_not_isdictionary(dict1, 'dict1')
     assert str(exceptioninfo.value) == 'Variable "dict1" is not of type dictionary, but of type '+str(type(dict1))
+
+
+def test_error_not_isinteger():
+    # Test 1 with an integer only, no error will occur
+    integer1 = 101
+    error_not_isinteger(integer1)
+
+    # Test 2 with an integer and name of variable, no error will occur
+    integer1 = 101
+    error_not_isinteger(integer1, name_inputvariable_in_text='integer1')
+
+    # Test 3 with a string
+    with pytest.raises(TypeIntegerError) as exceptioninfo:
+        integer1 = 'This is a string'
+        error_not_isinteger(integer1)
+    assert str(exceptioninfo.value) == 'Variable is not of type integer, but of type '+str(type(integer1))
+
+    # Test 4 with a float and name of variable
+    with pytest.raises(TypeIntegerError) as exceptioninfo:
+        integer1 = 404.505
+        error_not_isinteger(integer1, name_inputvariable_in_text='integer1')
+    assert str(exceptioninfo.value) == 'Variable "integer1" is not of type integer, but of type '+str(type(integer1))
+
+    # Test 5 with a string and name of variable as positional argument
+    with pytest.raises(TypeIntegerError) as exceptioninfo:
+        integer1 = 'This is a string'
+        error_not_isinteger(integer1, 'integer1')
+    assert str(exceptioninfo.value) == 'Variable "integer1" is not of type integer, but of type '+str(type(integer1))
 
 
 def test_error_not_isstring():
