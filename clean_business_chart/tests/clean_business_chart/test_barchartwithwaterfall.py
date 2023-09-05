@@ -334,7 +334,7 @@ def test__fill_data_total():
         testvar._fill_data_total(dataframe="This is a string")  # Default parameter decimals is None and that is supported
 
     # Test 6 - parameter decimals is a string and not an integer
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeIntegerError):
         testvar = BarWithWaterfall(test=True)
         testvar.data_scenarios = ['PY', 'PL', 'AC', 'FC']
         dataset  = pd.DataFrame({'Year' : ['2021', '2022'],
@@ -537,19 +537,19 @@ def test__optimize_data_total():
     assert actual == expected, message
 
     # Test 4 - Numerator is not an integer
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeIntegerError):
         testvar  = BarWithWaterfall(test=True)
         testvar.data_total = {'AC':1357.2468, 'PL':862.64, 'PY':8723.85, 'FC':103020.76932}
         testvar._optimize_data_total(numerator="This is a string", denominator=1, decimals=0)
 
     # Test 5 - Denominator is not an integer
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeIntegerError):
         testvar  = BarWithWaterfall(test=True)
         testvar.data_total = {'AC':1357.2468, 'PL':862.64, 'PY':8723.85, 'FC':103020.76932}
         testvar._optimize_data_total(numerator=1, denominator="This is a string", decimals=0)
 
     # Test 6 - Decimals is not an integer
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeIntegerError):
         testvar  = BarWithWaterfall(test=True)
         testvar.data_total = {'AC':1357.2468, 'PL':862.64, 'PY':8723.85, 'FC':103020.76932}
         testvar._optimize_data_total(numerator=1, denominator=1, decimals="This is a string")
