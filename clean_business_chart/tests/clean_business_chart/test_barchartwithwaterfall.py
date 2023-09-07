@@ -1111,7 +1111,7 @@ def test__drop_zero_lines():
         testvar._drop_zero_lines(dataframe='This is a string')
 
     # Test 4 - String instead of boolean for remove_lines_with_zeros
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeBooleanError):
         testvar = BarWithWaterfall(test=True)
         testvar.remove_lines_with_zeros = "This is a string"
         testvar.data_scenarios = ['PY', 'PL', 'FC', 'AC']
@@ -1119,7 +1119,7 @@ def test__drop_zero_lines():
         testvar._drop_zero_lines(dataframe=dataset)
 
     # Test 5 - String instead of list for data_scenarios
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeListError):
         testvar = BarWithWaterfall(test=True)
         testvar.remove_lines_with_zeros = True
         testvar.data_scenarios = "This is a string"
@@ -1152,7 +1152,7 @@ def test__optimize_data_get_big_total():
     assert actual == pytest.approx(expected), message
 
     # Test 3 - String instead of dictionary for data_total
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeDictionaryError):
         testvar = BarWithWaterfall(test=True)
         testvar.data_total = "This is a string"
         testvar._optimize_data_get_big_total()
@@ -1217,7 +1217,7 @@ def test__optimize_data_get_big_detail():
         testvar._optimize_data_get_big_detail(dataframe='This is a string')
 
     # Test 5 - String instead of list
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeListError):
         testvar = BarWithWaterfall(test=True)
         dataset = pd.DataFrame()
         testvar.data_scenarios = "This is a string"
@@ -1483,7 +1483,7 @@ def test__optimize_data_adjust_decimals():
         testvar._optimize_data_adjust_decimals(big_detail, big_total, denominator)
 
     # Test 13 - String instead of boolean for force_zero_decimals
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeBooleanError):
         testvar = BarWithWaterfall(test=True)
         testvar.force_zero_decimals = "This is a string"
         testvar.force_max_one_decimals = False
@@ -1493,7 +1493,7 @@ def test__optimize_data_adjust_decimals():
         testvar._optimize_data_adjust_decimals(big_detail, big_total, denominator)
 
     # Test 14 - String instead of boolean for force_max_one_decimals
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeBooleanError):
         testvar = BarWithWaterfall(test=True)
         testvar.force_zero_decimals = False
         testvar.force_max_one_decimals = "This is a string"
@@ -1590,7 +1590,7 @@ def test__optimize_data_dataframe_details():
         testvar._optimize_data_dataframe_details(dataframe=dataset)
 
     # Test 5 - String instead of list of data_scenarios
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeListError):
         dataset  = pd.DataFrame()
         testvar  = BarWithWaterfall(test=True)
         testvar.data_scenarios = "This is a string"
