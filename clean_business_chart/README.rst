@@ -20,15 +20,16 @@ Clean Business Chart is a Python package for IBCS-like charts based on matplotli
 
 
 * Free software: MIT license
-* Documentation: https://clean-business-chart.readthedocs.io.
+* Documentation: https://github.com/MarcelW1323/clean_business_chart/wiki.
 
 
 Features
 --------
 
-* ColumnWithWaterfall, the first chart released with clean-business-chart!
+* ColumnWithWaterfall, the first chart released with clean-business-chart (version 0.1.0)!
 * added support for pandas in version 0.1.1
 * added date column support for pandas DataFrame and added translation of column headers inside the call in version 0.1.2
+* BarWithWaterfall, the second chart released in version 0.2.0
 
 
 Read more

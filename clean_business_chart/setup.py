@@ -32,6 +32,7 @@ setup(
         'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
         'Programming Language :: Python :: 3.11',
+        'Programming Language :: Python :: 3.12',
         'Topic :: Scientific/Engineering :: Visualization',
     ],
     description="Clean Business Chart is a Python package for IBCS-like charts based on matplotlib.",
@@ -40,12 +41,12 @@ setup(
     long_description=readme + '\n\n' + history,
     include_package_data=True,
     keywords=['clean business chart', 'IBCS', 'business chart', 'clean business charts', 'business charts', 'chart', 'charts'],
-    name='Clean Business Chart',
+    name='clean_business_chart',
     packages=find_packages(include=['clean_business_chart', 'clean_business_chart.*']),
     test_suite='tests',
     tests_require=test_requirements,
     url='https://github.com/marcelw1323/clean_business_chart',
-    version='0.1.3',
+    version='0.2.0',
     zip_safe=False,
 )
 

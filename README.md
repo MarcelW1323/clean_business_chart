@@ -20,5 +20,5 @@ https://www.linkedin.com/groups/12827987/
 #### Columnchart with waterfall (available)
 <img src="test_charts/columnchart_001.png" alt="columnchart example" width="750"/>
 
-#### Barchart with waterfall (under construction, expected before end of Q3 2023)
+#### Barchart with waterfall (available)
 <img src="test_charts/barchart_001.png" alt="barchart example" width="500"/>

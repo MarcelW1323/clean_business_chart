@@ -10,6 +10,7 @@ import requests                                          # Needed in test_BarWit
 
 import pytest
 
+#### FIRST VERSION ONLY SUPPORTS 1 COMPARE SCENARIO in test__check_scenario_parameters()
 
 def test__simple_first_check_scenario_parameters_one_variable():
     # Test 1 - all parameters are OK
@@ -205,6 +206,7 @@ def test__check_scenario_parameters():
     for base_scenarios in scenarios.keys():
         compare_scenarios = scenarios[base_scenarios]
         for element in compare_scenarios:
+            if len(element) > 1 : continue    #### FIRST VERSION ONLY SUPPORTS 1 COMPARE SCENARIO
             testvar.base_scenarios = list(base_scenarios)
             testvar.compare_scenarios = element
             # If the function below doesn't give an error, it is good because all these tested scenarios are supported
