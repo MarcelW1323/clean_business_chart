@@ -2,6 +2,12 @@
 History
 =======
 
+0.2.1 (2023-09-12)
+------------------
+
+* Second chart: bar chart with waterfall. Small bugfix occured on Google Colab, not at local installation.
+
+
 0.2.0 (2023-09-12)
 ------------------
 

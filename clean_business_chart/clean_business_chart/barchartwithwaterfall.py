@@ -2020,8 +2020,8 @@ class BarWithWaterfall(GeneralChart):
         export_denominator       : Dividervalue for all DataFrame-values and total-values
         """
         # Check parameters
-        if not isinteger(big_detail) and not isfloat(big_detail):
-            raise TypeError('Parameter big_detail "'+str(big_detail)+'" is not an integer or a float, but of type '+str(type(big_detail)))
+        ####if not isinteger(big_detail) and not isfloat(big_detail):
+        ####    raise TypeError('Parameter big_detail "'+str(big_detail)+'" is not an integer or a float, but of type '+str(type(big_detail)))
  
         # Check self-variables
         if not isinstance(self.original_multiplier, Multiplier):
