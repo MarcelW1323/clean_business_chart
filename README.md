@@ -4,9 +4,12 @@ Clean Business Chart for IBCS-inspired business charts in a Python Package
 
 This Python Package can be tested with a Jupyter notebook online:
 
-On Google Colab: https://colab.research.google.com/drive/1xJmfQI4sNNDRe5Olh5Hm96f5FxEJQ_Vo
+On Google Colab: 
+* https://colab.research.google.com/drive/1DZpijeML8epNu3b3APn1Toe70RcYOJwR?usp=drive_link for **Columnchart with waterfall**
 
-Or DataCamp Workspace: https://app.datacamp.com/workspace/w/63ef8399-16af-49dd-8bcf-fff7b344ec73
+
+Or DataCamp Workspace: 
+* https://app.datacamp.com/workspace/w/63ef8399-16af-49dd-8bcf-fff7b344ec73 for **Columnchart with waterfall**
 
 
 Read my announcement on LinkedIn:
@@ -20,5 +23,5 @@ https://www.linkedin.com/groups/12827987/
 #### Columnchart with waterfall (available)
 <img src="test_charts/columnchart_001.png" alt="columnchart example" width="750"/>
 
-#### Barchart with waterfall (available)
+#### Barchart with waterfall (not available yet, expected end of september 2023)
 <img src="test_charts/barchart_001.png" alt="barchart example" width="500"/>
