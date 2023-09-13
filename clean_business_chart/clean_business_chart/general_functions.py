@@ -168,7 +168,7 @@ def convert_to_native_python_type(value):
 
     # Value is not a native python integer or float
     try:
-        # We try to get the native format out of a pandas/numpy variable
+        # We try to get the native format out of a pandas/numpy variable. The .item() is to get standard Python types back instead of numpy-types.
         export_value = value.item()
         if not isinteger(export_value) and not isfloat(export_value):
             # No, export_value is still not a native python integer or float
