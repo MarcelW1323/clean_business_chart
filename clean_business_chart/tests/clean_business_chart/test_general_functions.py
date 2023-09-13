@@ -283,6 +283,56 @@ def test_error_not_isaxes():
     assert str(exceptioninfo.value) == 'Variable "axes1" is not of type Axes, but of type '+str(type(axes1))
 
 
+def test_convert_to_native_python_type():
+    # Test 1 - Max float
+    data     = pd.DataFrame({'PY'       : [32, 38.2, 40, 39, 38],        # Float
+                             'AC'       : [35, 33, 39, 37, 36]})         # Integer
+    expected1 = 40.0
+    actual1   = convert_to_native_python_type(data['PY'].max())
+    message   = "Test 1a - convert_to_native_python_type returned {0} instead of {1}".format(actual1, expected1)
+    assert actual1 == expected1, message
+    expected2 = type(expected1)
+    actual2   = type(actual1)
+    message   = "Test 1b - convert_to_native_python_type returned type {0} instead of type {1}".format(actual2, expected2)
+    assert actual2 == expected2, message
+
+    # Test 2 - Min integer
+    data     = pd.DataFrame({'PY'       : [32, 38.2, 40, 39, 38],        # Float
+                             'AC'       : [35, 33, 39, 37, 36]})         # Integer
+    expected1 = 33
+    actual1   = convert_to_native_python_type(data['AC'].min())
+    message   = "Test 2a - convert_to_native_python_type returned {0} instead of {1}".format(actual1, expected1)
+    assert actual1 == expected1, message
+    expected2 = type(expected1)
+    actual2   = type(actual1)
+    message   = "Test 2b - convert_to_native_python_type returned type {0} instead of type {1}".format(actual2, expected2)
+    assert actual2 == expected2, message
+
+    # Test 3 - Mean float
+    data     = pd.DataFrame({'PY'       : [32, 38.2, 40, 39, 38],        # Float
+                             'AC'       : [35, 33, 39, 37, 36]})         # Integer
+    expected1 = 37.44
+    actual1   = convert_to_native_python_type(data['PY'].mean())
+    message   = "Test 3a - convert_to_native_python_type returned {0} instead of {1}".format(actual1, expected1)
+    assert actual1 == expected1, message
+    expected2 = type(expected1)
+    actual2   = type(actual1)
+    message   = "Test 3b - convert_to_native_python_type returned type {0} instead of type {1}".format(actual2, expected2)
+    assert actual2 == expected2, message
+
+    # Test 4 - Sum integer
+    data     = pd.DataFrame({'PY'       : [32, 38.2, 40, 39, 38],        # Float
+                             'AC'       : [35, 33, 39, 37, 36]})         # Integer
+    expected1 = 180
+    actual1   = convert_to_native_python_type(data['AC'].sum())
+    message   = "Test 4a - convert_to_native_python_type returned {0} instead of {1}".format(actual1, expected1)
+    assert actual1 == expected1, message
+    expected2 = type(expected1)
+    actual2   = type(actual1)
+    message   = "Test 4b - convert_to_native_python_type returned type {0} instead of type {1}".format(actual2, expected2)
+    assert actual2 == expected2, message
+
+
 def test_plot_line_accross_axes():
     # The function plot_line_accross_axes() draws a line in a figure object.
     #### At the moment I have no idea how to test this function

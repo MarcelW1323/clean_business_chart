@@ -148,6 +148,55 @@ def error_not_isaxes(inputvariable, name_inputvariable_in_text=None):
         # inputvariable is a matplotlib Axes, do return to caller
     return
 
+
+def convert_to_native_python_type(value):
+    """
+    Converts a pandas/numpy integer or float variable to their native python type.
+
+    Parameters
+    ----------
+    value : value to convert to a native python type.
+
+    Returns
+    -------
+    export_value: a native python integer or float
+    """
+    # Check if the value is already a native integer or float
+    if isinteger(value) or isfloat(value):
+        export_value = value
+        return export_value
+
+    # Value is not a native python integer or float
+    try:
+        # We try to get the native format out of a pandas/numpy variable
+        export_value = value.item()
+        if not isinteger(export_value) and not isfloat(export_value):
+            # No, export_value is still not a native python integer or float
+            raise ValueError("We like to go further with the except-clause")
+        # else:
+            # Yes, export_value is a native python integer or float
+
+    except:
+        # Check if it is a pandas/numpy variable
+        if 'numpy' in str(type(value)):
+            # Yes, it is a pandas/numpy variable
+            if 'float' in str(type(value)):
+                # The text 'float' is in the type information
+                export_value = float(value)
+            elif 'int' in str(type(value)):
+                # The text 'int' is in the type information
+                export_value = int(value)
+        # else:
+            # No, it is not a pandas/numpy variable
+
+        # Check the type of export_value
+        if not isinteger(export_value) and not isfloat(export_value):
+            # No, export_value is still not a native python integer or float. We unconditionally convert it to a float.
+            export_value = float(value)
+
+    return export_value
+
+
 def plot_line_accross_axes(fig, axbegin, xbegin, ybegin, axend, xend, yend, linecolor='black', arrowstyle='-', linewidth=1, endpoints=False, endpointcolor=None):
     """
     plot_line_accross_axes is needed when you want to draw a line over the borders of one subplot. Optionally the line has two endpoints to mark the beginning and end of the line
