@@ -8,7 +8,7 @@ from clean_business_chart.clean_business_chart import GeneralChart
 from clean_business_chart.general_functions    import plot_line_accross_axes, plot_line_within_ax, prepare_title, formatstring, optimize_data, \
                                                       islist, isdictionary, isinteger, isstring, isfloat, isboolean, isdataframe, error_not_islist, \
                                                       error_not_isdictionary, error_not_isinteger, error_not_isstring, error_not_isboolean, \
-                                                      error_not_isdataframe, error_not_isaxes, \
+                                                      error_not_isdataframe, error_not_isaxes, convert_to_native_python_type, \
                                                       string_to_value, filter_lists, convert_data_string_to_pandas_dataframe, convert_data_list_of_lists_to_pandas_dataframe, \
                                                       dataframe_translate_field_headers, dataframe_search_for_headers, dataframe_keep_only_relevant_columns, \
                                                       dataframe_date_to_year_and_month, dataframe_convert_year_month_to_string, list1_is_subset_list2, \
@@ -1912,14 +1912,14 @@ class BarWithWaterfall(GeneralChart):
 
         for element in self.data_scenarios:
             if decimals is None:
-                # No rounding, just sum it up and store. The .item() is to get standard Python types back instead of numpy-types.
-                self.data_total[element] = dataframe[element].sum().item()
+                # No rounding, just sum it up and store.
+                self.data_total[element] = convert_to_native_python_type(dataframe[element].sum())
             else:
                 # Rounding is activated, but we can only round on an integer number of decimals
                 error_not_isinteger(decimals, "decimals")
                 # Parameter decimals is an integer, do the rounding calculation and store it to the scenario of data_total.
-                # The .item() is to get standard Python types back instead of numpy-types.
-                self.data_total[element] = optimize_data(data=dataframe[element].sum().item(), numerator=1, denominator=1, decimals=decimals)
+                self.data_total[element] = optimize_data(data=convert_to_native_python_type(dataframe[element].sum()),
+                                                         numerator=1, denominator=1, decimals=decimals)
 
         return
 
@@ -1963,6 +1963,9 @@ class BarWithWaterfall(GeneralChart):
         # Now take the maximum of the list. Due to absolute values a lower minus value can be the max value now!
         big_detail = max(big_details)
 
+        # Be sure to make it a native python type
+        big_detail = convert_to_native_python_type(big_detail)
+
         return big_detail
 
 
@@ -1998,6 +2001,9 @@ class BarWithWaterfall(GeneralChart):
         # Now take the maximum of the list. Due to absolute values a lower minus value can be the max value now!
         big_total  = max(big_totals)
 
+        # Be sure to make it a native python type
+        big_total = convert_to_native_python_type(big_total)
+
         return big_total
 
 
@@ -2020,8 +2026,8 @@ class BarWithWaterfall(GeneralChart):
         export_denominator       : Dividervalue for all DataFrame-values and total-values
         """
         # Check parameters
-        ####if not isinteger(big_detail) and not isfloat(big_detail):
-        ####    raise TypeError('Parameter big_detail "'+str(big_detail)+'" is not an integer or a float, but of type '+str(type(big_detail)))
+        if not isinteger(big_detail) and not isfloat(big_detail):
+            raise TypeError('Parameter big_detail "'+str(big_detail)+'" is not an integer or a float, but of type '+str(type(big_detail)))
  
         # Check self-variables
         if not isinstance(self.original_multiplier, Multiplier):

@@ -27,9 +27,9 @@ Features
 --------
 
 * ColumnWithWaterfall, the first chart released with clean-business-chart (version 0.1.0)!
-* added support for pandas in version 0.1.1
-* added date column support for pandas DataFrame and added translation of column headers inside the call in version 0.1.2
-* BarWithWaterfall, the second chart released in version 0.2.0
+  * added support for pandas in version 0.1.1
+  * added date column support for pandas DataFrame and added translation of column headers inside the call in version 0.1.2
+* BarWithWaterfall, the second chart released in version 0.2.2
 
 
 Read more
