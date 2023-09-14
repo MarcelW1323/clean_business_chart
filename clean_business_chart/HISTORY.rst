@@ -5,13 +5,13 @@ History
 0.2.2 (2023-09-14)
 ------------------
 
-* Second chart: bar chart with waterfall. Small bugfix occured on Google Colab, not at local installation. Other solution.
+* Second chart: bar chart with waterfall. Small bug occured on Google Colab, not at local installation. Other solution.
 
 
 0.2.1 (2023-09-12)
 ------------------
 
-* Second chart: bar chart with waterfall. Small bugfix occured on Google Colab, not at local installation. Bugfix wasn't succesfull
+* Second chart: bar chart with waterfall. Small bug occured on Google Colab, not at local installation. Bugfix wasn't succesfull.
 
 
 0.2.0 (2023-09-12)
