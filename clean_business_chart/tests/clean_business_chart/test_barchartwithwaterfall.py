@@ -443,8 +443,8 @@ def test__dataframe_aggregate():
                              'AC'       : [35, 33, 39, 37, 36],
                              'FC'       : [32, 38, 41, 39, 40]})
     testvar  = BarWithWaterfall(test=True)
-    expected = {'_Category': ['Airbus', 'Airbus', 'Boeing', 'Boeing'], 'Year': ['2021', '2022', '2021', '2022'], 
-                'PY': [72.0, 38.0, 38.2, 39.0], 'PL': [74.0, 39.0, 38.98899, 40.0], 'AC': [74, 36, 33, 37], 'FC': [73, 40, 38, 39]}
+    expected = {'_Category': ['Airbus', 'Boeing', 'Boeing', 'Airbus'], 'Year': ['2021', '2021', '2022', '2022'],
+                'PY': [72.0, 38.2, 39.0, 38.0], 'PL': [74.0, 38.98899, 40.0, 39.0], 'AC': [74, 33, 37, 36], 'FC': [73, 38, 39, 40]}
     actual   = testvar._dataframe_aggregate(dataframe=dataset, wanted_headers=['_Category', 'Year'])
     actual   = actual.to_dict(orient='list')
     message  = "Test 1 - BarWithWaterfall._dataframe_aggregate returned {0} instead of {1}".format(actual, expected)
@@ -977,6 +977,8 @@ def test__sort_dataframe_with_other_last():
                              '_CBC_DELTA1': [-0.75, -0.9, -7.4, -1.3, 0.6],
                              '_CBC_DELTA2': [37.9, 31.1, 33.6, 35.8, 35.7]})
     testvar  = BarWithWaterfall(test=True)
+    testvar.sort_dataframe = True
+    testvar.compare_scenarios = ['AC', 'FC']
     expected = {'Year'       : ['2022', '2022', '2022', '2022', '2022'],
                 'PY'         : [35.0, 32.7, 38.2, 38.0, 40.0],
                 'PL'         : [36.0, 33.0, 38.9, 40.3, 41.0],
@@ -1000,6 +1002,8 @@ def test__sort_dataframe_with_other_last():
                              '_CBC_DELTA1': [-0.75, -0.9, -7.4, -1.3, 0.6],
                              '_CBC_DELTA2': [37.9, 31.1, 33.6, 35.8, 35.7]})
     testvar  = BarWithWaterfall(test=True)
+    testvar.sort_dataframe = True
+    testvar.compare_scenarios = ['AC', 'FC']
     expected = {'Year'       : ['2022', '2022', '2022', '2022', '2022'],
                 'PY'         : [35.0, 32.7, 38.0, 40.0, 38.2],
                 'PL'         : [36.0, 33.0, 40.3, 41.0, 38.9],
@@ -1013,14 +1017,41 @@ def test__sort_dataframe_with_other_last():
     message  = "Test 2 - BarWithWaterfall._sort_dataframe_with_other_last returned {0} instead of {1}".format(actual, expected)
     assert actual == pytest.approx(expected), message
 
-    # Test 3 - String instead of dataframe
+    # Test 3 - Good dataframe, but don't sort the dataframe
+    dataset  = pd.DataFrame({'PY'         : [32.7, 38.2, 40.0, 38.0, 35.0],
+                             'PL'         : [33.0, 38.9, 41.0, 40.3, 36.0],
+                             '_Category'  : ['0-30 days', '31-60 days', '61-90 days', '91-120 days', '> 120 days'],
+                             'AC'         : [32.25, 38.0, 33.6, 39.0, 36.6],
+                             'FC'         : [38.65, 32.0, 41.0, 37.1, 35.1],
+                             '_CBC_DELTA1': [-0.75, -0.9, -7.4, -1.3, 0.6],
+                             '_CBC_DELTA2': [37.9, 31.1, 33.6, 35.8, 35.7]})
+    testvar  = BarWithWaterfall(test=True)
+    testvar.sort_dataframe = False
+    testvar.compare_scenarios = ['AC', 'FC']
+    expected = {'PY'         : [32.7, 38.2, 40.0, 38.0, 35.0],
+                'PL'         : [33.0, 38.9, 41.0, 40.3, 36.0],
+                '_Category'  : ['0-30 days', '31-60 days', '61-90 days', '91-120 days', '> 120 days'],
+                'AC'         : [32.25, 38.0, 33.6, 39.0, 36.6],
+                'FC'         : [38.65, 32.0, 41.0, 37.1, 35.1],
+                '_CBC_DELTA1': [-0.75, -0.9, -7.4, -1.3, 0.6],
+                '_CBC_DELTA2': [37.9, 31.1, 33.6, 35.8, 35.7]}
+    actual   = testvar._sort_dataframe_with_other_last(dataframe=dataset)
+    actual   = actual.to_dict(orient='list')
+    message  = "Test 3 - BarWithWaterfall._sort_dataframe_with_other_last returned {0} instead of {1}".format(actual, expected)
+    assert actual == pytest.approx(expected), message
+
+    # Test 4 - String instead of dataframe
     with pytest.raises(TypeDataFrameError):
         testvar = BarWithWaterfall(test=True)
+        testvar.sort_dataframe = True
+        testvar.compare_scenarios = ['AC', 'FC']
         testvar._sort_dataframe_with_other_last(dataframe='This is a string')
 
-    # Test 4 - Dataframe is missing the category-of-interest column
+    # Test 5 - Dataframe is missing the category-of-interest column
     with pytest.raises(ValueError):
         testvar = BarWithWaterfall(test=True)
+        testvar.sort_dataframe = True
+        testvar.compare_scenarios = ['AC', 'FC']
         dataset = pd.DataFrame({'Year'       : ['2022', '2022', '2022', '2022', '2022'],
                                 'PY'         : [32.7, 38.2, 40.0, 38.0, 35.0],
                                 'PL'         : [33.0, 38.9, 41.0, 40.3, 36.0],
@@ -1030,9 +1061,11 @@ def test__sort_dataframe_with_other_last():
                                 '_CBC_DELTA2': [37.9, 31.1, 33.6, 35.8, 35.7]})
         testvar._sort_dataframe_with_other_last(dataframe=dataset)
 
-    # Test 5 - Dataframe is missing the delta1 column
+    # Test 6 - Dataframe is missing the delta1 column
     with pytest.raises(ValueError):
         testvar = BarWithWaterfall(test=True)
+        testvar.sort_dataframe = True
+        testvar.compare_scenarios = ['AC', 'FC']
         dataset = pd.DataFrame({'Year'       : ['2022', '2022', '2022', '2022', '2022'],
                                 'PY'         : [32.7, 38.2, 40.0, 38.0, 35.0],
                                 'PL'         : [33.0, 38.9, 41.0, 40.3, 36.0],
@@ -1042,9 +1075,11 @@ def test__sort_dataframe_with_other_last():
                                 '_CBC_DELTA2': [37.9, 31.1, 33.6, 35.8, 35.7]})
         testvar._sort_dataframe_with_other_last(dataframe=dataset)
 
-    # Test 6 - Dataframe is missing the delta2 column
+    # Test 7 - Dataframe is missing the delta2 column
     with pytest.raises(ValueError):
         testvar = BarWithWaterfall(test=True)
+        testvar.sort_dataframe = True
+        testvar.compare_scenarios = ['AC', 'FC']
         dataset = pd.DataFrame({'Year'       : ['2022', '2022', '2022', '2022', '2022'],
                                 'PY'         : [32.7, 38.2, 40.0, 38.0, 35.0],
                                 'PL'         : [33.0, 38.9, 41.0, 40.3, 36.0],
@@ -1053,6 +1088,22 @@ def test__sort_dataframe_with_other_last():
                                 'FC'         : [38.65, 32.0, 41.0, 37.1, 35.1],
                                 '_CBC_DELTA1': [-0.75, -0.9, -7.4, -1.3, 0.6]})
         testvar._sort_dataframe_with_other_last(dataframe=dataset)
+
+    # Test 8 - Compare scenarios is not a list
+    with pytest.raises(TypeListError):
+        testvar = BarWithWaterfall(test=True)
+        testvar.sort_dataframe = True
+        testvar.compare_scenarios = 'This is a string'
+        dataset = pd.DataFrame({'Year'       : ['2022', '2022', '2022', '2022', '2022'],
+                                'PY'         : [32.7, 38.2, 40.0, 38.0, 35.0],
+                                'PL'         : [33.0, 38.9, 41.0, 40.3, 36.0],
+                                '_Category'  : ['Airbus', 'OTHER', 'Boeing', 'General Dynamics', 'Lockheed Martin'],
+                                'AC'         : [32.25, 38.0, 33.6, 39.0, 36.6],
+                                'FC'         : [38.65, 32.0, 41.0, 37.1, 35.1],
+                                '_CBC_DELTA1': [-0.75, -0.9, -7.4, -1.3, 0.6],
+                                '_CBC_DELTA2': [37.9, 31.1, 33.6, 35.8, 35.7]})
+        testvar._sort_dataframe_with_other_last(dataframe=dataset)
+
 
 def test__drop_zero_lines():
     # Test 1 - Good dataframe, one line with only zeros, one line with some zeros. We want to remove lines with zeros.
@@ -1135,6 +1186,7 @@ def test__drop_zero_lines():
         testvar.data_scenarios = list()
         dataset = pd.DataFrame()
         testvar._drop_zero_lines(dataframe=dataset)
+
 
 def test__optimize_data_get_big_total():
     # Test 1 - Good dictionary. The maximum is already a positive number
@@ -1766,6 +1818,7 @@ def test__process_dataframe():
     testvar.original_multiplier = Multiplier("1")
     testvar.force_zero_decimals = False
     testvar.force_max_one_decimals = False
+    testvar.sort_dataframe = True
     expected = {'Year': ['2022', '2022', '2022', '2022', '2022'],
                 'PY': [38.5, 38.9, 39.4, 39.7, 40.2],
                 'PL': [38.9, 39.8, 39.8, 41.8, 40.6],
@@ -1804,6 +1857,7 @@ def test__check_and_process_data():
     testvar.original_multiplier = Multiplier("1")
     testvar.force_zero_decimals = False
     testvar.force_max_one_decimals = False
+    testvar.sort_dataframe = True
     expected = {'Year': ['2022', '2022', '2022', '2022', '2022'],
                 'PY': [38.5, 38.9, 39.4, 39.7, 40.2],
                 'PL': [38.9, 39.8, 39.8, 41.8, 40.6],
@@ -1848,6 +1902,7 @@ def test__check_and_process_data():
     testvar.original_multiplier = Multiplier("1")
     testvar.force_zero_decimals = False
     testvar.force_max_one_decimals = False
+    testvar.sort_dataframe = True
     expected = {'_Category': ['Spain', 'Greece', 'Sweden', 'Germany', 'Russia', 'Great Britain', 'Italy', 'Slovenia', 'Denmark', 'Netherlands', 'France', 'OTHER'],
                 'PY': [30.0, 38.0, 38.0, 90.0, 60.0, 15.0, 15.0, 4.0, 29.0, 39.0, 60.0, 40.0],
                 'PL': [33.0, 33.0, 35.0, 89.0, 56.0, 13.0, 12.0, 5.0, 35.0, 42.0, 77.0, 37.0],
@@ -1898,6 +1953,7 @@ OTHER, 40 , 37 , 44 , 15
     testvar.original_multiplier = Multiplier("1")
     testvar.force_zero_decimals = False
     testvar.force_max_one_decimals = False
+    testvar.sort_dataframe = True
     expected = {'_Category': ['Spain', 'Greece', 'Sweden', 'Germany', 'Russia', 'Great Britain', 'Italy', 'Slovenia', 'Denmark', 'Netherlands', 'France', 'OTHER'],
                 'PY': [30.0, 38.0, 38.0, 90.0, 60.0, 15.0, 15.0, 4.0, 29.0, 39.0, 60.0, 40.0],
                 'PL': [33.0, 33.0, 35.0, 89.0, 56.0, 13.0, 12.0, 5.0, 35.0, 42.0, 77.0, 37.0],
@@ -2381,8 +2437,8 @@ def test_BarWithWaterfall():
                  'Sweden'       : [ 38 , 35 , 40 ,  0 ],
                  'Germany'      : [ 90 , 89 , 93 , 25 ],
                  'Russia'       : [ 60 , 56 , 60 ,  0 ],
-                 'Italy'        : [ 15 , 12 , 14 ,  4 ],
-                 'Great Britain': [ 15 , 13 , 15 ,  0 ],
+                 'Italy'        : [ 15 , 12 , 14 ,  0 ],
+                 'Great Britain': [ 15 , 13 , 15 ,  4 ],
                  'Slovenia'     : [  4 ,  5 ,  4 ,  0 ],
                  'Denmark'      : [ 29 , 35 , 33 , 10 ],
                  'Netherlands'  : [ 39 , 42 , 38 , 15 ],
@@ -2418,8 +2474,8 @@ def test_BarWithWaterfall():
                  'Sweden'       : [ 38 , 35 , 40 ,  0 ],
                  'Germany'      : [ 90 , 89 , 93 , 25 ],
                  'Russia'       : [ 60 , 56 , 60 ,  0 ],
-                 'Italy'        : [ 15 , 12 , 14 ,  4 ],
-                 'Great Britain': [ 15 , 13 , 15 ,  0 ],
+                 'Italy'        : [ 15 , 12 , 14 ,  0 ],
+                 'Great Britain': [ 15 , 13 , 15 ,  4 ],
                  'Slovenia'     : [  4 ,  5 ,  4 ,  0 ],
                  'Denmark'      : [ 29 , 35 , 33 , 10 ],
                  'Netherlands'  : [ 39 , 42 , 38 , 15 ],

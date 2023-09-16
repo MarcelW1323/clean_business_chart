@@ -87,12 +87,14 @@ class BarWithWaterfall(GeneralChart):
                               Default: True (category-elements with zero in all scenarios will be removed)    
     other                   : Text that will be displayed instead of "OTHER"
                               Default: None ("OTHER" will be displayed)
+    sort_chart              : Sort the info for the chart (True) or don't sort at all (False).
+                              Default: True (sort dataframe while aggregating)
     """
 
     def __init__(self, data=None, positive_is_good=True, base_scenarios=None, compare_scenarios=None, title=None, measure=True, multiplier='1', 
                  filename=None, force_pl_is_zero=False, force_zero_decimals=False, force_max_one_decimals=False, translate_headers=None, 
-                 category_of_interest=None, previous_year=False, total_text=None, total_line=True, remove_lines_with_zeros=True, other=None, test=False,
-                 do_not_show=False):
+                 category_of_interest=None, previous_year=False, total_text=None, total_line=True, remove_lines_with_zeros=True, other=None,
+                 sort_chart=True, test=False, do_not_show=False):
         """
         The function __init__ is the first function that will be called automatically. Here you'll find all the possible parameters to customize your experience.
         """
@@ -120,6 +122,7 @@ class BarWithWaterfall(GeneralChart):
         self.total_line                 = total_line
         self.remove_lines_with_zeros    = remove_lines_with_zeros
         self.other_text                 = other
+        self.sort_dataframe             = sort_chart
 
         # Check scenarios
         self.simple_first_check_scenario_parameters()     
@@ -290,9 +293,9 @@ class BarWithWaterfall(GeneralChart):
                 #               Gives answer to the question: How am I doing this time period when the rest of the time period goes like previous year
                 #               compared to the same time period previous year.
                 # PY and FC   : Compare the forecast against the previous year.
-                #               Gives answer to the question: How is my forecast this time period compared to the same time period previous year.
+                #               Gives answer to the question: How is my forecast this time period compared to the actuals of the same time period previous year.
                 # PY and PL   : Compare the plan against the previous year.
-                #               Gives answer to the question: How is my plan this time period compared to the same time period previous year.
+                #               Gives answer to the question: How is my plan this time period compared to the actuals of the same time period previous year.
         if base == 'PL':
             # The first bar is PLan
             if compare not in ( ['AC'], ['AC', 'FC'], ['AC', 'PY'], ['AC', 'PL'], ['FC'] ):
@@ -1031,6 +1034,8 @@ class BarWithWaterfall(GeneralChart):
         self.linewidth_bar     : The width of the lines from a bar
         self.linewidth_line_n  : The normal width of the lines
         self.padding           : Padding between the bars and the text
+        self.sort_dataframe    : Boolean value determining if we need to do the sorting (True) or not (False)
+                                 In the future, 'sort_dataframe' can have an other meaning and type.
         """
         # Check parameter
         error_not_isdataframe(dataframe, "dataframe")
@@ -1095,9 +1100,14 @@ class BarWithWaterfall(GeneralChart):
                          font=self.font, fontsize=self.fontsize, zorder=10)
 
         # Plot the downarrow (\u2193). The up-arrow has code: \u2191. \u0394 is a delta-sign
-        ax.text(base_value, yvalues[0]+0.75, "\u0394"+base_scenario+"(\u2193)", horizontalalignment='left', font=self.font, 
-                             fontsize=self.fontsize, color=self.colors['text'])
-
+        if self.sort_dataframe:
+            # Yes, the dataframe is sorted, so we need to add the arrow
+            ax.text(base_value, yvalues[0]+0.75, "\u0394"+base_scenario+"(\u2193)", horizontalalignment='left', font=self.font,
+                                 fontsize=self.fontsize, color=self.colors['text'])
+        else:
+            # No, the dataframe is not sorted, so no need for an arrow
+            ax.text(base_value, yvalues[0]+0.75, "\u0394"+base_scenario, horizontalalignment='left', font=self.font,
+                                 fontsize=self.fontsize, color=self.colors['text'])
         return
 
 
@@ -1540,7 +1550,7 @@ class BarWithWaterfall(GeneralChart):
             raise ValueError("Available headers does not contain the category of interest: "+str(available_headers))
 
         # Aggregate data
-        export_dataframe = dataframe.groupby(available_headers).sum().reset_index().copy()
+        export_dataframe = dataframe.groupby(available_headers, sort=False).sum().reset_index().copy()
 
         return export_dataframe 
 
@@ -2253,14 +2263,32 @@ class BarWithWaterfall(GeneralChart):
 
         Parameters
         ----------
-        dataframe : pandas DataFrame with all values
+        dataframe              : pandas DataFrame with all values
+
+        Self variables
+        --------------
+        self.sort_dataframe    : Boolean value determining if we need to do the sorting (True) or not (False)
+                                 In the future, 'sort_dataframe' can have an other meaning and type.
+        self.compare_scenarios : List of compare scenarios
         
         Returns
         -------
-        export_dataframe: pandas DataFrame sorted by delta-values where OTHER value is handled separate
+        export_dataframe       : pandas DataFrame sorted by delta-values where OTHER value is handled separate
         """
         # Check dataframe
         error_not_isdataframe(dataframe, 'dataframe')
+
+        # Check self-variable
+        if isboolean(self.sort_dataframe):
+            # Sort dataframe can be true or false
+            if not self.sort_dataframe:
+                # Sort_dataframe = False. We don't want to sort this dataframe
+                return dataframe
+
+        # In the sort, we want to take the first compare scenario after the delta columns
+        error_not_islist(self.compare_scenarios)
+        # Yes, compare_scenarios is a list, take the first compare_scenario
+        compare_scenario1 = self.compare_scenarios[0]
 
         # Check pre-condition
         if not list1_is_subset_list2(list1=['_Category', '_CBC_DELTA1', '_CBC_DELTA2'], list2=list(dataframe.columns)):
@@ -2271,7 +2299,7 @@ class BarWithWaterfall(GeneralChart):
 
         # Use all values except the OTHER value and then sort the dataframe
         df_all_but_other = dataframe[dataframe['_Category'] != "OTHER"].copy()
-        df_all_but_other = df_all_but_other.sort_values(by=['_CBC_DELTA1'], ascending=False).copy()
+        df_all_but_other = df_all_but_other.sort_values(by=['_CBC_DELTA1', '_CBC_DELTA2', compare_scenario1], ascending=False).copy()
 
         # Add the OTHER values back to the dataframe
         export_dataframe = pd.concat([df_all_but_other, df_other], ignore_index=True).copy()

@@ -868,10 +868,13 @@ def dataframe_convert_year_month_to_string(dataframe, wanted_headers, year_field
 
     Returns
     -------
-    export_dataframe : pandas DataFrame sorted by available headers
+    export_dataframe : pandas DataFrame sorted by available headers if year and/or month are in available headers
     """
     # Search for available headers
     available_headers = dataframe_search_for_headers(dataframe, search_for_headers=wanted_headers, error_not_found=False)
+
+    # Initialise sort-variable: standard no-sorting
+    sort_dataframe = False
 
     # Prepare the dataframe to be returned
     export_dataframe = dataframe.copy()
@@ -879,16 +882,20 @@ def dataframe_convert_year_month_to_string(dataframe, wanted_headers, year_field
     # Convert year to string.
     year = year_field[0]
     if year in available_headers:
-        # Yes, year is available in the headers
+        # Yes, year is available in the headers, so we can sort on that
         export_dataframe[year] = export_dataframe[year].apply(int).apply(str)
+        sort_dataframe = True
 
     # Convert month to string with length=2, filled with leading zeros if value < 10
     month = month_field[0]
     if month in available_headers:
-        # Yes, month is available in the headers
+        # Yes, month is available in the headers, so we can sort on that
         export_dataframe[month] = export_dataframe[month].apply(int).apply(str).str.zfill(2)
+        sort_dataframe = True
 
-    # Sort dataframe by available headers
-    export_dataframe = export_dataframe.sort_values(available_headers, ascending = [True] * len(available_headers)).copy()
+    # Do we need to sort?
+    if sort_dataframe:
+       # Yes, sort dataframe by available headers
+       export_dataframe = export_dataframe.sort_values(available_headers, ascending = [True] * len(available_headers)).copy()
 
     return export_dataframe
