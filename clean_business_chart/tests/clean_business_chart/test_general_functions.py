@@ -969,7 +969,20 @@ def test_dataframe_convert_year_month_to_string():
     message  = "Test 2 - dataframe_convert_year_month_to_string returned {0} instead of {1}".format(actual, expected)
     assert actual == expected, message
 
-    # Test 3 - only dataframe supported
+    # Test 3 - good dataframe without year values or month values, but with a category-of-interest
+    dataset = pd.DataFrame({'_Category' : ['sales', 'finance', 'operations', 'marketing'],
+                            'AC'        : [35     , 33       , 17          , 3          ],
+                            'PY'        : [32     , 37       , 19          , 2          ]})
+    expected = {'_Category': ['sales', 'finance', 'operations', 'marketing'], 
+                'AC': [35, 33, 17, 3], 
+                'PY': [32, 37, 19, 2]}
+    wanted_headers = ['_Category']
+    actual   = dataframe_convert_year_month_to_string(dataset, wanted_headers=wanted_headers, year_field=['Year'], month_field=['Month'])
+    actual   = actual.to_dict(orient='list')
+    message  = "Test 3 - dataframe_convert_year_month_to_string returned {0} instead of {1}".format(actual, expected)
+    assert actual == expected, message
+
+    # Test 4 - only dataframe supported
     with pytest.raises(TypeError):
         dataframe_convert_year_month_to_string("This is a string", wanted_headers=['Year', 'Month'], year_field=['Year'], month_field=['Month'])
 

@@ -1,5 +1,7 @@
 """Multiplier-module"""
 
+from clean_business_chart.general_functions    import isinteger, isfloat
+
 class Multiplier:
     """
     The class Multiplier helps you manage a multiplier in validating the multiplier, let you get the corresponding value and gives you the string to show. 
@@ -181,16 +183,15 @@ class Multiplier:
         ----------
         denominator : a factor by which all related values needs to be divided by. The denominator can be 1 (no further optimization possible), 1000, 1000000 or 1000000000.
         """
-        
+        # Check for integer or float
+        if not isinteger(value) and not isfloat(value):
+            raise TypeError('Parameter value "'+str(value)+'" is not an integer or a float, but of type '+str(type(value)))
+
         # Prepare optimization
         multiplier_index = self.get_multiplier_index()
         copy_value = value
         denominator = 1
-        
-        # Check for integer or float
-        if type(copy_value) != type(1) and type(copy_value) != type(1.1):
-            raise TypeError(str(copy_value)+" is not an integer or a float.")
-        
+
         # Keep on going to the next multiplier as long as the value with the next multiplier will be one or greater and as long as there are multipliers left
         while ((copy_value // 1000 ) >= 1) and (multiplier_index < len(self._multipliers)-1):
             multiplier_index += 1

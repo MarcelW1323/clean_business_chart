@@ -2,6 +2,12 @@
 History
 =======
 
+0.2.4 (2023-09-26)
+------------------
+
+* Added parameter 'sort_chart' in bar chart with waterfall for supporting ordinal categories-of-interest.
+
+
 0.2.2 (2023-09-14)
 ------------------
 

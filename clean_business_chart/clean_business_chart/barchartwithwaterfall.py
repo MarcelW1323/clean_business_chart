@@ -273,7 +273,7 @@ class BarWithWaterfall(GeneralChart):
         base = self.base_scenarios[0]
         compare = self.compare_scenarios
 
-        #### FIRST VERSION SUPPORTS ONLY ONE COMPARE SCENARIO
+        #### THIS VERSION SUPPORTS ONLY ONE COMPARE SCENARIO
         if len(compare) > 1:
             raise ValueError("More than one compare scenario is still not supported:"+str(compare))
         

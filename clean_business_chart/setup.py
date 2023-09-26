@@ -35,7 +35,8 @@ setup(
         'Programming Language :: Python :: 3.12',
         'Topic :: Scientific/Engineering :: Visualization',
     ],
-    description="Clean Business Chart is a Python package for IBCS-like charts based on matplotlib.",
+    # description will be visible in the search on PyPi.org
+    description="Clean Business Chart is a Python package for IBCS-like charts based on matplotlib. Currently a column chart with waterfall and a barchart with waterfall are supported.",
     install_requires=requirements,
     license="MIT license",
     long_description=readme + '\n\n' + history,
@@ -46,7 +47,7 @@ setup(
     test_suite='tests',
     tests_require=test_requirements,
     url='https://github.com/marcelw1323/clean_business_chart',
-    version='0.2.2',
+    version='0.2.4',
     zip_safe=False,
 )
 
