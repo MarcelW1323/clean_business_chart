@@ -6,7 +6,7 @@ This Python Package can be tested with a Jupyter notebook online:
 
 On Google Colab: 
 * https://colab.research.google.com/drive/1DZpijeML8epNu3b3APn1Toe70RcYOJwR?usp=drive_link for **Columnchart with waterfall**
-* https://colab.research.google.com/drive/1HofevzNHv9luQV-BpiGy6acOP1uchO6_?usp=drive_link for **Barchart with waterfall**
+* https://colab.research.google.com/drive/1WuqWXcW0WWa5DK4_anNRgvYhxUewqdwQ?usp=sharing for **Barchart with waterfall**
 
 Or DataCamp Workspace: 
 * https://app.datacamp.com/workspace/w/63ef8399-16af-49dd-8bcf-fff7b344ec73 for **Columnchart with waterfall**
@@ -26,4 +26,4 @@ Try it yourself: https://colab.research.google.com/drive/1DZpijeML8epNu3b3APn1To
 
 #### Barchart with waterfall (available)
 <img src="test_charts/barchart_001.png" alt="barchart example" width="500"/>
-Try it yourself: https://colab.research.google.com/drive/1HofevzNHv9luQV-BpiGy6acOP1uchO6_?usp=drive_link
+Try it yourself: https://colab.research.google.com/drive/1WuqWXcW0WWa5DK4_anNRgvYhxUewqdwQ?usp=sharing
