@@ -899,3 +899,48 @@ def dataframe_convert_year_month_to_string(dataframe, wanted_headers, year_field
        export_dataframe = export_dataframe.sort_values(available_headers, ascending = [True] * len(available_headers)).copy()
 
     return export_dataframe
+
+
+def get_default_scenarios(type_scenario=None, scenarios=None):
+    """
+    The function get_default_scenarios chooses the best possible scenarios given the type_scenario and available scenarios.
+
+    Parameters
+    ----------
+    type_scenario    : Type of scenarios. Choose from 'base' or 'compare'.
+                       Default: None
+    scenarios        : List of scenarios to assign to the export_scenarios
+
+    Returns
+    -------
+    export_scenarios : List of scenarios related to the type_scenario
+    """
+    # Check parameter type_scenario
+    if type_scenario is None:
+        return
+    error_not_isstring(type_scenario)
+    # Type_scenario is a string
+    if not type_scenario == 'base' and not type_scenario == 'compare':
+        raise ValueError('Parameter type_scenario needs to have value "base" or value "compare".')
+
+    # Check parameter scenarios
+    error_not_islist(scenarios)
+    # scenarios is a list
+
+    # Fill export variable
+    export_scenarios = scenarios[:]
+
+    if type_scenario == 'base':
+        # Never 'AC' as a base scenario
+        export_scenarios = [x for x in export_scenarios if x != 'AC']
+        if len(export_scenarios) > 2:
+            export_scenarios = export_scenarios[:2]
+        export_scenarios.reverse()
+    else:
+        # Never 'PY' as a compare scenario
+        export_scenarios = [x for x in export_scenarios if x != 'PY']
+        if len(export_scenarios) > 1:
+            #### THIS VERSION SUPPORTS ONLY ONE COMPARE SCENARIO
+            export_scenarios.reverse()
+            export_scenarios = export_scenarios[:1]
+    return export_scenarios

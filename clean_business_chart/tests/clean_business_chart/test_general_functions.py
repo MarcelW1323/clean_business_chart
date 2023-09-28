@@ -1023,4 +1023,52 @@ def test_convert_dataframe_scenario_columns_to_value():
         convert_dataframe_scenario_columns_to_value(dataframe=dataset, scenariolist=['AC', 'PY', 'PL', 'FC'])
 
 
+def test_get_default_scenarios():
+    # Test 1 - base scenarios out of all scenarios
+    scenarios = ['PY', 'PL', 'FC', 'AC']
+    expected  = ['PL', 'PY']
+    actual    = get_default_scenarios('base', scenarios)
+    message   = "Test 1 - get_default_scenarios returned {0} instead of {1}".format(actual, expected)
+    assert actual == expected, message
+
+    # Test 2 - base scenarios out of a subset of scenarios
+    scenarios = ['PY', 'FC', 'AC']
+    expected  = ['FC', 'PY']
+    actual    = get_default_scenarios('base', scenarios)
+    message   = "Test 2 - get_default_scenarios returned {0} instead of {1}".format(actual, expected)
+    assert actual == expected, message
+
+    # Test 3 - base scenarios out of a subset of scenarios
+    scenarios = ['PL', 'FC', 'AC']
+    expected  = ['FC', 'PL']
+    actual    = get_default_scenarios('base', scenarios)
+    message   = "Test 3 - get_default_scenarios returned {0} instead of {1}".format(actual, expected)
+    assert actual == expected, message
+
+    # Test 4 - base scenarios out of a subset of scenarios
+    scenarios = ['FC', 'AC']
+    expected  = ['FC']
+    actual    = get_default_scenarios('base', scenarios)
+    message   = "Test 4 - get_default_scenarios returned {0} instead of {1}".format(actual, expected)
+    assert actual == expected, message
+
+    # Test 5 - compare scenarios out of all scenarios
+    scenarios = ['PY', 'PL', 'FC', 'AC']
+    expected  = ['AC']
+    actual    = get_default_scenarios('compare', scenarios)
+    message   = "Test 5 - get_default_scenarios returned {0} instead of {1}".format(actual, expected)
+    assert actual == expected, message
+
+    # Test 6 - float instead of string
+    with pytest.raises(TypeStringError):
+        get_default_scenarios(1.2, ['AC', 'PL'])
+
+    # Test 7 - wrong value as string
+    with pytest.raises(ValueError):
+        get_default_scenarios('This is a string with wrong value', ['AC', 'PL'])
+
+    # Test 8 - string instead of list
+    with pytest.raises(TypeListError):
+        get_default_scenarios('base', 'This is a string')
+
 #### Need to add more test-functions for automatic testing
