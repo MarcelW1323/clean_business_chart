@@ -425,7 +425,7 @@ def formatstring(decimals=None):
     raise ValueError("Decimals has value: "+str(decimals)+". Only values 0 to 3 are supported.")
 
 
-def optimize_data(data=None, numerator=1, denominator=1, decimals=0):
+def optimize_data(data=None, numerator=1, denominator=1, decimals=None):
     """
     Optimizes your data to multiply it with the numerator and divide it with the denominator.
 
@@ -444,6 +444,7 @@ def optimize_data(data=None, numerator=1, denominator=1, decimals=0):
          (default value 1).
 
     decimals    : How many decimals needs to be supported?
+         (default value None).
 
     Returns
     -------
@@ -467,10 +468,10 @@ def optimize_data(data=None, numerator=1, denominator=1, decimals=0):
         # Numerator is not an integer and not a float
         raise TypeError("Numerator "+str(numerator)+" is not of type integer or type float")
 
-    # Decimals needs to be an integer
-    if not isinteger(decimals):
-        # Decimals is not an integer
-        raise TypeError("Decimals "+str(decimals)+" is not of type integer, but of type "+str(type(decimals)))    
+    # Decimals needs to be an integer if not None
+    if not decimals is None:
+        error_not_isinteger(decimals, "decimals")
+        # Decimals is now an integer
 
     # Process the data    
     if islist(data):
@@ -480,16 +481,20 @@ def optimize_data(data=None, numerator=1, denominator=1, decimals=0):
             returnvalue[number] = optimize_data(data=element, numerator=numerator, denominator=denominator, decimals=decimals)
     elif isinteger(data) or isfloat(data):
         # Data is a integer or data is a float
-        if decimals == 0:
+        if decimals is None:
+            # No rounding
+            returnvalue = data * numerator / denominator
+        elif decimals == 0:
             # The function "round" returns a float and with 0 decimals, you like to have an integer
             returnvalue = int(round(data * numerator / denominator, decimals))
         else:
-            # Decimals <> 0, we can use the round-function
-            returnvalue = round(data * numerator / denominator, decimals)
+            # Decimals is an integer, but decimals <> 0, we can use the round-function
+            returnvalue = round(data * numerator / denominator, decimals)        # Data is an integer or data is a float
     else:
         # Not a supported data type, just give the value back.
         returnvalue = data
     return returnvalue
+
 
 def string_to_value(value):
     """
