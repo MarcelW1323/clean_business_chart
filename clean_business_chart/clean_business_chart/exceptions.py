@@ -3,6 +3,10 @@ class TypeAxesError(Exception):
     """Raised when the type is not an Axes-object of matplotlib"""
     pass
 
+class TypeFigureError(Exception):
+    """Raised when the type is not a Figure-object of matplotlib"""
+    pass
+
 class TypeListError(Exception):
     """Raised when the type is not a List"""
     pass
@@ -12,7 +16,15 @@ class TypeDictionaryError(Exception):
     pass
 
 class TypeIntegerError(Exception):
-    """Raised when the type is not a List"""
+    """Raised when the type is not an Integer"""
+    pass
+
+class TypeFloatError(Exception):
+    """Raised when the type is not a Float"""
+    pass
+
+class TypeNumberError(Exception):
+    """Raised when the type is not an Integer and not a Float"""
     pass
 
 class TypeDataFrameError(Exception):
@@ -24,5 +36,5 @@ class TypeStringError(Exception):
     pass
 
 class TypeBooleanError(Exception):
-    """Raised when the type is not a List"""
+    """Raised when the type is not a Boolean"""
     pass
