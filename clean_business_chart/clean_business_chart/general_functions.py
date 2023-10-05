@@ -402,13 +402,14 @@ def prepare_title(title=None, multiplier=None):
 
 def formatstring(decimals=None):
     """
-    Give a string with the formatstring so values behave according to the formatstring
-        
+    Give a string with the formatstring so values behave according to the formatstring.
+    NOTE: Be aware that the displayed number will not be rounded, but just cut at the given position of decimals.
+
     Parameters
     ----------
     decimals : How many decimals do you need
          (default value: None). No decimals provided. This causes an error
-    
+
     Returns
     -------
     string: this is a format-string
@@ -493,6 +494,115 @@ def optimize_data(data=None, numerator=1, denominator=1, decimals=None):
     else:
         # Not a supported data type, just give the value back.
         returnvalue = data
+    return returnvalue
+
+
+def convert_number_to_string(data=None, decimals=None, delta_value=False):
+    """
+    The function convert_number_to_string converts a integer or float to a string or a list of items to a string.
+    In case of a integer or a float, the number of decimals will be used for the output. If decimals is None, then a normal
+    conversion to string will take place
+
+    In case of delta_value=True then a positive sign will be placed before a positive value. Negative signs will be untouched for
+    negative values.
+    In case of delta_value=False, then positive integer and float values have no positive sign.
+    That's why this function makes a string of a integer or float and adds a plus sign (+) to a positive value 
+    (also adds a plus sign to a zero value).
+
+    Parameters
+    ----------
+    data                  : An integer or float or list of integers and or floats. When of other type, the value will be 
+                            converted to a string with no additional modification.
+    decimals              : An integer indicating the number of decimals. Only values 0 - 3 are supported.
+                            When decimals is None, no decimal reduction or extension will be done.
+    delta_value           : A boolean to address the addition of a positive sign to positive integers, floats or 0-values.
+                            True: A plus-sign will be added for positive values and 0-values.
+                            False: No plus-sign will be added for positive values and 0-values.
+                            Default value: False (No plus-sign)
+
+    Returns
+    -------
+    returnvalue           : one single string or a list of strings
+    """
+    def _delta_treatment(string_value, value, delta_value):
+        """
+        The local function _delta_treatment adds a plus sign to a number-value in case of value >=0
+        """
+        error_not_isstring(string_value)
+        error_not_isboolean(delta_value)
+        if delta_value:
+            # Yes, we need to add a plus sign in case of value >= 0
+            if isinteger(value) or isfloat(value):
+                # Yes, it is a number
+                if value >= 0:
+                    # Yes, it is positive or 0, add a plus sign
+                    return '+' + string_value
+                else:
+                    # No, it is negative, return unmodified string_value
+                    return string_value
+            else:
+                # No, it is not a number
+                raise TypeNumberError("Value is not an integer or a float, but of type:"+str(type(value)))
+        else:
+            # No, we don't need to add a plus sign in case of value >=0, just return unmodified string_value
+            return string_value
+
+    def _check_decimals(string_value, decimals):
+        """
+        The local function _check_decimals checks and corrects the number of decimals
+        """
+        error_not_isstring(string_value)
+        error_not_isinteger(decimals)
+        if '.' in string_value:
+            # Yes, there is a decimal point
+            position = string_value.find('.')
+            string_decimals = string_value[position+1:]+ '000'
+            string_decimals = string_decimals[:decimals]
+            print('String_value:', string_value, position, 'String_value:', string_value[:position+1], 'String decimals:', string_decimals)
+            return string_value[:position+1]+string_decimals
+        else:
+            # A decimal point is not available, add it and add the number of decimals
+            return string_value + '.' + '0'*decimals
+ 
+    # Check parameter decimals
+    if not decimals is None:
+        # Decimals has a value other than 0, only support for integer values 0 to 3
+        error_not_isinteger(decimals, "decimals")
+        # Decimals is an integer, check value
+        if decimals < 0 or decimals > 3:
+            # Decimals is out of supported range (0, 1, 2, 3 are supported)
+            raise ValueError("Decimals is only supported for 0, 1, 2 or 3, but has value:"+str(decimals))
+    # Decimals has now a valid value (None or 0, 1, 2 or 3)
+
+    # Check parameter delta_value
+    error_not_isboolean(delta_value, "delta_value")
+    # Delta_value is a boolean
+
+    # Supports int/float and lists of int/float
+    if isinteger(data) or isfloat(data):
+        # Data is of type integer or of type float
+        if not decimals is None:
+            # Decimals has a supported value of 0, 1, 2 or 3
+            if decimals == 0:
+                # Decimals=0. Round with 0 decimals gives a float with .0. You want an integer in this case!
+                returnvalue = _delta_treatment(string_value=str(int(round(data, decimals))),
+                                               value=data, delta_value=delta_value)
+            else:
+                # Decimals<>0.
+                returnvalue = _check_decimals(string_value=_delta_treatment(string_value=str(round(data, decimals)),
+                                                                            value=data, delta_value=delta_value),
+                                              decimals=decimals)
+    elif isstring(data):
+        # Data is of type string. Return the same value
+        returnvalue = data
+    elif islist(data):
+        # Data is of type list
+        # Recursive so we check with the same code all elements of the list
+        returnvalue = [convert_number_to_string(data=x, decimals=decimals, delta_value=delta_value) for x in data]
+    else:
+        # Data is not of type integer, not of type float, not of type string and not of type list
+        returnvalue = str(data)
+
     return returnvalue
 
 
