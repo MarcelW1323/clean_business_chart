@@ -592,6 +592,9 @@ def convert_number_to_string(data=None, decimals=None, delta_value=False):
                 returnvalue = _check_decimals(string_value=_delta_treatment(string_value=str(round(data, decimals)),
                                                                             value=data, delta_value=delta_value),
                                               decimals=decimals)
+        else:
+            # Decimals is None
+            returnvalue = data
     elif isstring(data):
         # Data is of type string. Return the same value
         returnvalue = data

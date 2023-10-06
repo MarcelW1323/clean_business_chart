@@ -516,6 +516,161 @@ def test_optimize_data():
         data    = 3
         optimize_data(data=data, numerator=1, denominator=1, decimals=1.1)
 
+def test_convert_number_to_string():
+    # Test 1 - floats rounded with 1 decimals and delta_value=False
+    data     = (16.37682, -106.839, 387, -85726.4923)
+    expected = ('16.4', '-106.8', '387.0', '-85726.5')
+    for data_item, expected_item in zip(data, expected):
+        actual   = convert_number_to_string(data=data_item, decimals=1, delta_value=False)
+        message  = "Test 1 - convert_number_to_string returned {0} instead of {1}".format(actual, expected_item)
+        assert actual == expected_item, message
+
+    # Test 2 - floats rounded with 1 decimals and delta_value=True
+    data     = (16.37682, -106.839, 387, -85726.4923)
+    expected = ('+16.4', '-106.8', '+387.0', '-85726.5')
+    for data_item, expected_item in zip(data, expected):
+        actual   = convert_number_to_string(data=data_item, decimals=1, delta_value=True)
+        message  = "Test 2 - convert_number_to_string returned {0} instead of {1}".format(actual, expected_item)
+        assert actual == expected_item, message
+
+    # Test 3 - floats rounded with 2 decimals and delta_value=False
+    data     = (16.37682, -106.839, 387, -85726.4963)
+    expected = ('16.38', '-106.84', '387.00', '-85726.50')
+    for data_item, expected_item in zip(data, expected):
+        actual   = convert_number_to_string(data=data_item, decimals=2, delta_value=False)
+        message  = "Test 3 - convert_number_to_string returned {0} instead of {1}".format(actual, expected_item)
+        assert actual == expected_item, message
+
+    # Test 4 - floats rounded with 2 decimals and delta_value=True
+    data     = (16.37682, -106.839, 387, -85726.4923)
+    expected = ('+16.38', '-106.84', '+387.00', '-85726.49')
+    for data_item, expected_item in zip(data, expected):
+        actual   = convert_number_to_string(data=data_item, decimals=2, delta_value=True)
+        message  = "Test 4 - convert_number_to_string returned {0} instead of {1}".format(actual, expected_item)
+        assert actual == expected_item, message
+
+    # Test 5 - floats rounded with 3 decimals and delta_value=False
+    data     = (16.37682, -106.8395, 387, -85726.4966, 85726.49651)
+    expected = ('16.377', '-106.840', '387.000', '-85726.497', '85726.497')
+    for data_item, expected_item in zip(data, expected):
+        actual   = convert_number_to_string(data=data_item, decimals=3, delta_value=False)
+        message  = "Test 5 - convert_number_to_string returned {0} instead of {1}".format(actual, expected_item)
+        assert actual == expected_item, message
+
+    # Test 6 - floats rounded with 3 decimals and delta_value=True
+    data     = (16.37682, -106.839, 387, -85726.4923)
+    expected = ('+16.377', '-106.839', '+387.000', '-85726.492')
+    for data_item, expected_item in zip(data, expected):
+        actual   = convert_number_to_string(data=data_item, decimals=3, delta_value=True)
+        message  = "Test 6 - convert_number_to_string returned {0} instead of {1}".format(actual, expected_item)
+        assert actual == expected_item, message
+
+    # Test 7 - floats rounded with 0 decimals and delta_value=False
+    data     = (16.37682, -106.8395, 387, -85726.4966, 85726.49651)
+    expected = ('16', '-107', '387', '-85726', '85726')
+    for data_item, expected_item in zip(data, expected):
+        actual   = convert_number_to_string(data=data_item, decimals=0, delta_value=False)
+        message  = "Test 7 - convert_number_to_string returned {0} instead of {1}".format(actual, expected_item)
+        assert actual == expected_item, message
+
+    # Test 8 - floats rounded with 0 decimals and delta_value=True
+    data     = (16.37682, -106.839, 387, -85726.4923)
+    expected = ('+16', '-107', '+387', '-85726')
+    for data_item, expected_item in zip(data, expected):
+        actual   = convert_number_to_string(data=data_item, decimals=0, delta_value=True)
+        message  = "Test 8 - convert_number_to_string returned {0} instead of {1}".format(actual, expected_item)
+        assert actual == expected_item, message
+
+    # Test 9 - list of floats rounded with 1 decimals and delta_value=False
+    data     = [16.37682, -106.839, 387, -85726.4923]
+    expected = ['16.4', '-106.8', '387.0', '-85726.5']
+    actual   = convert_number_to_string(data=data, decimals=1, delta_value=False)
+    message  = "Test 9 - convert_number_to_string returned {0} instead of {1}".format(actual, expected)
+    assert actual == expected, message
+
+    # Test 10 - list of floats rounded with 1 decimals and delta_value=True
+    data     = [16.37682, -106.839, 387, -85726.4923]
+    expected = ['+16.4', '-106.8', '+387.0', '-85726.5']
+    actual   = convert_number_to_string(data=data, decimals=1, delta_value=True)
+    message  = "Test 10 - convert_number_to_string returned {0} instead of {1}".format(actual, expected)
+    assert actual == expected, message
+
+    # Test 11 - list of floats rounded with 2 decimals and delta_value=False
+    data     = [16.37682, -106.839, 387, -85726.4963]
+    expected = ['16.38', '-106.84', '387.00', '-85726.50']
+    actual   = convert_number_to_string(data=data, decimals=2, delta_value=False)
+    message  = "Test 11 - convert_number_to_string returned {0} instead of {1}".format(actual, expected)
+    assert actual == expected, message
+
+    # Test 12 - list of floats rounded with 2 decimals and delta_value=True
+    data     = [16.37682, -106.839, 387, -85726.4923]
+    expected = ['+16.38', '-106.84', '+387.00', '-85726.49']
+    actual   = convert_number_to_string(data=data, decimals=2, delta_value=True)
+    message  = "Test 12 - convert_number_to_string returned {0} instead of {1}".format(actual, expected)
+    assert actual == expected, message
+
+    # Test 13 - list of floats rounded with 3 decimals and delta_value=False
+    data     = [16.37682, -106.8395, 387, -85726.4966, 85726.49651]
+    expected = ['16.377', '-106.840', '387.000', '-85726.497', '85726.497']
+    actual   = convert_number_to_string(data=data, decimals=3, delta_value=False)
+    message  = "Test 13 - convert_number_to_string returned {0} instead of {1}".format(actual, expected)
+    assert actual == expected, message
+
+    # Test 14 - list of floats rounded with 3 decimals and delta_value=True
+    data     = [16.37682, -106.839, 387, -85726.4923]
+    expected = ['+16.377', '-106.839', '+387.000', '-85726.492']
+    actual   = convert_number_to_string(data=data, decimals=3, delta_value=True)
+    message  = "Test 14 - convert_number_to_string returned {0} instead of {1}".format(actual, expected)
+    assert actual == expected, message
+
+    # Test 15 - list of floats rounded with 0 decimals and delta_value=False
+    data     = [16.37682, -106.8395, 387, -85726.4966, 85726.49651]
+    expected = ['16', '-107', '387', '-85726', '85726']
+    actual   = convert_number_to_string(data=data, decimals=0, delta_value=False)
+    message  = "Test 15 - convert_number_to_string returned {0} instead of {1}".format(actual, expected)
+    assert actual == expected, message
+
+    # Test 16 - list of floats rounded with 0 decimals and delta_value=True
+    data     = [16.37682, -106.839, 387, -85726.4923]
+    expected = ['+16', '-107', '+387', '-85726']
+    actual   = convert_number_to_string(data=data, decimals=0, delta_value=True)
+    message  = "Test 16 - convert_number_to_string returned {0} instead of {1}".format(actual, expected)
+    assert actual == expected, message
+
+    # Test 17 - tuple of floats rounded with 1 decimals and delta_value=False returns a string
+    data     = (16.37682, -106.8395, 387, -85726.4966, 85726.49651)
+    expected = '(16.37682, -106.8395, 387, -85726.4966, 85726.49651)'
+    actual   = convert_number_to_string(data=data, decimals=1, delta_value=False)
+    message  = "Test 17 - convert_number_to_string returned {0} instead of {1}".format(actual, expected)
+    assert actual == expected, message
+
+    # Test 18 - list of floats rounded with None decimals and delta_value=True
+    data     = [16.37682, -106.8395, 387, -85726.4966, 85726.49651]
+    expected = [16.37682, -106.8395, 387, -85726.4966, 85726.49651]
+    actual   = convert_number_to_string(data=data, decimals=None, delta_value=True)
+    message  = "Test 18 - convert_number_to_string returned {0} instead of {1}".format(actual, expected)
+    assert actual == expected, message
+
+    # Test 19 - String
+    data     = "This is a string"
+    expected = "This is a string"
+    actual   = convert_number_to_string(data=data, decimals=None, delta_value=True)
+    message  = "Test 19 - convert_number_to_string returned {0} instead of {1}".format(actual, expected)
+    assert actual == expected, message
+
+    # Test 20 - delta_value = None
+    with pytest.raises(TypeBooleanError):
+        convert_number_to_string(data=1, decimals=1, delta_value=None)
+
+    # Test 21 - decimals = float
+    with pytest.raises(TypeIntegerError):
+        convert_number_to_string(data=1, decimals=1.23, delta_value=False)
+
+    # Test 22 - decimals = 4
+    with pytest.raises(ValueError):
+        convert_number_to_string(data=1, decimals=4, delta_value=False)
+
+
 def test_formatstring():
     # Test 1 - zero decimals
     data     = 0
