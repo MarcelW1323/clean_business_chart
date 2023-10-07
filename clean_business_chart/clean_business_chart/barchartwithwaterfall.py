@@ -12,7 +12,7 @@ from clean_business_chart.general_functions    import plot_line_accross_axes, pl
                                                       string_to_value, filter_lists, convert_data_string_to_pandas_dataframe, convert_data_list_of_lists_to_pandas_dataframe, \
                                                       dataframe_translate_field_headers, dataframe_search_for_headers, dataframe_keep_only_relevant_columns, \
                                                       dataframe_date_to_year_and_month, dataframe_convert_year_month_to_string, list1_is_subset_list2, \
-                                                      convert_dataframe_scenario_columns_to_value
+                                                      convert_dataframe_scenario_columns_to_value, convert_number_to_string
                                                       
 from clean_business_chart.multiplier           import Multiplier
 from clean_business_chart.exceptions           import *  # for custom errors/exceptions
@@ -844,19 +844,19 @@ class BarWithWaterfall(GeneralChart):
 
         # Endpoint of the vertical line
         ymin_start = dataframe['_CBC_Y2'].min() - 3
-        
+
         for y_extra, scenario in enumerate(self.base_scenarios):
             base_dict  = self.dict_totals[scenario]
             total_base = base_dict['total']
             if y_extra == 0 or first_scenario_line_start:
                 y_base     = base_dict['yvalue']
-              
+
             comp_dict  = self.dict_totals[self.compare_scenarios[0]]
             total_comp = comp_dict['total']
             y_comp     = comp_dict['yvalue']
-            
+
             ymin = ymin_start - (y_extra * 1.4)
-            
+
             # Plot a line at the total level from one of the base scenarios to under the compare scenario bar
             plot_line_within_ax(ax=ax, xbegin=total_base, ybegin=y_base-(self.barwidth/2), xend=total_base, yend=ymin, 
                                 linecolor=self.colors['line'], arrowstyle='-', linewidth=self.linewidth_line_n, endpoints=False, endpointcolor=None, zorder=0)
@@ -864,19 +864,21 @@ class BarWithWaterfall(GeneralChart):
             # Plot a line at the total level from the compare scenario to under the compare scenario bar
             plot_line_within_ax(ax=ax, xbegin=total_comp, ybegin=y_comp-(self.barwidth/2), xend=total_comp, yend=ymin, 
                                 linecolor=self.colors['line'], arrowstyle='-', linewidth=self.linewidth_line_n, endpoints=False, endpointcolor=None, zorder=0)
-        
+
             color = self.good_or_bad_color(differencevalue=total_comp-total_base)
-        
+
             # Plot horizontal bar in a good or bad color
             plot_line_within_ax(ax=ax, xbegin=total_comp, ybegin=ymin, xend=total_base, yend=ymin, endpoints=False, linecolor=color, arrowstyle='-', linewidth=self.linewidth_delta)
-        
+
             # Set the value next to the horizontal bar
             value = optimize_data(data=(total_comp-total_base), numerator=1, denominator=1, decimals=self.decimals_totals)
             # Dataframe-values are not the same as internal int or float. To avoid importing numpy for example a numpy.integer we do a string to non-string conversion
             value = string_to_value(str(value))
-        
-            ax.text(total_comp - (total_comp-total_base)/2, ymin-0.8, self.convert_to_delta_string(value), horizontalalignment='center', #verticalalignment='center', 
-                    font=self.font, fontsize=self.fontsize, color=self.colors['text'],zorder=10)
+
+            ax.text(total_comp - (total_comp-total_base)/2, ymin-0.8,
+                    s=convert_number_to_string(data=value, decimals=self.decimals_totals, delta_value=True),
+                    horizontalalignment='center', #verticalalignment='center', 
+                    font=self.font, fontsize=self.fontsize, color=self.colors['text'], zorder=10)
 
         return
 
@@ -1093,10 +1095,10 @@ class BarWithWaterfall(GeneralChart):
         
         self.data_text['delta'] = len(ax.containers)-1
         
-        label_value_list = self.convert_to_delta_string(height)
+        label_value_list = convert_number_to_string(data=height, decimals=self.decimals_details, delta_value=True)
         
         if len(label_value_list) > 0:
-            ax.bar_label(ax.containers[self.data_text['delta']], labels=label_value_list, fmt= '%0i', label_type='edge', padding = self.padding, 
+            ax.bar_label(ax.containers[self.data_text['delta']], labels=label_value_list, label_type='edge', padding = self.padding, 
                          font=self.font, fontsize=self.fontsize, zorder=10)
 
         # Plot the downarrow (\u2193). The up-arrow has code: \u2191. \u0394 is a delta-sign

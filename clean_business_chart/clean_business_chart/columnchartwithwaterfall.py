@@ -11,7 +11,7 @@ from clean_business_chart.general_functions    import plot_line_accross_axes, pl
                                                       convert_data_string_to_pandas_dataframe, convert_data_list_of_lists_to_pandas_dataframe, \
                                                       dataframe_translate_field_headers, dataframe_search_for_headers, \
                                                       dataframe_date_to_year_and_month, dataframe_keep_only_relevant_columns, \
-                                                      dataframe_convert_year_month_to_string
+                                                      dataframe_convert_year_month_to_string, convert_number_to_string
 from clean_business_chart.multiplier           import Multiplier
 
 
@@ -992,10 +992,11 @@ class ColumnWithWaterfall(GeneralChart):
         self.fontsize    : All text in a chart has the same height
         """
         ax = self.ax["main"]
-        label_value_list = self.convert_to_delta_string(self.delta_value[delta_name])
+        label_value_list = convert_number_to_string(data=self.delta_value[delta_name], decimals=self.decimals_details, delta_value=True)
         
         if len(label_value_list) > 0:
-            ax.bar_label(ax.containers[self.data_text['delta']], labels=label_value_list, fmt= '%0i', label_type='edge', padding = self.padding, font=self.font, fontsize=self.fontsize, zorder=10)
+            ax.bar_label(ax.containers[self.data_text['delta']], labels=label_value_list, label_type='edge', padding = self.padding, font=self.font, fontsize=self.fontsize, zorder=10)
+
 
 
     def _fill_axcomments(self):
@@ -1054,8 +1055,10 @@ class ColumnWithWaterfall(GeneralChart):
         
             # Set the value next to the vertical bar
             value = optimize_data(data=(yvaluesum-yvalue_scenario), numerator=1, denominator=1, decimals=self.decimals_totals)
-            ax.text(xbegin + textadjustment, (yvaluesum+yvalue_scenario)/2, self.convert_to_delta_string(value), horizontalalignment='left', verticalalignment='center', 
-                                 font=self.font, fontsize=self.fontsize, color=self.colors['text'],zorder=10)
+            ax.text(xbegin + textadjustment, (yvaluesum+yvalue_scenario)/2,
+                    s=convert_number_to_string(data=value, decimals=self.decimals_totals, delta_value=True),
+                    horizontalalignment='left', verticalalignment='center',
+                    font=self.font, fontsize=self.fontsize, color=self.colors['text'], zorder=10)
 
         ax.tick_params(top=False, bottom=False, left=False, right=False, labelleft=False, labelbottom=False)
         ax.spines[['top', 'left', 'right', 'bottom']].set_visible(False)

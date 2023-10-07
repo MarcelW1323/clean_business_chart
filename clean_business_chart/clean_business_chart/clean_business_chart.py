@@ -316,46 +316,6 @@ class GeneralChart:
         self.main_months[delta_name]    = work_month[:]                                                # Keep the list of modified month descriptions
 
 
-    def convert_to_delta_string(self, delta_value):
-        """
-        Deltavalues have a minus sign for a negative value. Deltavalues have a positive sign for a positive value. Normal integer and float values have no positive sign.
-           That's why this function makes a string of a integer or float and adds a plus sign (+) to a positive value (also adds a plus sign to a zero value).
-
-        Parameters
-        ----------
-        delta_value           : integer or float (or string) -> one single value will be returned as a string
-                                list of integers or floats (or strings)-> a list of strings will be returned.
-
-        Self variables
-        --------------
-        self.decimals_details : number of digits when rounding delta values
-
-        Returns
-        -------
-        returnvalue           : one single string or a list of strings
-        """
-        # Supports int/float and lists of int/float
-        if isinteger(delta_value) or isfloat(delta_value):
-            # Delta_value is of type integer or of type float
-            if delta_value >= 0: returnvalue = '+' + str(round(delta_value, self.decimals_details))
-            else: returnvalue = str(round(delta_value, self.decimals_details))
-        elif isstring(delta_value):
-            # Delta_value is of type string. Only 'not available' is supported.
-            if delta_value == self.not_available:
-                returnvalue = delta_value
-            else:
-                raise ValueError("We expect a delta_value of type integer, float, string or list. When string, the only value supported is 'not available'.")
-        elif islist(delta_value):
-            # Delta_value is of type list
-            # Recursive so we check with the same code all elements of the list
-            returnvalue = [self.convert_to_delta_string(x) for x in delta_value]
-        else:
-            # Delta_value is not of type integer, not of type float, not of type string and not of type list
-            raise ValueError(ValueError("We expect a delta_value of type integer, float, string or list. When string, the only value supported is 'not available'."))
-
-        return returnvalue
-
-
     def good_or_bad_color(self, differencevalue):
         """Helperfunction to determine which color you need to display.
 

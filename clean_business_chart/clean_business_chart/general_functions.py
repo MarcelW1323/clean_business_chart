@@ -558,7 +558,6 @@ def convert_number_to_string(data=None, decimals=None, delta_value=False):
             position = string_value.find('.')
             string_decimals = string_value[position+1:]+ '000'
             string_decimals = string_decimals[:decimals]
-            print('String_value:', string_value, position, 'String_value:', string_value[:position+1], 'String decimals:', string_decimals)
             return string_value[:position+1]+string_decimals
         else:
             # A decimal point is not available, add it and add the number of decimals
