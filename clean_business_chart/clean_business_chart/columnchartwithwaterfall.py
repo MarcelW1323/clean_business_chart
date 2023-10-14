@@ -243,8 +243,8 @@ class ColumnWithWaterfall(GeneralChart):
         self.data_total             : Total values for each scenario. Scenario is the key for the total value
         """
         for scenario in self.data.keys():
-            self.data[scenario]       = optimize_data(data=self.data[scenario]      , numerator=1, denominator=self.multiplier_denominator, decimals=self.decimals_details)
-            self.data_total[scenario] = optimize_data(data=self.data_total[scenario], numerator=1, denominator=self.multiplier_denominator, decimals=self.decimals_totals)
+            self.data[scenario]       = optimize_data(data=self.data[scenario]      , numerator=1, denominator=self.multiplier_denominator, decimals=None)
+            self.data_total[scenario] = optimize_data(data=self.data_total[scenario], numerator=1, denominator=self.multiplier_denominator, decimals=None)
 
  
     def _check_data(self, data=None):
@@ -356,8 +356,6 @@ class ColumnWithWaterfall(GeneralChart):
                         ac_serie = number
                         if fc is not None and fc != 0:
                             twin_value += 1  # Both ac and fc has a value
-                    elif ac != 0:
-                        raise ValueError("Actual values of 0 are not supported yet")
                     elif fc is not None and fc != 0:
                         if fc_serie == 0: fc_serie = number
                         if ac != 0: twin_value += 1
@@ -640,7 +638,7 @@ class ColumnWithWaterfall(GeneralChart):
         for scenario in self.filter_scenarios(scenario_list=[self.base_scenario, 'AC', 'FC']):
             self._fill_main_ax_bar(scenario=scenario)
         self._fill_main_ax_text()
-        self._fill_main_ax_label()
+        self._fill_main_ax_monthlabel()
         
         
     def _fill_main_ax_bar(self, scenario):
@@ -649,30 +647,29 @@ class ColumnWithWaterfall(GeneralChart):
 
         Parameters
         ----------
-        scenario : the scenario of which the bars will be plotted
+        scenario              : the scenario of which the bars will be plotted
 
         Self variables
         --------------
-        self.data          : is a dictionary of the detaildata
+        self.data             : is a dictionary of the detaildata
 
-        self.barshift      : the barshift for the main part of the chart.
+        self.barshift         : the barshift for the main part of the chart.
 
-        self.barwidth      : a float with the width of the bars for measure of ratio
+        self.barwidth         : a float with the width of the bars for measure of ratio
 
-        self.colors        : a dictionary of colors needed for the consistent look of the charts
+        self.colors           : a dictionary of colors needed for the consistent look of the charts
 
-        self.linewidth_bar : the width of the lines from a bar
+        self.linewidth_bar    : the width of the lines from a bar
 
-        self.hatch         : the pattern for hatched
+        self.hatch            : the pattern for hatched
 
-        self.data_text     : a dictionary with the number of the matplotlib-ax-containers of the bar-data including the texts of the bars
+        self.data_text        : a dictionary with the number of the matplotlib-ax-containers of the bar-data including the texts of the bars
 
+        self.decimals_details : number of decimals for detailed information
         """
-        # print(scenario+":", self.data[scenario])
-        scenario_data = self.data[scenario]
+        scenario_data = optimize_data(data=self.data[scenario], numerator=1, denominator=1, decimals=self.decimals_details)
         ax = self.ax["main"]
         if scenario[0] == 'P':
-            #xvalue_temp     = [x for x in range(len(scenario_data)]
             xvalue = [x - self.barshift * self.barwidth for x in range(len(scenario_data))]
             ax.bar(xvalue, scenario_data, color=self.colors[scenario][0], width=self.barwidth, linewidth=self.linewidth_bar, edgecolor=self.colors[scenario][1], label=scenario)
         if scenario == 'AC':
@@ -710,7 +707,7 @@ class ColumnWithWaterfall(GeneralChart):
             ax.bar_label(ax.containers[self.data_text[scenario]], fmt=format_string, label_type='edge', padding=self.padding, font=self.font, fontsize=self.fontsize )
 
 
-    def _fill_main_ax_label(self): 
+    def _fill_main_ax_monthlabel(self):
         """
         Fills the month information on the x-axis in the main-ax-area
         
@@ -781,7 +778,7 @@ class ColumnWithWaterfall(GeneralChart):
         ax = self.ax["left"]
 
         scenarios = self.filter_scenarios(scenario_list=['PY', 'PL'])
-        
+
         for scenario in scenarios:
             PY_valuetext_special = False
             if len(scenarios) == 2:
@@ -825,17 +822,19 @@ class ColumnWithWaterfall(GeneralChart):
 
             # Make the column for the scenario            
             ax.bar(0 + (barsign * self.barshift_leftside), self.data_total[scenario], color=self.colors[scenario][0], width=self.barwidth, linewidth=self.linewidth_bar, edgecolor=self.colors[scenario][1], label=scenario)
-            
+
             # Put the value on the column for the scenario
             if PY_valuetext_special:
                 # The PL-column with text is so high, that the valuetext of the PY-column needs to be more adjusted to the left.
-                ax.text(0-self.barwidth/2.5, self.data_total[scenario]*(1+(self.padding/250)), str(self.data_total[scenario]), horizontalalignment='right', verticalalignment='bottom', 
-                            font=self.font, fontsize=self.fontsize, color=self.colors['text'])
+                ax.text(0-self.barwidth/2.5, self.data_total[scenario]*(1+(self.padding/250)),
+                        s=convert_number_to_string(data=self.data_total[scenario], decimals=self.decimals_totals, delta_value=False),
+                        horizontalalignment='right', verticalalignment='bottom',
+                        font=self.font, fontsize=self.fontsize, color=self.colors['text'])
             else:
                 # The PL-column with text is small enough, that we can put the valuetext centered on top of the PY-column.
-                format_string = formatstring(decimals=self.decimals_totals)
-                ax.bar_label(ax.containers[-1], fmt=format_string, label_type='edge', padding=self.padding, font=self.font, fontsize=self.fontsize)
-        
+                string_list = [convert_number_to_string(data=self.data_total[scenario], decimals=self.decimals_totals, delta_value=False)]
+                ax.bar_label(ax.containers[-1], labels=string_list, label_type='edge', padding=self.padding, font=self.font, fontsize=self.fontsize)
+
             #if len(self.filter_scenarios(['PY', 'PL'])) > 1:
                 # Inline legend (barwidth * 0.8 to be close to the bar, but not adjacent)
             ax.text(0 + (textsign * self.barwidth * textadjustment), self.data_total[scenario]/2, scenario, horizontalalignment=halignment, font=self.font, 
@@ -857,63 +856,67 @@ class ColumnWithWaterfall(GeneralChart):
 
         Self variables
         --------------
-        self.ax            : Dictionary of axesobjects for the generated subplots
+        self.ax              : Dictionary of axesobjects for the generated subplots
 
-        self.padding       : Padding between the bars and the text
+        self.padding         : Padding between the bars and the text
 
-        self.font          : All text in a chart has the same font
-        
-        self.fontsize      : All text in a chart has the same height
-        
-        self.colors        : A dictionary with all color information
+        self.font            : All text in a chart has the same font
 
-        self.barwidth      : A float with the width of the bars for measure of ratio
-        
-        self.linewidth_bar : The width of the lines from a bar
+        self.fontsize        : All text in a chart has the same height
 
-        self.data_total    : Total values for each scenario. Scenario is the key for the total value
+        self.colors          : A dictionary with all color information
 
-        self.year          : Year of the data
+        self.barwidth        : A float with the width of the bars for measure of ratio
+
+        self.decimals_totals : Number of decimals for total information
+
+        self.linewidth_bar   : The width of the lines from a bar
+
+        self.data_total      : Total values for each scenario. Scenario is the key for the total value
+
+        self.year            : Year of the data
         """
-        
         ax = self.ax["sum"]
         bottom = 0 
-        
+
         scenarios = self.filter_scenarios(scenario_list=['AC', 'FC'])
-        format_string = formatstring(decimals=self.decimals_totals)
 
         for scenario in scenarios:
             # Determine the hatch
             hatch = None
             if scenario == 'FC': 
                 hatch = self.hatch
-            
+
             # Plot the (part of the stacked) bar (due to parameter bottom)
-            ax.bar(0, self.data_total[scenario], color=self.colors[scenario][0], width=self.barwidth, linewidth=self.linewidth_bar, edgecolor=self.colors[scenario][1], bottom=bottom, label=scenario, hatch=hatch)
+            ax.bar(0, self.data_total[scenario], color=self.colors[scenario][0], width=self.barwidth, linewidth=self.linewidth_bar,
+                   edgecolor=self.colors[scenario][1], bottom=bottom, label=scenario, hatch=hatch)
 
             # Inline legend (barwidth * 0.6 to be close to the bar, but not adjacent)
             ax.text(0+self.barwidth*0.6, bottom + self.data_total[scenario]/2, scenario, horizontalalignment='left', font=self.font, fontsize=self.fontsize, color=self.colors['text'], verticalalignment='center')
-               
+
             # Only stacked bar values inside if more than 1 scenario
             if len(scenarios)>1:
-               
+                # Round the value with the desired number of decimals and make it a string
+                value_string = convert_number_to_string(data=self.data_total[scenario], decimals=self.decimals_totals, delta_value=False)
+
                 # Two different kinds of adding text in the bars
                 if scenario == 'FC':
-                    # Round the value with the desired number of decimals. With numerator=1 and denominator=1 you get the same value.
-                    value = optimize_data(data=self.data_total[scenario], numerator=1, denominator=1, decimals=self.decimals_totals)
-                    
                     # use text function because the use of backgroundcolor
-                    ax.text(0, bottom + self.data_total[scenario]/2, str(value), horizontalalignment='center', verticalalignment='center', 
-                            font=self.font, fontsize=self.fontsize, color=self.colors[scenario][2], backgroundcolor=self.colors[scenario][3],
+                    ax.text(0, bottom + self.data_total[scenario]/2, s=value_string, horizontalalignment='center',
+                            verticalalignment='center', font=self.font, fontsize=self.fontsize, color=self.colors[scenario][2],
+                            backgroundcolor=self.colors[scenario][3],
                             bbox=dict(facecolor=self.colors[scenario][3], edgecolor='none', pad=0.8, alpha=0.85))
                 else:
                     # use standard label function
-                    ax.bar_label(ax.containers[-1], fmt=format_string, label_type='center', font=self.font, fontsize=self.fontsize, color=self.colors[scenario][2])    
+                    ax.bar_label(ax.containers[-1], labels=[value_string], label_type='center', font=self.font, fontsize=self.fontsize, color=self.colors[scenario][2])
 
             bottom = bottom + self.data_total[scenario]
+
         # add top label
-        ax.bar_label(ax.containers[-1], fmt=format_string, label_type='edge', padding=self.padding, font=self.font, fontsize=self.fontsize, color=self.colors['text']) 
-        
+        # Round the value with the desired number of decimals and make it a string
+        value_string = convert_number_to_string(data=bottom, decimals=self.decimals_totals, delta_value=False)
+        ax.bar_label(ax.containers[-1], labels=[value_string], label_type='edge', padding=self.padding, font=self.font, fontsize=self.fontsize, color=self.colors['text'])
+
         ax.tick_params(top=False, bottom=False, left=False, right=False, labelleft=False, labelbottom=True)
         ax.set_xticks([0], [str(self.year)], font=self.font, fontsize=self.fontsize)
         ax.spines[['top', 'left', 'right', 'bottom']].set_visible(False)   
@@ -1054,9 +1057,9 @@ class ColumnWithWaterfall(GeneralChart):
             plot_line_within_ax(ax=self.ax["comment"], xbegin=xbegin, ybegin=yvaluesum, xend=xbegin, yend=yvalue_scenario, endpoints=False, linecolor=color, arrowstyle='-', linewidth=self.linewidth_delta)
         
             # Set the value next to the vertical bar
-            value = optimize_data(data=(yvaluesum-yvalue_scenario), numerator=1, denominator=1, decimals=self.decimals_totals)
+            ####value = optimize_data(data=(yvaluesum-yvalue_scenario), numerator=1, denominator=1, decimals=self.decimals_totals)
             ax.text(xbegin + textadjustment, (yvaluesum+yvalue_scenario)/2,
-                    s=convert_number_to_string(data=value, decimals=self.decimals_totals, delta_value=True),
+                    s=convert_number_to_string(data=yvaluesum-yvalue_scenario, decimals=self.decimals_totals, delta_value=True),
                     horizontalalignment='left', verticalalignment='center',
                     font=self.font, fontsize=self.fontsize, color=self.colors['text'], zorder=10)
 
