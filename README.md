@@ -19,11 +19,16 @@ https://www.linkedin.com/pulse/clean-business-chart-first-mvp-python-package-cha
 Follow the public LinkedIn-group about Clean Business Chart:
 https://www.linkedin.com/groups/12827987/
 
+
+More info in the wiki of Clean Business Chart: https://github.com/MarcelW1323/clean_business_chart/wiki
+
 ### Examples
 #### Columnchart with waterfall (available)
 <img src="test_charts/columnchart_001.png" alt="columnchart example" width="750"/>
-Try it yourself: https://colab.research.google.com/drive/1DZpijeML8epNu3b3APn1Toe70RcYOJwR?usp=drive_link<br><br>
+Try it yourself: https://colab.research.google.com/drive/1DZpijeML8epNu3b3APn1Toe70RcYOJwR?usp=drive_link<br>
+How to read the chart: https://github.com/MarcelW1323/clean_business_chart/wiki/Column-Chart-with-Waterfall-(Time)-%E2%80%90-How-to-read<br><br>
 
 #### Barchart with waterfall (available)
 <img src="test_charts/barchart_001.png" alt="barchart example" width="500"/>
-Try it yourself: https://colab.research.google.com/drive/1WuqWXcW0WWa5DK4_anNRgvYhxUewqdwQ?usp=sharing
+Try it yourself: https://colab.research.google.com/drive/1WuqWXcW0WWa5DK4_anNRgvYhxUewqdwQ?usp=sharing<br>
+How to read the chart: https://github.com/MarcelW1323/clean_business_chart/wiki/Bar-Chart-with-Waterfall-(Structure)-%E2%80%90-How-to-read
