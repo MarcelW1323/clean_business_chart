@@ -2,6 +2,12 @@
 History
 =======
 
+0.2.5 (2023-10-15)
+------------------
+
+* Better rounding support for value labels in charts.
+
+
 0.2.4 (2023-09-26)
 ------------------
 
