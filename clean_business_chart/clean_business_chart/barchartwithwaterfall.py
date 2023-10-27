@@ -89,12 +89,17 @@ class BarWithWaterfall(GeneralChart):
                               Default: None ("OTHER" will be displayed)
     sort_chart              : Sort the info for the chart (True) or don't sort at all (False).
                               Default: True (sort dataframe while aggregating)
+    footnote                : Text that will be displayed on the bottom of the chart, starting at the left.
+                              Default: None (no text will be displayed)
+    footnote_size           : Size of the text of the footnote. Use 'small' for small sized footnote. 
+                              Use 'normal' for the normal textsize like all other texts in the chart.
+                              Default: 'normal' (for normal sized footnote-text)
     """
 
     def __init__(self, data=None, positive_is_good=True, base_scenarios=None, compare_scenarios=None, title=None, measure=True, multiplier='1', 
                  filename=None, force_pl_is_zero=False, force_zero_decimals=False, force_max_one_decimals=False, translate_headers=None, 
                  category_of_interest=None, previous_year=False, total_text=None, total_line=True, remove_lines_with_zeros=True, other=None,
-                 sort_chart=True, test=False, do_not_show=False):
+                 sort_chart=True, footnote=None, footnote_size='normal', test=False, do_not_show=False):
         """
         The function __init__ is the first function that will be called automatically. Here you'll find all the possible parameters to customize your experience.
         """
@@ -123,6 +128,8 @@ class BarWithWaterfall(GeneralChart):
         self.remove_lines_with_zeros    = remove_lines_with_zeros
         self.other_text                 = other
         self.sort_dataframe             = sort_chart
+        self.footnote                   = footnote
+        self.footnote_size              = footnote_size
 
         # Check scenarios
         self.simple_first_check_scenario_parameters()     
@@ -134,6 +141,9 @@ class BarWithWaterfall(GeneralChart):
         # Make chart and fill the chart
         self._make_subplots()
         self._fill_chart()
+
+        # Add the footnote
+        self._footnote_figure()
 
         # Add the title as the last element 
         self._title_figure(title)
@@ -2471,7 +2481,6 @@ class BarWithWaterfall(GeneralChart):
 
         Self variables
         --------------
-        self.barwidth : A float with the width of the bars for measure or ratio
         self.colors   : Dictionary with colors
         self.fig      : Figure-object for the generated plot and subplots
         self.font     : All text in a chart has the same font
@@ -2487,3 +2496,39 @@ class BarWithWaterfall(GeneralChart):
         
         #### TECHNICAL DEBT: How to determine the right x and y values?
         fig.suptitle(t=title_text, font=self.font, fontsize=self.fontsize, color=self.colors['text'], ha='left', va='top',x=0,y=0.95)  #### x=-0.01??
+
+        return
+
+
+    def _footnote_figure(self):
+        """
+        The function _footnote_figure puts a footnote in the lower left corner of the chart.
+
+        Self variables
+        --------------
+        self.colors            : Dictionary with colors
+        self.fig               : Figure-object for the generated plot and subplots
+        self.font              : All text in a chart has the same font
+        self.footnote          : Text that will be displayed on the bottom of the chart, starting at the left
+        self.footnote_fontsize : Dictionary of predefined fontsizes for footnotes
+        self.footnote_size     : Textvalues as keys for the predefined fontsizes for footnotes ('small' or 'normal')
+        """
+        # Check if there is a footnote
+        if self.footnote is None:
+           # No footnote
+           return False  # For test purpose only
+        error_not_isstring(self.footnote,"footnote")
+        # self.footnote has a stringvalue
+
+        # Check if valid size of footnote-text
+        if not self.footnote_size in self.footnote_fontsize.keys():
+            raise ValueError('footnote_size (' + str(self.footnote_size) + ') does not match valid values:'+ \
+                             str(self.footnote_fontsize.keys()))
+
+        fig = self.fig
+
+        #### TECHNICAL DEBT: How to determine the right x and y values?
+        fig.text(s=self.footnote, font=self.font, fontsize=self.footnote_fontsize[self.footnote_size],
+                     color=self.colors['text'], ha='left', va='bottom',x=0,y=0.00)  #### x=-0.01??
+
+        return

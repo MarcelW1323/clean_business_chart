@@ -20,6 +20,8 @@ class GeneralChart:
     
     # Variables with direct value assignment, public variables for all instances
     fontsize          = 12       # All text in a chart has the same height
+    fontsize_small    = 10       # Small fontsize for footnotes
+    footnote_fontsize = {'small': fontsize_small, 'normal':fontsize}  # Normal is default
     font              = 'Arial'  # All text in a chart has the same font. Default font of matplotlib is 'DejaVu Sans'.
     padding           = 3        # Padding between the bars and the text
     
