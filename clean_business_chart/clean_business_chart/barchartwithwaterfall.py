@@ -389,7 +389,7 @@ class BarWithWaterfall(GeneralChart):
         export_dataframe = dataframe.copy()
 
         # Make column with the Y-values for the categories.
-        export_dataframe.insert(loc = len(export_dataframe.columns), column='_CBC_Y', value=range(0, len(export_dataframe)*-1, -1))
+        export_dataframe.insert(loc = len(export_dataframe.columns), column='_CBC_Y', value=[x*-1.0 for x in range(len(export_dataframe))])
         export_dataframe.loc[export_dataframe['_Category']=='OTHER', ['_CBC_Y']] = export_dataframe[export_dataframe['_Category']=='OTHER']['_CBC_Y'] - 0.5
 
         # Make columns Y1 for the "upper" bar, Y2 for the bar located lower, but partly on top of the "upper" bar.
