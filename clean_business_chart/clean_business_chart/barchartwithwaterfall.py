@@ -6,9 +6,10 @@ import pandas as pd                               # for easy pandas support
 
 from clean_business_chart.clean_business_chart import GeneralChart 
 from clean_business_chart.general_functions    import plot_line_accross_axes, plot_line_within_ax, prepare_title, formatstring, optimize_data, \
-                                                      islist, isdictionary, isinteger, isstring, isfloat, isboolean, isdataframe, error_not_islist, \
-                                                      error_not_isdictionary, error_not_isinteger, error_not_isstring, error_not_isboolean, \
-                                                      error_not_isdataframe, error_not_isaxes, convert_to_native_python_type, \
+                                                      islist, isdictionary, isinteger, isstring, isfloat, isboolean, isdataframe, isaxes, isfigure, \
+                                                      error_not_islist, error_not_isdictionary, error_not_isinteger, error_not_isstring, \
+                                                      error_not_isboolean, error_not_isdataframe, error_not_isaxes, error_not_isfigure, \
+                                                      convert_to_native_python_type, \
                                                       string_to_value, filter_lists, convert_data_string_to_pandas_dataframe, convert_data_list_of_lists_to_pandas_dataframe, \
                                                       dataframe_translate_field_headers, dataframe_search_for_headers, dataframe_keep_only_relevant_columns, \
                                                       dataframe_date_to_year_and_month, dataframe_convert_year_month_to_string, list1_is_subset_list2, \
@@ -2453,7 +2454,7 @@ class BarWithWaterfall(GeneralChart):
         
         # Create the figure-object and the axis-object
         self.fig, self.ax = plt.subplots(nrows=1, ncols=1, figsize=(8, 2 + dataframe_rows*0.5), dpi=72) # dpi=72 solves some strange linewidth issues.
-        
+
         # Clean up the ticks and make the left-side available for the labels
         self.ax.tick_params(top=False, bottom=False, left=False, right=False, labelleft=True, labelbottom=False)
         
@@ -2491,7 +2492,9 @@ class BarWithWaterfall(GeneralChart):
         if title_text is None:
             # No title
             return
-        
+
+        # Check figure
+        error_not_isfigure(self.fig, "self.fig")
         fig = self.fig
         
         #### TECHNICAL DEBT: How to determine the right x and y values?
@@ -2525,6 +2528,8 @@ class BarWithWaterfall(GeneralChart):
             raise ValueError('footnote_size (' + str(self.footnote_size) + ') does not match valid values:'+ \
                              str(self.footnote_fontsize.keys()))
 
+        # Check figure
+        error_not_isfigure(self.fig, "self.fig")
         fig = self.fig
 
         #### TECHNICAL DEBT: How to determine the right x and y values?

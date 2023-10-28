@@ -87,6 +87,30 @@ def test_isdataframe():
     assert actual == expected, "isdataframe('not a DataFrame') gives back "+str(actual)+" instead of "+str(expected)
 
 
+def test_isaxes():
+    # Test with an axes
+    expected = True
+    _, axes1 = plt.subplots()
+    actual   = isaxes(axes1)
+    assert actual == expected, "isaxes(axes1) gives back "+str(actual)+" instead of "+str(expected)
+    # Test with a string
+    expected = False
+    actual   = isaxes('not an axes')
+    assert actual == expected, "isaxes('not an axes') gives back "+str(actual)+" instead of "+str(expected)
+
+
+def test_isfigure():
+    # Test with a figure
+    expected = True
+    figure1, _ = plt.subplots()
+    actual   = isfigure(figure1)
+    assert actual == expected, "isfigure(figure1) gives back "+str(actual)+" instead of "+str(expected)
+    # Test with a string
+    expected = False
+    actual   = isfigure('not a figure')
+    assert actual == expected, "isfigure('not a figure') gives back "+str(actual)+" instead of "+str(expected)
+
+
 def test_error_not_islist():
     # Test 1 with a list only, no error will occur
     list1 = [ 'Value1', 'Value2']
@@ -256,11 +280,11 @@ def test_error_not_isdataframe():
 
 
 def test_error_not_isaxes():
-    # Test 1 with a axes only, no error will occur
+    # Test 1 with an axes only, no error will occur
     _, axes1 = plt.subplots()
     error_not_isaxes(axes1)
 
-    # Test 2 with a axes and name of variable, no error will occur
+    # Test 2 with an axes and name of variable, no error will occur
     _, axes1 = plt.subplots()
     error_not_isaxes(axes1, name_inputvariable_in_text='axes1')
 
@@ -276,11 +300,39 @@ def test_error_not_isaxes():
         error_not_isaxes(axes1, name_inputvariable_in_text='axes1')
     assert str(exceptioninfo.value) == 'Variable "axes1" is not of type Axes, but of type '+str(type(axes1))
 
-    # Test 5 with a axes and name of variable as positional argument
+    # Test 5 with a string and name of variable as positional argument
     with pytest.raises(TypeAxesError) as exceptioninfo:
         axes1 = 'This is a string'
         error_not_isaxes(axes1, 'axes1')
     assert str(exceptioninfo.value) == 'Variable "axes1" is not of type Axes, but of type '+str(type(axes1))
+
+
+def test_error_not_isfigure():
+    # Test 1 with a figure only, no error will occur
+    figure1, _ = plt.subplots()
+    error_not_isfigure(figure1)
+
+    # Test 2 with a figure and name of variable, no error will occur
+    figure1, _ = plt.subplots()
+    error_not_isfigure(figure1, name_inputvariable_in_text='figure1')
+
+    # Test 3 with a list
+    with pytest.raises(TypeFigureError) as exceptioninfo:
+        figure1 = 'This is a string'
+        error_not_isfigure(figure1)
+    assert str(exceptioninfo.value) == 'Variable is not of type Figure, but of type '+str(type(figure1))
+
+    # Test 4 with a int and name of variable
+    with pytest.raises(TypeFigureError) as exceptioninfo:
+        figure1 = 404
+        error_not_isfigure(figure1, name_inputvariable_in_text='figure1')
+    assert str(exceptioninfo.value) == 'Variable "figure1" is not of type Figure, but of type '+str(type(figure1))
+
+    # Test 5 with a string and name of variable as positional argument
+    with pytest.raises(TypeFigureError) as exceptioninfo:
+        figure1 = 'This is a string'
+        error_not_isfigure(figure1, 'figure1')
+    assert str(exceptioninfo.value) == 'Variable "figure1" is not of type Figure, but of type '+str(type(figure1))
 
 
 def test_convert_to_native_python_type():

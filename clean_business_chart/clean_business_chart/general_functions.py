@@ -43,6 +43,10 @@ def isaxes(inputvariable):
     """Returns whether the inputvariable is a matplotlib Axes (True) or not (False)"""
     return isinstance(inputvariable, plt.Axes)
 
+def isfigure(inputvariable):
+    """Returns whether the inputvariable is a matplotlib Figure (True) or not (False)"""
+    return isinstance(inputvariable, plt.Figure)
+
 def error_not_islist(inputvariable, name_inputvariable_in_text=None):
     """Returns a TypeError when the inputvariable is not a list"""
     if not islist(inputvariable):
@@ -146,6 +150,21 @@ def error_not_isaxes(inputvariable, name_inputvariable_in_text=None):
         raise TypeAxesError(message)
     # else:
         # inputvariable is a matplotlib Axes, do return to caller
+    return
+
+def error_not_isfigure(inputvariable, name_inputvariable_in_text=None):
+    """Returns a TypeError when the inputvariable is not a matplotlib Figure-object"""
+    if not isfigure(inputvariable):
+        # inputvariable is not a matplotlib Figure, construct message and generate a TypeError
+        if name_inputvariable_in_text is not None:
+            # Yes, extra information is given
+            message = 'Variable "'+str(name_inputvariable_in_text)+'" is not of type Figure, but of type '+str(type(inputvariable))
+        else:
+            # No extra information is given, use this unified message
+            message = 'Variable is not of type Figure, but of type '+str(type(inputvariable))
+        raise TypeFigureError(message)
+    # else:
+        # inputvariable is a matplotlib Figure, do return to caller
     return
 
 
