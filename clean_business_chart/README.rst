@@ -23,7 +23,7 @@ Clean Business Chart is a Python package for IBCS-like charts based on matplotli
 Features
 --------
 
-* ColumnWithWaterfall, the first chart released with clean-business-chart (version 0.1.0)!
+* ColumnWithWaterfall, the first chart released with clean-business-chart (version 0.1.0)
 
   * added support for pandas in version 0.1.1
 
@@ -32,6 +32,8 @@ Features
 * BarWithWaterfall, the second chart released in version 0.2.2
 
   * added support for parameter sort_chart in version 0.2.4
+
+  * added support for parameter footnote in version 0.2.6
 
 * General
 

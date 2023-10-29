@@ -2,6 +2,12 @@
 History
 =======
 
+0.2.6 (2023-10-29)
+------------------
+
+* Added parameter 'footnote' and related 'footnote_size' in bar chart with waterfall for supporting footnotes for example to mention the source.
+
+
 0.2.5 (2023-10-15)
 ------------------
 
