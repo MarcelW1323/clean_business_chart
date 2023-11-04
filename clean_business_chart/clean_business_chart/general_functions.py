@@ -15,6 +15,10 @@ def islist(inputvariable):
     """Returns whether the inputvariable is a list (True) or not (False)"""
     return isinstance(inputvariable, list)
 
+def istuple(inputvariable):
+    """Returns whether the inputvariable is a tuple (True) or not (False)"""
+    return isinstance(inputvariable, tuple)
+
 def isdictionary(inputvariable):
     """Returns whether the inputvariable is a dictionary (True) or not (False)"""
     return isinstance(inputvariable, dict)
@@ -30,6 +34,10 @@ def isstring(inputvariable):
 def isfloat(inputvariable):
     """Returns whether the inputvariable is a float (True) or not (False)"""
     return isinstance(inputvariable, float)
+
+def isnumber(inputvariable):
+    """Returns whether the inputvariable is an integer or a float (True) or not (False)"""
+    return isinstance(inputvariable, int) or isinstance(inputvariable, float)
 
 def isboolean(inputvariable):
     """Returns whether the inputvariable is a boolean (True) or not (False)"""
@@ -62,6 +70,21 @@ def error_not_islist(inputvariable, name_inputvariable_in_text=None):
         # inputvariable is a list, do return to caller
     return
 
+def error_not_istuple(inputvariable, name_inputvariable_in_text=None):
+    """Returns a TypeError when the inputvariable is not a tuple"""
+    if not istuple(inputvariable):
+        # inputvariable is not a tuple, construct message and generate a TypeError
+        if name_inputvariable_in_text is not None:
+            # Yes, extra information is given
+            message = 'Variable "'+str(name_inputvariable_in_text)+'" is not of type tuple, but of type '+str(type(inputvariable))
+        else:
+            # No extra information is given, use this unified message
+            message = 'Variable is not of type tuple, but of type '+str(type(inputvariable))
+        raise TypeTupleError(message)
+    # else:
+        # inputvariable is a tuple, do return to caller
+    return
+
 def error_not_isdictionary(inputvariable, name_inputvariable_in_text=None):
     """Returns a TypeError when the inputvariable is not a dictionary"""
     if not isdictionary(inputvariable):
@@ -78,7 +101,7 @@ def error_not_isdictionary(inputvariable, name_inputvariable_in_text=None):
     return
 
 def error_not_isinteger(inputvariable, name_inputvariable_in_text=None):
-    """Returns a TypeError when the inputvariable is not a integer"""
+    """Returns a TypeError when the inputvariable is not an integer"""
     if not isinteger(inputvariable):
         # inputvariable is not an integer, construct message and generate a TypeError
         if name_inputvariable_in_text is not None:
@@ -90,6 +113,21 @@ def error_not_isinteger(inputvariable, name_inputvariable_in_text=None):
         raise TypeIntegerError(message)
     # else:
         # inputvariable is an integer, do return to caller
+    return
+
+def error_not_isnumber(inputvariable, name_inputvariable_in_text=None):
+    """Returns a TypeError when the inputvariable is not an integer and not a float"""
+    if not isnumber(inputvariable):
+        # inputvariable is not an integer and not a float, construct message and generate a TypeError
+        if name_inputvariable_in_text is not None:
+            # Yes, extra information is given
+            message = 'Variable "'+str(name_inputvariable_in_text)+'" is not of type integer and not of type float, but of type '+str(type(inputvariable))
+        else:
+            # No extra information is given, use this unified message
+            message = 'Variable is not of type integer and not of type float, but of type '+str(type(inputvariable))
+        raise TypeNumberError(message)
+    # else:
+        # inputvariable is an integer or a float, do return to caller
     return
 
 def error_not_isstring(inputvariable, name_inputvariable_in_text=None):

@@ -11,6 +11,10 @@ class TypeListError(Exception):
     """Raised when the type is not a List"""
     pass
 
+class TypeTupleError(Exception):
+    """Raised when the type is not a Tuple"""
+    pass
+
 class TypeDictionaryError(Exception):
     """Raised when the type is not a Dictionary"""
     pass

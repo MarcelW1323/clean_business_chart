@@ -21,6 +21,17 @@ def test_islist():
     assert actual == expected, "islist('not a list') gives back "+str(actual)+" instead of "+str(expected)
 
 
+def test_istuple():
+    # Test with a tuple
+    expected = True
+    actual   = istuple(('tuplevalue 1', 'tuplevalue 2'))
+    assert actual == expected, "istuple(('tuplevalue 1', 'tuplevalue 2')) gives back "+str(actual)+" instead of "+str(expected)
+    # Test with a string
+    expected = False
+    actual   = istuple('not a tuple')
+    assert actual == expected, "istuple('not a tuple') gives back "+str(actual)+" instead of "+str(expected)
+
+
 def test_isdictionary():
     # Test with a dictionary
     expected = True
@@ -139,6 +150,34 @@ def test_error_not_islist():
     assert str(exceptioninfo.value) == 'Variable "list1" is not of type list, but of type '+str(type(list1))
 
 
+def test_error_not_istuple():
+    # Test 1 with a tuple only, no error will occur
+    tuple1 = ('Value1', 'Value2')
+    error_not_istuple(tuple1)
+
+    # Test 2 with a tuple and name of variable, no error will occur
+    tuple1 = ('Value1', 'Value2')
+    error_not_istuple(tuple1, name_inputvariable_in_text='tuple1')
+
+    # Test 3 with a string
+    with pytest.raises(TypeTupleError) as exceptioninfo:
+        tuple1 = 'This is a string'
+        error_not_istuple(tuple1)
+    assert str(exceptioninfo.value) == 'Variable is not of type tuple, but of type '+str(type(tuple1))
+
+    # Test 4 with an integer and name of variable
+    with pytest.raises(TypeTupleError) as exceptioninfo:
+        tuple1 = 404
+        error_not_istuple(tuple1, name_inputvariable_in_text='tuple1')
+    assert str(exceptioninfo.value) == 'Variable "tuple1" is not of type tuple, but of type '+str(type(tuple1))
+
+    # Test 5 with a string and name of variable as positional argument
+    with pytest.raises(TypeTupleError) as exceptioninfo:
+        tuple1 = 'This is a string'
+        error_not_istuple(tuple1, 'tuple1')
+    assert str(exceptioninfo.value) == 'Variable "tuple1" is not of type tuple, but of type '+str(type(tuple1))
+
+
 def test_error_not_isdictionary():
     # Test 1 with a dictionary only, no error will occur
     dict1 = {'Label1':'Value1', 'Label2':'Value2'}
@@ -193,6 +232,42 @@ def test_error_not_isinteger():
         integer1 = 'This is a string'
         error_not_isinteger(integer1, 'integer1')
     assert str(exceptioninfo.value) == 'Variable "integer1" is not of type integer, but of type '+str(type(integer1))
+
+
+def test_error_not_isnumber():
+    # Test 1 with an integer only, no error will occur
+    number1 = 101
+    error_not_isnumber(number1)
+
+    # Test 2 with an integer and name of variable, no error will occur
+    number1 = 101
+    error_not_isnumber(number1, name_inputvariable_in_text='number1')
+
+    # Test 3 with a float only, no error will occur
+    number1 = 101.23
+    error_not_isnumber(number1)
+
+    # Test 4 with a float and name of variable, no error will occur
+    number1 = 101.23
+    error_not_isnumber(number1, name_inputvariable_in_text='number1')
+
+    # Test 5 with a string
+    with pytest.raises(TypeNumberError) as exceptioninfo:
+        number1 = 'This is a string'
+        error_not_isnumber(number1)
+    assert str(exceptioninfo.value) == 'Variable is not of type integer and not of type float, but of type '+str(type(number1))
+
+    # Test 6 with a list and name of variable
+    with pytest.raises(TypeNumberError) as exceptioninfo:
+        number1 = [404, 505]
+        error_not_isnumber(number1, name_inputvariable_in_text='number1')
+    assert str(exceptioninfo.value) == 'Variable "number1" is not of type integer and not of type float, but of type '+str(type(number1))
+
+    # Test 7 with a string and name of variable as positional argument
+    with pytest.raises(TypeNumberError) as exceptioninfo:
+        number1 = 'This is a string'
+        error_not_isnumber(number1, 'number1')
+    assert str(exceptioninfo.value) == 'Variable "number1" is not of type integer and not of type float, but of type '+str(type(number1))
 
 
 def test_error_not_isstring():
