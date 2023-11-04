@@ -2009,6 +2009,7 @@ def test__make_subplots():
                              'FC'         : [38389.8, 41972.8, 41420.2, 39889.2, 40879.4]})
     testvar  = BarWithWaterfall(test=True)
     testvar.data = dataset
+    testvar.figsize = None   # Not a given figure size (default value of this parameter)
     testvar._make_subplots()
     expected = [8, 4.5]
     actual   = list(testvar.fig.get_size_inches())
@@ -2028,6 +2029,7 @@ def test__make_subplots():
                              'FC'         : [38389.8, 41972.8, 41420.2]})
     testvar  = BarWithWaterfall(test=True)
     testvar.data = dataset
+    testvar.figsize = None   # Not a given figure size (default value of this parameter)
     testvar._make_subplots()
     expected = [8, 3.5]
     actual   = list(testvar.fig.get_size_inches())
@@ -2042,6 +2044,7 @@ def test__make_subplots():
     with pytest.raises(TypeDataFrameError):
         testvar  = BarWithWaterfall(test=True)
         testvar.data = "This is a string"
+        testvar.figsize = None   # Not a given figure size (default value of this parameter)
         testvar._make_subplots()
 
 
@@ -2158,6 +2161,7 @@ def test__fill_ax_bar_label():
                              'AC'         : [350.506, 275.497, 425, 335.987654]})
     testvar  = BarWithWaterfall(test=True)
     testvar.data = dataset   # data is necessary for the make_subplots
+    testvar.figsize = None   # Not a given figure size (default value of this parameter)
     testvar._make_subplots() # make_subplots is necessary to have an "ax"-object
     testvar.data_scenarios = ['AC']
     testvar.ax.barh(y=list(dataset['_Category']), width=list(dataset['AC']), left=0)
@@ -2175,6 +2179,7 @@ def test__fill_ax_bar_label():
                              'AC'         : [350.506, 275.497, 425, 335.987654]})
     testvar  = BarWithWaterfall(test=True)
     testvar.data = dataset   # data is necessary for the make_subplots
+    testvar.figsize = None   # Not a given figure size (default value of this parameter)
     testvar._make_subplots() # make_subplots is necessary to have an "ax"-object
     testvar.data_scenarios = ['AC']
     testvar.ax.barh(y=list(dataset['_Category']), width=list(dataset['AC']), left=0)
@@ -2197,6 +2202,7 @@ def test__fill_ax_bar_label():
     with pytest.raises(TypeStringError):
         testvar = BarWithWaterfall(test=True)
         testvar.data = pd.DataFrame()
+        testvar.figsize = None   # Not a given figure size (default value of this parameter)
         testvar._make_subplots() # make_subplots is necessary to have an "ax"-object
         testvar.data_scenarios = ['AC']
         testvar._fill_ax_bar_label(scenario=404, total=True)
@@ -2205,6 +2211,7 @@ def test__fill_ax_bar_label():
     with pytest.raises(ValueError):
         testvar = BarWithWaterfall(test=True)
         testvar.data = pd.DataFrame()
+        testvar.figsize = None   # Not a given figure size (default value of this parameter)
         testvar._make_subplots() # make_subplots is necessary to have an "ax"-object
         testvar.data_scenarios = ['AC']
         testvar._fill_ax_bar_label(scenario='PY', total=False)
@@ -2213,6 +2220,7 @@ def test__fill_ax_bar_label():
     with pytest.raises(TypeBooleanError):
         testvar = BarWithWaterfall(test=True)
         testvar.data = pd.DataFrame()
+        testvar.figsize = None   # Not a given figure size (default value of this parameter)
         testvar._make_subplots() # make_subplots is necessary to have an "ax"-object
         testvar.data_scenarios = ['AC']
         testvar._fill_ax_bar_label(scenario='AC', total=404)

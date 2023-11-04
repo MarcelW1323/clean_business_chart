@@ -95,12 +95,17 @@ class BarWithWaterfall(GeneralChart):
     footnote_size           : Size of the text of the footnote. Use 'small' for small sized footnote. 
                               Use 'normal' for the normal textsize like all other texts in the chart.
                               Default: 'normal' (for normal sized footnote-text)
+    figsize                 : Size of the matplotlib-figure in inches in tuple-format (x-size, y-size).
+                              This parameter is optional and overwrites the default calculated standard size. This can be handy if you
+                              want to make the figure scale with an other figure by hand.
+                              More info about figsize on matplotlib.org.
+                              Default: None (no explicit size)
     """
 
     def __init__(self, data=None, positive_is_good=True, base_scenarios=None, compare_scenarios=None, title=None, measure=True, multiplier='1', 
                  filename=None, force_pl_is_zero=False, force_zero_decimals=False, force_max_one_decimals=False, translate_headers=None, 
                  category_of_interest=None, previous_year=False, total_text=None, total_line=True, remove_lines_with_zeros=True, other=None,
-                 sort_chart=True, footnote=None, footnote_size='normal', test=False, do_not_show=False):
+                 sort_chart=True, footnote=None, footnote_size='normal', figsize=None, test=False, do_not_show=False):
         """
         The function __init__ is the first function that will be called automatically. Here you'll find all the possible parameters to customize your experience.
         """
@@ -131,6 +136,7 @@ class BarWithWaterfall(GeneralChart):
         self.sort_dataframe             = sort_chart
         self.footnote                   = footnote
         self.footnote_size              = footnote_size
+        self.figsize                    = figsize
 
         # Check scenarios
         self.simple_first_check_scenario_parameters()     
@@ -2435,6 +2441,51 @@ class BarWithWaterfall(GeneralChart):
         return
 
 
+    def _check_figsize(self):
+        """
+        The function _check_figsize checks if the parameter figsize is a tuple or a list and contains two positive values.
+
+        Self variables
+        --------------
+        self.figsize   : Tuple or List with two positive values representing the X-size and the Y-size in inches
+
+        Returns
+        -------
+        export_figsize : tuple with two positive values representing the X-size and Y-size of the figure in inches
+        """
+        export_figsize = self.figsize
+        # Is it default (None)?
+        if not export_figsize is None:
+            # No the value is not default None
+
+            # Is it a list? Turn it into a tuple!
+            if islist(export_figsize):
+                # Yes, it is a list
+                export_figsize = tuple(export_figsize)
+
+            # It should be a tuple now
+            error_not_istuple(export_figsize, "parameter figsize")
+            # Now it is a tuple for sure!
+
+            # Check the number of values
+            if len(export_figsize) != 2:
+                raise ValueError("Parameter figsize, when given, needs to be a tuple with 2 values. Number of values now: "+ \
+                                 str(len(export_figsize)))
+
+            # Check the values
+            for value in export_figsize:
+                error_not_isnumber(value, "element of parameter figsize")
+                # Value is now an integer or a float
+                if value <= 0:
+                    # Value needs to be bigger than zero
+                    raise ValueError("This element does not have value bigger than zero: " + str(value))
+            # Now every value in the tuple is an integer or a float and has a value bigger than zero
+        #else:
+            # Yes, the value is None (default-value)
+
+        return export_figsize
+
+
     def _make_subplots(self):
         """
         The function _make_subplots creates the figure and subplot for the chart. The figure size in heigt depends on the number of dataframe-rows. 
@@ -2446,14 +2497,25 @@ class BarWithWaterfall(GeneralChart):
         self.fig      : Figure-object for the generated plot and subplots
         self.ax       : axisobject
         """
-        # Check dataframe
-        error_not_isdataframe(self.data, "self.data")
-        
-        # Get the number of dataframe-rows out of the shape of the dataframe
-        dataframe_rows = self.data.shape[0]
-        
+        # Get the figure size of the parameter and check for validness
+        figsize = self._check_figsize()
+
+        # Is there a figure size given?
+        if figsize is None:
+            # No figure size is given, use default x-value and calculate y-value
+            # Check dataframe
+            error_not_isdataframe(self.data, "self.data")
+
+            # Get the number of dataframe-rows out of the shape of the dataframe
+            dataframe_rows = self.data.shape[0]
+
+            # Default width (x-value) is 8. Height (y-value) is calculated
+            figsize = (8, 2 + dataframe_rows*0.5)
+        #else:
+            # Yes, a figure size is given
+
         # Create the figure-object and the axis-object
-        self.fig, self.ax = plt.subplots(nrows=1, ncols=1, figsize=(8, 2 + dataframe_rows*0.5), dpi=72) # dpi=72 solves some strange linewidth issues.
+        self.fig, self.ax = plt.subplots(nrows=1, ncols=1, figsize=figsize, dpi=72) # dpi=72 solves some strange linewidth issues.
 
         # Clean up the ticks and make the left-side available for the labels
         self.ax.tick_params(top=False, bottom=False, left=False, right=False, labelleft=True, labelbottom=False)
