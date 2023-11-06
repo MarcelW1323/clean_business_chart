@@ -1999,6 +1999,70 @@ def test__convert_data_dictionary_to_pandas_dataframe():
         testvar2._convert_data_dictionary_to_pandas_dataframe(data=dataset)
 
 
+def test__check_figsize():
+    # Test 1 - figsize = None
+    testvar  = BarWithWaterfall(test=True)
+    testvar.figsize = None
+    expected = None
+    actual   = testvar._check_figsize()
+    message  = "Test 1 - BarWithWaterfall._check_figsize returned {0} instead of {1}".format(actual, expected)
+    assert actual == pytest.approx(expected), message
+
+    # Test 2 - figsize = list with 2 values
+    testvar  = BarWithWaterfall(test=True)
+    testvar.figsize = [5,6]
+    expected = (5,6)
+    actual   = testvar._check_figsize()
+    message  = "Test 2 - BarWithWaterfall._check_figsize returned {0} instead of {1}".format(actual, expected)
+    assert actual == pytest.approx(expected), message
+
+    # Test 3 - figsize = tuple with 2 values
+    testvar  = BarWithWaterfall(test=True)
+    testvar.figsize = (9,7)
+    expected = (9,7)
+    actual   = testvar._check_figsize()
+    message  = "Test 3 - BarWithWaterfall._check_figsize returned {0} instead of {1}".format(actual, expected)
+    assert actual == pytest.approx(expected), message
+
+    # Test 4 - String instead of list/tuple
+    with pytest.raises(TypeTupleError):
+        testvar  = BarWithWaterfall(test=True)
+        testvar.figsize = "This is a string"
+        testvar._check_figsize()
+
+    # Test 5 - List with 3 values
+    with pytest.raises(ValueError):
+        testvar  = BarWithWaterfall(test=True)
+        testvar.figsize = [1, 2, 3]
+        testvar._check_figsize()
+
+    # Test 6 - Tuple with 1 value
+    with pytest.raises(ValueError):
+        testvar  = BarWithWaterfall(test=True)
+        testvar.figsize = tuple([1])
+        testvar._check_figsize()
+
+    # Test 7 - Tuple with 2 value, one value is < 0
+    with pytest.raises(ValueError):
+        testvar  = BarWithWaterfall(test=True)
+        testvar.figsize = (10, -10)
+        testvar._check_figsize()
+
+    # Test 8 - Tuple with 2 value and fig has a value
+    with pytest.raises(ValueError):
+        testvar  = BarWithWaterfall(test=True)
+        testvar.figsize = (11, 12)
+        testvar.fig = "Just a value is enough"
+        testvar._check_figsize()
+
+    # Test 9 - Tuple with 2 value and ax has a value
+    with pytest.raises(ValueError):
+        testvar  = BarWithWaterfall(test=True)
+        testvar.figsize = (11, 12)
+        testvar.ax = "Just a value is enough"
+        testvar._check_figsize()
+
+
 def test__make_subplots():
     # Test 1 - Dataframe with 5 rows
     dataset  = pd.DataFrame({'Year'       : ['2022', '2022', '2022', '2022', '2022'],
