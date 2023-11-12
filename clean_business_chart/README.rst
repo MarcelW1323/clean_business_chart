@@ -35,6 +35,8 @@ Features
 
   * added support for parameter footnote in version 0.2.6
 
+  * added support for parameter figsize in version 0.2.7 for optional (manual) sizing of the chart
+
 * General
 
   * better rounding support for values of chart-labels in version 0.2.5

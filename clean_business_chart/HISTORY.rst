@@ -2,6 +2,11 @@
 History
 =======
 
+0.2.7 (2023-11-12)
+------------------
+
+* Added parameter 'figsize' in bar chart with waterfall for optional (manual) sizing of the chart.
+
 0.2.6 (2023-10-29)
 ------------------
 
