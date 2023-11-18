@@ -37,6 +37,8 @@ Features
 
   * added support for parameter figsize in version 0.2.7 for optional (manual) sizing of the chart
 
+  * better calculation of vertical part of figsize in version 0.2.8 for automatic sizing of the chart
+
 * General
 
   * better rounding support for values of chart-labels in version 0.2.5

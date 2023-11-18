@@ -2,6 +2,11 @@
 History
 =======
 
+0.2.8 (2023-11-18)
+------------------
+
+* Better calculation of vertical part of figsize for automatic sizing of the bar chart with waterfall.
+
 0.2.7 (2023-11-12)
 ------------------
 
