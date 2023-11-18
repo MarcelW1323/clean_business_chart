@@ -2515,17 +2515,14 @@ class BarWithWaterfall(GeneralChart):
 
             # Get the number of dataframe-rows out of the shape of the dataframe
             dataframe_rows = self.data.shape[0]
-            print("Datarows", dataframe_rows)
 
             # Number of base_scenarios
             num_scenarios = len(self.base_scenarios)
-            print("Scenarios", num_scenarios)
 
             # Number of title_rows
             num_titles = 0
             if not self.title is None:
                 num_titles = sum([(x in self.title.keys()) for x in ('Reporting_unit', 'Business_measure', 'Time')])
-            print("num_titles", num_titles)
 
             # Default width (x-value) is 8. Height (y-value) is calculated
             figsize = (8, 1.63 + (num_titles*0.35) + (num_scenarios + dataframe_rows) * 0.38)
@@ -2534,7 +2531,6 @@ class BarWithWaterfall(GeneralChart):
 
         # Create the figure-object and the axis-object
         self.fig, self.ax = plt.subplots(nrows=1, ncols=1, figsize=figsize, dpi=72) # dpi=72 solves some strange linewidth issues.
-        print(self.fig.get_size_inches())
 
         # Clean up the ticks and make the left-side available for the labels
         self.ax.tick_params(top=False, bottom=False, left=False, right=False, labelleft=True, labelbottom=False)
