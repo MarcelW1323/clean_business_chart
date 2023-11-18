@@ -121,6 +121,7 @@ class BarWithWaterfall(GeneralChart):
         self.positive_is_good           = positive_is_good
         self.original_base_scenarios    = base_scenarios
         self.original_compare_scenarios = compare_scenarios
+        self.title                      = title
         self.hatch                      = self.hatch_pattern
         self.filename                   = filename
         self.force_pl_is_zero           = force_pl_is_zero
@@ -2497,9 +2498,11 @@ class BarWithWaterfall(GeneralChart):
 
         Self variables
         --------------
-        self.data     : Dataframe with detail data, needed here to get the number of dataframe-rows
-        self.fig      : Figure-object for the generated plot and subplots
-        self.ax       : axisobject
+        self.data           : Dataframe with detail data, needed here to get the number of dataframe-rows
+        self.fig            : Figure-object for the generated plot and subplots
+        self.ax             : Axisobject
+        self.base_scenarios : List of max 2 scenarios of which the first is used for comparisation and is used in the detail chart.
+        self.title          : Dictionary of title-components
         """
         # Get the figure size of the parameter and check for validness
         figsize = self._check_figsize()
@@ -2512,21 +2515,33 @@ class BarWithWaterfall(GeneralChart):
 
             # Get the number of dataframe-rows out of the shape of the dataframe
             dataframe_rows = self.data.shape[0]
+            print("Datarows", dataframe_rows)
+
+            # Number of base_scenarios
+            num_scenarios = len(self.base_scenarios)
+            print("Scenarios", num_scenarios)
+
+            # Number of title_rows
+            num_titles = 0
+            if not self.title is None:
+                num_titles = sum([(x in self.title.keys()) for x in ('Reporting_unit', 'Business_measure', 'Time')])
+            print("num_titles", num_titles)
 
             # Default width (x-value) is 8. Height (y-value) is calculated
-            figsize = (8, 2 + dataframe_rows*0.5)
+            figsize = (8, 1.63 + (num_titles*0.35) + (num_scenarios + dataframe_rows) * 0.38)
         #else:
             # Yes, a figure size is given
 
         # Create the figure-object and the axis-object
         self.fig, self.ax = plt.subplots(nrows=1, ncols=1, figsize=figsize, dpi=72) # dpi=72 solves some strange linewidth issues.
+        print(self.fig.get_size_inches())
 
         # Clean up the ticks and make the left-side available for the labels
         self.ax.tick_params(top=False, bottom=False, left=False, right=False, labelleft=True, labelbottom=False)
-        
+
         # Remove the lines around the chart
         self.ax.spines[['top', 'left', 'right', 'bottom']].set_visible(False)
-        
+
         return
 
 

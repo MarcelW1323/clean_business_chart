@@ -2074,8 +2074,10 @@ def test__make_subplots():
     testvar  = BarWithWaterfall(test=True)
     testvar.data = dataset
     testvar.figsize = None   # Not a given figure size (default value of this parameter)
+    testvar.base_scenarios = ['PY', 'PL']  # Test with 2 base-scenarios
+    testvar.title = None     # No title (default value of this parameter)
     testvar._make_subplots()
-    expected = [8, 4.5]
+    expected = [8, 4.29]
     actual   = list(testvar.fig.get_size_inches())
     message  = "Test 1a - BarWithWaterfall._make_subplots returned {0} instead of {1}".format(actual, expected)
     assert actual == pytest.approx(expected), message
@@ -2094,8 +2096,10 @@ def test__make_subplots():
     testvar  = BarWithWaterfall(test=True)
     testvar.data = dataset
     testvar.figsize = None   # Not a given figure size (default value of this parameter)
+    testvar.base_scenarios = ['PY', 'PL']  # Test with 2 base-scenarios
+    testvar.title = None     # No title (default value of this parameter)
     testvar._make_subplots()
-    expected = [8, 3.5]
+    expected = [8, 3.53]
     actual   = list(testvar.fig.get_size_inches())
     message  = "Test 2a - BarWithWaterfall._make_subplots returned {0} instead of {1}".format(actual, expected)
     assert actual == pytest.approx(expected), message
@@ -2226,6 +2230,8 @@ def test__fill_ax_bar_label():
     testvar  = BarWithWaterfall(test=True)
     testvar.data = dataset   # data is necessary for the make_subplots
     testvar.figsize = None   # Not a given figure size (default value of this parameter)
+    testvar.base_scenarios = ['PY', 'PL']  # Test with 2 base-scenarios
+    testvar.title = None     # No title (default value of this parameter)
     testvar._make_subplots() # make_subplots is necessary to have an "ax"-object
     testvar.data_scenarios = ['AC']
     testvar.ax.barh(y=list(dataset['_Category']), width=list(dataset['AC']), left=0)
@@ -2244,6 +2250,8 @@ def test__fill_ax_bar_label():
     testvar  = BarWithWaterfall(test=True)
     testvar.data = dataset   # data is necessary for the make_subplots
     testvar.figsize = None   # Not a given figure size (default value of this parameter)
+    testvar.base_scenarios = ['PY']  # Test with one base-scenario
+    testvar.title = None     # No title (default value of this parameter)
     testvar._make_subplots() # make_subplots is necessary to have an "ax"-object
     testvar.data_scenarios = ['AC']
     testvar.ax.barh(y=list(dataset['_Category']), width=list(dataset['AC']), left=0)
@@ -2267,6 +2275,8 @@ def test__fill_ax_bar_label():
         testvar = BarWithWaterfall(test=True)
         testvar.data = pd.DataFrame()
         testvar.figsize = None   # Not a given figure size (default value of this parameter)
+        testvar.base_scenarios = ['PY', 'PL']  # Test with 2 base-scenarios
+        testvar.title = None     # No title (default value of this parameter)
         testvar._make_subplots() # make_subplots is necessary to have an "ax"-object
         testvar.data_scenarios = ['AC']
         testvar._fill_ax_bar_label(scenario=404, total=True)
@@ -2276,6 +2286,8 @@ def test__fill_ax_bar_label():
         testvar = BarWithWaterfall(test=True)
         testvar.data = pd.DataFrame()
         testvar.figsize = None   # Not a given figure size (default value of this parameter)
+        testvar.base_scenarios = ['PY']  # Test with 1 base-scenario
+        testvar.title = None     # No title (default value of this parameter)
         testvar._make_subplots() # make_subplots is necessary to have an "ax"-object
         testvar.data_scenarios = ['AC']
         testvar._fill_ax_bar_label(scenario='PY', total=False)
@@ -2285,6 +2297,8 @@ def test__fill_ax_bar_label():
         testvar = BarWithWaterfall(test=True)
         testvar.data = pd.DataFrame()
         testvar.figsize = None   # Not a given figure size (default value of this parameter)
+        testvar.base_scenarios = ['PY', 'PL']  # Test with 2 base-scenarios
+        testvar.title = None     # No title (default value of this parameter)
         testvar._make_subplots() # make_subplots is necessary to have an "ax"-object
         testvar.data_scenarios = ['AC']
         testvar._fill_ax_bar_label(scenario='AC', total=404)
