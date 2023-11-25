@@ -1118,3 +1118,42 @@ def get_default_scenarios(type_scenario=None, scenarios=None):
             export_scenarios.reverse()
             export_scenarios = export_scenarios[:1]
     return export_scenarios
+
+
+def check_scenario_translation(standardscenarios, translation=None):
+    """
+    Incorporates the translation for the scenarios into the standard scenarios.
+
+    For example:
+    standardscenarios = {'PY':'PY', 'PL':'PL', 'AC':'AC', 'FC':'FC'}  # As standard scenarios are PY, PL, AC, FC
+    translation       = {'PY':'PP', 'ZZ':'AA'}
+    results into      : {'PY':'PP', 'PL':'PL', 'AC':'AC', 'FC':'FC'}  # PP will be adopted as outputtranslation for PY. but AA will not be adopted as ZZ is not a standard scenario
+
+    Parameters
+    ----------
+    standardscenarios : Dictionary with standard scenarios as keys and their standard translation as value
+    translation       : Dictionary with standard scenarios as keys (will have a valid translation) or other keys and translation as values
+                        Default: None (No translation needed)
+    Returns
+    -------
+    export_dictionary : Dictionary with standard scenarios as keys and their translation as value
+    """
+    # Standardscenarios needs to be a dictionary
+    error_not_isdictionary(standardscenarios, "standardscenarios")
+    # Standardscenarios is now a dictionary
+
+    # Prepare exportvariable
+    export_dictionary = standardscenarios
+
+    #Check if a translation is given
+    if translation is None:
+        # No translation given
+        return export_dictionary
+
+    # Translation is given. This needs to be a dictionary
+    error_not_isdictionary(translation, "translation")
+    # Translation is now a dictionary
+
+    export_dictionary = {key: translation.get(key, standardscenarios[key]) for key in standardscenarios}
+
+    return export_dictionary

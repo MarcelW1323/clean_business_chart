@@ -63,6 +63,7 @@ class GeneralChart:
         """
         # Scenarios
         self.all_scenarios    = ['PY', 'PL', 'AC', 'FC']  # Previous Year, PLan, ACtual, ForeCast (in order of time)
+        self.all_scenarios_translate = {'PY':'PY', 'PL':'PL', 'AC':'AC', 'FC':'FC'}  # Translate standard scenarios
         self.data_scenarios   = list()      # Every class needs to fill this variable to indicate which scenarios are in the data
 
         # Date columns

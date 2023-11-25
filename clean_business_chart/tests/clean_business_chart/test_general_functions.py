@@ -1367,4 +1367,37 @@ def test_get_default_scenarios():
     with pytest.raises(TypeListError):
         get_default_scenarios('base', 'This is a string')
 
+
+def test_check_scenario_translation():
+    # Test 1 - One correct key, one other key
+    translation = {'PY':'PP', 'ZZ':'AA'}
+    expected    = {'PY':'PP', 'PL':'PL', 'AC':'AC', 'FC':'FC'}
+    actual      = check_scenario_translation(standardscenarios={'PY':'PY', 'PL':'PL', 'AC':'AC', 'FC':'FC'}, translation=translation)
+    message     = "Test 1 - check_scenario_translation returned {0} instead of {1}".format(actual, expected)
+    assert actual == expected, message
+
+    # Test 2 - No translation
+    translation = None
+    expected    = {'PY':'PY', 'PL':'PL', 'AC':'AC', 'FC':'FC'}
+    actual      = check_scenario_translation(standardscenarios={'PY':'PY', 'PL':'PL', 'AC':'AC', 'FC':'FC'}, translation=translation)
+    message     = "Test 2 - check_scenario_translation returned {0} instead of {1}".format(actual, expected)
+    assert actual == expected, message
+
+    # Test 3 - Complete translation, different order
+    translation = {'AC':'WK', 'FC':'EAC', 'PY':'VJ', 'PL':'BUD'}
+    expected    = {'PY':'VJ', 'PL':'BUD', 'AC':'WK', 'FC':'EAC'}
+    actual      = check_scenario_translation(standardscenarios={'PY':'PY', 'PL':'PL', 'AC':'AC', 'FC':'FC'}, translation=translation)
+    message     = "Test 3 - check_scenario_translation returned {0} instead of {1}".format(actual, expected)
+    assert actual == expected, message
+
+    # Test 4 - string instead of dictionary
+    with pytest.raises(TypeDictionaryError):
+        check_scenario_translation(standardscenarios="This is a string", translation={'AC':'AC'})
+
+    # Test 5 - string instead of dictionary
+    with pytest.raises(TypeDictionaryError):
+        check_scenario_translation(standardscenarios={'PY':'PY', 'PL':'PL', 'AC':'AC', 'FC':'FC'}, translation="This is a string")
+
+
+
 #### Need to add more test-functions for automatic testing
