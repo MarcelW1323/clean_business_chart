@@ -13,7 +13,7 @@ from clean_business_chart.general_functions    import plot_line_accross_axes, pl
                                                       string_to_value, filter_lists, convert_data_string_to_pandas_dataframe, convert_data_list_of_lists_to_pandas_dataframe, \
                                                       dataframe_translate_field_headers, dataframe_search_for_headers, dataframe_keep_only_relevant_columns, \
                                                       dataframe_date_to_year_and_month, dataframe_convert_year_month_to_string, list1_is_subset_list2, \
-                                                      convert_dataframe_scenario_columns_to_value, convert_number_to_string
+                                                      convert_dataframe_scenario_columns_to_value, convert_number_to_string, check_scenario_translation
                                                       
 from clean_business_chart.multiplier           import Multiplier
 from clean_business_chart.exceptions           import *  # for custom errors/exceptions
@@ -100,12 +100,15 @@ class BarWithWaterfall(GeneralChart):
                               want to make the figure scale with an other figure by hand.
                               More info about figsize on matplotlib.org.
                               Default: None (no explicit size)
+    translate_scenario      : Dictionary for renaming standard scenarios in charts. Only standard scenarios have impact on the translations.
+                              Use case: You want to indicate "Previous Month" instead of PY (Previous Year). translate_scenario = {'PY':'PM'}. PM will be visible instead of PY.
+                              Default: None (no translation of scenarios)
     """
 
     def __init__(self, data=None, positive_is_good=True, base_scenarios=None, compare_scenarios=None, title=None, measure=True, multiplier='1', 
                  filename=None, force_pl_is_zero=False, force_zero_decimals=False, force_max_one_decimals=False, translate_headers=None, 
                  category_of_interest=None, previous_year=False, total_text=None, total_line=True, remove_lines_with_zeros=True, other=None,
-                 sort_chart=True, footnote=None, footnote_size='normal', figsize=None, test=False, do_not_show=False):
+                 sort_chart=True, footnote=None, footnote_size='normal', figsize=None, translate_scenario=None, test=False, do_not_show=False):
         """
         The function __init__ is the first function that will be called automatically. Here you'll find all the possible parameters to customize your experience.
         """
@@ -138,10 +141,14 @@ class BarWithWaterfall(GeneralChart):
         self.footnote                   = footnote
         self.footnote_size              = footnote_size
         self.figsize                    = figsize
+        self.translate_scenario         = translate_scenario
 
         # Check scenarios
         self.simple_first_check_scenario_parameters()     
-        
+
+        # Translate scenarios
+        self.all_scenarios_translate = check_scenario_translation(standardscenarios=self.all_scenarios_translate, translation=translate_scenario)
+
         # Calculate chart
         self.get_barwidth(measure)
         self._check_and_process_data(data)
@@ -522,15 +529,16 @@ class BarWithWaterfall(GeneralChart):
 
         Self variables
         --------------
-        self.ax               : Axesobject for the generated subplot
-        self.font             : All text in a chart has the same font
-        self.fontsize         : All text in a chart has the same height
-        self.colors           : Dictionary with colors
-        self.barwidth         : A float with the width of the bars for measure or ratio
-        self.data_total       : Dictionary (key=scenario) with the total value
-        self.dict_totals      : Totals of the data (only one entry for the last total line underneath the detailed chart)
-                                One entry each for the base scenarios, only one entry with the name of the first item of the compare scenarios
-                                Combined with the Y-coordinate of the bar
+        self.all_scenarios_translate : Dictionary of all scenarios and their translation in the chart
+        self.ax                      : Axesobject for the generated subplot
+        self.font                    : All text in a chart has the same font
+        self.fontsize                : All text in a chart has the same height
+        self.colors                  : Dictionary with colors
+        self.barwidth                : A float with the width of the bars for measure or ratio
+        self.data_total              : Dictionary (key=scenario) with the total value
+        self.dict_totals             : Totals of the data (only one entry for the last total line underneath the detailed chart)
+                                       One entry each for the base scenarios, only one entry with the name of the first item of the compare scenarios
+                                       Combined with the Y-coordinate of the bar
         """
         # Check axis-object
         error_not_isaxes(self.ax, "self.ax")
@@ -560,14 +568,16 @@ class BarWithWaterfall(GeneralChart):
             if x==0:
                 # The first scenario is running now
                 # Put the label of the scenario half way on top of the bar
-                ax.text(tot_base / 2, yvalue + self.barwidth*0.8, scenario, horizontalalignment='center', font=self.font, 
+                scenariotext = self.all_scenarios_translate[scenario]
+                ax.text(tot_base / 2, yvalue + self.barwidth*0.8, scenariotext, horizontalalignment='center', font=self.font,
                         fontsize=self.fontsize, color=self.colors['text'])
             else:
                 # The second scenario is running now, we need to set the first_scenario-variables to False
                 first_scenario_special_text = False
                 first_scenario_line_start = False
                 # Put the label of the scenario half way underneath of the bar
-                ax.text(tot_base / 2, yvalue - self.barwidth*1.4, scenario, horizontalalignment='center', font=self.font, 
+                scenariotext = self.all_scenarios_translate[scenario]
+                ax.text(tot_base / 2, yvalue - self.barwidth*1.4, scenariotext, horizontalalignment='center', font=self.font,
                         fontsize=self.fontsize, color=self.colors['text'])
            
             # Plot bar
@@ -743,20 +753,21 @@ class BarWithWaterfall(GeneralChart):
 
         Parameters
         ----------
-        dataframe              : pandas DataFrame with y-coordinates for compare-scenario
+        dataframe                    : pandas DataFrame with y-coordinates for compare-scenario
 
         Self variables
         --------------
-        self.ax                : Axesobject for the generated subplot
-        self.barwidth          : A float with the width of the bars for measure or ratio
-        self.colors            : Dictionary with colors
-        self.compare_scenarios : List of compare scenarios
-        self.data_total        : Dictionary (key=scenario) with the total value
-        self.dict_totals       : Totals of the data (only one entry for the last total line underneath the detailed chart)
-                                 One entry each for the base scenarios, only one entry with the name of the first item of the compare scenarios
-                                 Combined with the Y-coordinate of the bar
-        self.font              : All text in a chart has the same font
-        self.fontsize          : All text in a chart has the same height
+        self.all_scenarios_translate : Dictionary of all scenarios and their translation in the chart
+        self.ax                      : Axesobject for the generated subplot
+        self.barwidth                : A float with the width of the bars for measure or ratio
+        self.colors                  : Dictionary with colors
+        self.compare_scenarios       : List of compare scenarios
+        self.data_total              : Dictionary (key=scenario) with the total value
+        self.dict_totals             : Totals of the data (only one entry for the last total line underneath the detailed chart)
+                                       One entry each for the base scenarios, only one entry with the name of the first item of the compare scenarios
+                                       Combined with the Y-coordinate of the bar
+        self.font                    : All text in a chart has the same font
+        self.fontsize                : All text in a chart has the same height
         """
         # Check axis-object
         error_not_isaxes(self.ax, "self.ax")
@@ -796,10 +807,12 @@ class BarWithWaterfall(GeneralChart):
         # Check if there are two separate compare scenarios or check that the first scenario is the same as the last scenario
         if compare_scenario1 != compare_scenario2:
             # Yes, there are two compare scenarios. In that case we set the scenario abbreviation underneath the bar near the center of the length of the bar
-            ax.text(tot_comp1 / 2, yvalue - self.barwidth*1.2, compare_scenario1, horizontalalignment='center', font=self.font, fontsize=self.fontsize, color=self.colors['text']) #, verticalalignment='center')
+            scenariotext = self.all_scenarios_translate[compare_scenario1]
+            ax.text(tot_comp1 / 2, yvalue - self.barwidth*1.2, scenariotext, horizontalalignment='center', font=self.font, fontsize=self.fontsize, color=self.colors['text']) #, verticalalignment='center')
 
             # Now plot the horizontal bar of the second compare scenario as a stacked bar on top of the first bar
-            self._plot_barh(y=yvalue, width=tot_comp2, scenario=compare_scenario2, height=self.barwidth, left=tot_comp1, total=True, zorder=0)
+            scenariotext = self.all_scenarios_translate[compare_scenario2]
+            self._plot_barh(y=yvalue, width=tot_comp2, scenario=scenariotext, height=self.barwidth, left=tot_comp1, total=True, zorder=0)
             # Write the total sum of the lenght of both bars combines on the right of the second (stacked) bar
             self._fill_ax_bar_label(compare_scenario2, total=True)
             # Also here, set the scenario abbreviation of the second scenario underneath the second (stacked) bar near the center of this addition
@@ -812,7 +825,8 @@ class BarWithWaterfall(GeneralChart):
             # Store this total in the dictionary
             total_dict['total']  = tot_comp1
             # Put the scenario text underneath the bar near the center of the length of the bar
-            ax.text(tot_comp1 / 2, yvalue - self.barwidth*1.4, compare_scenario1, horizontalalignment='center', font=self.font, fontsize=self.fontsize, color=self.colors['text']) #, verticalalignment='center')
+            scenariotext = self.all_scenarios_translate[compare_scenario1]
+            ax.text(tot_comp1 / 2, yvalue - self.barwidth*1.4, scenariotext, horizontalalignment='center', font=self.font, fontsize=self.fontsize, color=self.colors['text']) #, verticalalignment='center')
 
         
         # As the total for the compare scenarios is just one horizontal bar (one horizontal stacked bar in case of two compare scenarios)
@@ -1039,23 +1053,24 @@ class BarWithWaterfall(GeneralChart):
 
         Self variables
         --------------
-        self.ax                : Axesobject for the generated subplot
-        self.barwidth          : A float with the width of the bars for measure or ratio
-        self.base_scenarios    : List of base scenarios
-        self.colors            : Dictionary with colors
-        self.compare_scenarios : List of compare scenarios
-        self.data_text         : Dictionary with the number of the matplotllib-ax-containers of the bar-data including the texts of the bars
-        self.data_total        : Dictionary (key=scenario) with the total value
-        self.dict_totals       : Totals of the data (only one entry for the last total line underneath the detailed chart)
-                                 One entry each for the base scenarios, only one entry with the name of the first item of the compare scenarios
-                                 Combined with the Y-coordinate of the bar
-        self.font              : All text in a chart has the same font
-        self.fontsize          : All text in a chart has the same height
-        self.linewidth_bar     : The width of the lines from a bar
-        self.linewidth_line_n  : The normal width of the lines
-        self.padding           : Padding between the bars and the text
-        self.sort_dataframe    : Boolean value determining if we need to do the sorting (True) or not (False)
-                                 In the future, 'sort_dataframe' can have an other meaning and type.
+        self.all_scenarios_translate : Dictionary of all scenarios and their translation in the chart
+        self.ax                      : Axesobject for the generated subplot
+        self.barwidth                : A float with the width of the bars for measure or ratio
+        self.base_scenarios          : List of base scenarios
+        self.colors                  : Dictionary with colors
+        self.compare_scenarios       : List of compare scenarios
+        self.data_text               : Dictionary with the number of the matplotllib-ax-containers of the bar-data including the texts of the bars
+        self.data_total              : Dictionary (key=scenario) with the total value
+        self.dict_totals             : Totals of the data (only one entry for the last total line underneath the detailed chart)
+                                       One entry each for the base scenarios, only one entry with the name of the first item of the compare scenarios
+                                       Combined with the Y-coordinate of the bar
+        self.font                    : All text in a chart has the same font
+        self.fontsize                : All text in a chart has the same height
+        self.linewidth_bar           : The width of the lines from a bar
+        self.linewidth_line_n        : The normal width of the lines
+        self.padding                 : Padding between the bars and the text
+        self.sort_dataframe          : Boolean value determining if we need to do the sorting (True) or not (False)
+                                       In the future, 'sort_dataframe' can have an other meaning and type.
         """
         # Check parameter
         error_not_isdataframe(dataframe, "dataframe")
@@ -1120,13 +1135,14 @@ class BarWithWaterfall(GeneralChart):
                          font=self.font, fontsize=self.fontsize, zorder=10)
 
         # Plot the downarrow (\u2193). The up-arrow has code: \u2191. \u0394 is a delta-sign
+        scenariotext = self.all_scenarios_translate[base_scenario]
         if self.sort_dataframe:
             # Yes, the dataframe is sorted, so we need to add the arrow
-            ax.text(base_value, yvalues[0]+0.75, "\u0394"+base_scenario+"(\u2193)", horizontalalignment='left', font=self.font,
+            ax.text(base_value, yvalues[0]+0.75, "\u0394"+scenariotext+"(\u2193)", horizontalalignment='left', font=self.font,
                                  fontsize=self.fontsize, color=self.colors['text'])
         else:
             # No, the dataframe is not sorted, so no need for an arrow
-            ax.text(base_value, yvalues[0]+0.75, "\u0394"+base_scenario, horizontalalignment='left', font=self.font,
+            ax.text(base_value, yvalues[0]+0.75, "\u0394"+scenariotext, horizontalalignment='left', font=self.font,
                                  fontsize=self.fontsize, color=self.colors['text'])
         return
 
@@ -1357,7 +1373,38 @@ class BarWithWaterfall(GeneralChart):
         # Plot the category-names of the detail bars and the total bars and plot the y-axis (zeroline)
         self._plot_y_axis_labels(dataframe=dataframe)
 
+        # Plot the scaling bar (optional)
+####        self._plot_scaling_bar()  ## Future version
+
         return 
+
+
+    def _plot_scaling_bar(self):
+        """
+        The function _plot_scaling_bar plots a scaling bar. This is a line and an filled area underneath this line. If you have several charts on different sizes
+        (for example for revenue and profit) you can scale the profit larger to see it better and with the scaling bars at the same value you indicate
+        how both charts relate.
+
+        Self variables
+        --------------
+        self.ax            : Axesobject for the generated subplot
+        self.colors        : Dictionary with colors
+        self.linewidth_bar : The width of the lines from a bar
+        self.scalingvalue  : The value of the scaling band
+        """
+        # Check axis-object
+        error_not_isaxes(self.ax, "self.ax")
+        ax = self.ax
+
+        # This needs to be improved
+        limits = ax.axis()
+        height = abs(limits[2]) + abs(limits[3])
+        y = sum(limits[2:])/2
+
+        ax.barh(y, width=self.scalingvalue, color=self.colors["highlight"], height=height, linewidth=self.linewidth_bar,
+                         edgecolor=self.colors["highlight"], alpha=0.2, label="Scaling bar",zorder=0)
+
+        return
 
 
     def _plot_barh(self, y, width, scenario, height, left=0, total=False, zorder=None):
