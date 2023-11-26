@@ -2,6 +2,12 @@
 History
 =======
 
+0.2.9 (2023-11-26)
+------------------
+
+* Added parameter 'translate_scenario' in bar chart with waterfall for optional translating the standard scenarios on the output of the chart.
+
+
 0.2.8 (2023-11-18)
 ------------------
 
