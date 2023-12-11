@@ -512,51 +512,80 @@ def test__dataframe_aggregate():
 
 def test__optimize_data_total():
     # Test 1 - good dictionary and good parameters (with unusual, but valid values and two decimals)
-    testvar  = BarWithWaterfall(test=True)
+    testvar   = BarWithWaterfall(test=True)
     testvar.data_total = {'AC':1357.2468, 'PL':862.64, 'PY':8723.85, 'FC':103020.76932}
-    expected = {'AC': 48.85, 'PL': 31.05, 'PY': 313.97, 'FC': 3707.69}
+    expected1 = {'AC': 48.85, 'PL': 31.05, 'PY': 313.97, 'FC': 3707.69}
+    expected2 = 2425.09
+    testvar.scalingvalue = 67382.9382718
     testvar._optimize_data_total(numerator=14, denominator=389, decimals=2)
-    actual   = testvar.data_total
-    message  = "Test 1 - BarWithWaterfall._optimize_data_total returned {0} instead of {1}".format(actual, expected)
-    assert actual == expected, message
+    actual1   = testvar.data_total
+    actual2   = testvar.scalingvalue
+    message   = "Test 1a - BarWithWaterfall._optimize_data_total returned {0} instead of {1}".format(actual1, expected1)
+    assert actual1 == expected1, message
+    message   = "Test 1b - BarWithWaterfall._optimize_data_total returned {0} instead of {1}".format(actual2, expected2)
+    assert actual2 == expected2, message
 
     # Test 2 - good dictionary and good parameters (with normal, valid values and one decimals)
-    testvar  = BarWithWaterfall(test=True)
+    testvar   = BarWithWaterfall(test=True)
     testvar.data_total = {'AC':1357.2468, 'PL':862.64, 'PY':8723.85, 'FC':103020.76932}
-    expected = {'AC': 1.4, 'PL': 0.9, 'PY': 8.7, 'FC': 103.0}
+    expected1 = {'AC': 1.4, 'PL': 0.9, 'PY': 8.7, 'FC': 103.0}
+    expected2 = 67.4
+    testvar.scalingvalue = 67382.9382718
     testvar._optimize_data_total(numerator=1, denominator=1000, decimals=1)
-    actual   = testvar.data_total
-    message  = "Test 2 - BarWithWaterfall._optimize_data_total returned {0} instead of {1}".format(actual, expected)
-    assert actual == expected, message
+    actual1   = testvar.data_total
+    actual2   = testvar.scalingvalue
+    message   = "Test 2a - BarWithWaterfall._optimize_data_total returned {0} instead of {1}".format(actual1, expected1)
+    assert actual1 == expected1, message
+    message   = "Test 2b - BarWithWaterfall._optimize_data_total returned {0} instead of {1}".format(actual2, expected2)
+    assert actual2 == expected2, message
 
     # Test 3 - good dictionary and good parameters (with unusual, valid values and no decimals)
-    testvar  = BarWithWaterfall(test=True)
+    testvar   = BarWithWaterfall(test=True)
     testvar.data_total = {'AC':1357.2468, 'PL':862.64, 'PY':8723.85, 'FC':103020.76932}
-    expected = {'AC': 68, 'PL': 43, 'PY': 436, 'FC': 5151}
+    expected1 = {'AC': 68, 'PL': 43, 'PY': 436, 'FC': 5151}
+    expected2 = 3369
+    testvar.scalingvalue = 67382.9382718
     testvar._optimize_data_total(numerator=50, denominator=1000, decimals=0)
-    actual   = testvar.data_total
-    message  = "Test 3 - BarWithWaterfall._optimize_data_total returned {0} instead of {1}".format(actual, expected)
-    assert actual == expected, message
+    actual1   = testvar.data_total
+    actual2   = testvar.scalingvalue
+    message   = "Test 3a - BarWithWaterfall._optimize_data_total returned {0} instead of {1}".format(actual1, expected1)
+    assert actual1 == expected1, message
+    message   = "Test 3b - BarWithWaterfall._optimize_data_total returned {0} instead of {1}".format(actual2, expected2)
+    assert actual2 == expected2, message
 
-    # Test 4 - Numerator is not an integer
+    # Test 4 - repeat of test 3, but with scalingvalue None
+    testvar   = BarWithWaterfall(test=True)
+    testvar.data_total = {'AC':1357.2468, 'PL':862.64, 'PY':8723.85, 'FC':103020.76932}
+    expected1 = {'AC': 68, 'PL': 43, 'PY': 436, 'FC': 5151}
+    expected2 = None
+    testvar.scalingvalue = None
+    testvar._optimize_data_total(numerator=50, denominator=1000, decimals=0)
+    actual1   = testvar.data_total
+    actual2   = testvar.scalingvalue
+    message   = "Test 4a - BarWithWaterfall._optimize_data_total returned {0} instead of {1}".format(actual1, expected1)
+    assert actual1 == expected1, message
+    message   = "Test 4b - BarWithWaterfall._optimize_data_total returned {0} instead of {1}".format(actual2, expected2)
+    assert actual2 == expected2, message
+
+    # Test 5 - Numerator is not an integer
     with pytest.raises(TypeIntegerError):
         testvar  = BarWithWaterfall(test=True)
         testvar.data_total = {'AC':1357.2468, 'PL':862.64, 'PY':8723.85, 'FC':103020.76932}
         testvar._optimize_data_total(numerator="This is a string", denominator=1, decimals=0)
 
-    # Test 5 - Denominator is not an integer
+    # Test 6 - Denominator is not an integer
     with pytest.raises(TypeIntegerError):
         testvar  = BarWithWaterfall(test=True)
         testvar.data_total = {'AC':1357.2468, 'PL':862.64, 'PY':8723.85, 'FC':103020.76932}
         testvar._optimize_data_total(numerator=1, denominator="This is a string", decimals=0)
 
-    # Test 6 - Decimals is not an integer
+    # Test 7 - Decimals is not an integer
     with pytest.raises(TypeIntegerError):
         testvar  = BarWithWaterfall(test=True)
         testvar.data_total = {'AC':1357.2468, 'PL':862.64, 'PY':8723.85, 'FC':103020.76932}
         testvar._optimize_data_total(numerator=1, denominator=1, decimals="This is a string")
 
-    # Test 7 - Data_total is not a dictionary
+    # Test 8 - Data_total is not a dictionary
     with pytest.raises(TypeDictionaryError):
         testvar  = BarWithWaterfall(test=True)
         testvar.data_total = "This is a string"
@@ -1674,21 +1703,22 @@ def test__optimize_data_dataframe_details():
 def test__optimize_data():
     # Just a test to see if all components still work. Those components are tested in their own test-functions.
     # Test 1 - Good dataframe with all data_scenarios and a normal denominator and 2 decimals
-    dataset  = pd.DataFrame({'Year'       : ['2022', '2022', '2022', '2022', '2022'],
-                             'PY'         : [39364.4, 39710.1, 40165.2, 38875.8, 38539.8],
-                             'PL'         : [39846.8, 41769.6, 40615.4, 39770.7, 38879.1],
-                             '_Category'  : ['Airbus', 'Boeing', 'OTHER', 'General Dynamics', 'Lockheed Martin'],
-                             'AC'         : [40299.2, 39443.1, 41702.8, 40331.9, 41207.3],
-                             'FC'         : [38389.8, 41972.8, 41420.2, 39889.2, 40879.4],
-                             '_CBC_DELTA1': [  452.4, -2326.5,  1087.4,   561.2,  2328.2],     # FYI: Delta1 is AC-PL
-                             '_CBC_DELTA2': [38842.2, 39646.3, 42507.6, 40450.4, 43207.6]})    # FYI: Delta2 is Delta1+FC
-    testvar  = BarWithWaterfall(test=True)
+    dataset   = pd.DataFrame({'Year'       : ['2022', '2022', '2022', '2022', '2022'],
+                              'PY'         : [39364.4, 39710.1, 40165.2, 38875.8, 38539.8],
+                              'PL'         : [39846.8, 41769.6, 40615.4, 39770.7, 38879.1],
+                              '_Category'  : ['Airbus', 'Boeing', 'OTHER', 'General Dynamics', 'Lockheed Martin'],
+                              'AC'         : [40299.2, 39443.1, 41702.8, 40331.9, 41207.3],
+                              'FC'         : [38389.8, 41972.8, 41420.2, 39889.2, 40879.4],
+                              '_CBC_DELTA1': [  452.4, -2326.5,  1087.4,   561.2,  2328.2],     # FYI: Delta1 is AC-PL
+                              '_CBC_DELTA2': [38842.2, 39646.3, 42507.6, 40450.4, 43207.6]})    # FYI: Delta2 is Delta1+FC
+    testvar   = BarWithWaterfall(test=True)
     testvar.data_scenarios = ['PY', 'PL', 'FC', 'AC']
     testvar.data_total = {'PY':196655.3, 'PL':200881.6, 'AC':202984.3, 'FC':202551.4}
     testvar.original_multiplier = Multiplier("1")
     testvar.force_zero_decimals = False
     testvar.force_max_one_decimals = False
-    expected =  {'Year'       : ['2022', '2022', '2022', '2022', '2022'],
+    testvar.scalingvalue = 38207.237138
+    expected1 =  {'Year'       : ['2022', '2022', '2022', '2022', '2022'],
                  'PY'         : [39.4, 39.7, 40.2, 38.9, 38.5],
                  'PL'         : [39.8, 41.8, 40.6, 39.8, 38.9],
                  '_Category'  : ['Airbus', 'Boeing', 'OTHER', 'General Dynamics', 'Lockheed Martin'],
@@ -1696,10 +1726,18 @@ def test__optimize_data():
                  'FC'         : [38.4, 42.0, 41.4, 39.9, 40.9],
                  '_CBC_DELTA1': [0.5, -2.3, 1.1, 0.6, 2.3],
                  '_CBC_DELTA2': [38.8, 39.6, 42.5, 40.5, 43.2]}
-    actual   = testvar._optimize_data(dataframe=dataset)
-    actual   = actual.to_dict(orient='list')
-    message  = "Test 1 - BarWithWaterfall._optimize_data returned {0} instead of {1}".format(actual, expected)
-    assert actual == pytest.approx(expected), message
+    expected2 = {'PY': 197, 'PL': 201, 'AC': 203, 'FC': 203}
+    expected3 = 38
+    actual1   = testvar._optimize_data(dataframe=dataset)
+    actual1   = actual1.to_dict(orient='list')
+    actual2   = testvar.data_total
+    actual3   = testvar.scalingvalue
+    message   = "Test 1a - BarWithWaterfall._optimize_data returned {0} instead of {1}".format(actual1, expected1)
+    assert actual1 == pytest.approx(expected1), message
+    message   = "Test 1b - BarWithWaterfall._optimize_data returned {0} instead of {1}".format(actual2, expected2)
+    assert actual2 == pytest.approx(expected2), message
+    message   = "Test 1c - BarWithWaterfall._optimize_data returned {0} instead of {1}".format(actual3, expected3)
+    assert actual3 == pytest.approx(expected3), message
 
 
 def test__add_yvalues_to_dataframe():
@@ -1819,6 +1857,7 @@ def test__process_dataframe():
     testvar.force_zero_decimals = False
     testvar.force_max_one_decimals = False
     testvar.sort_dataframe = True
+    testvar.scalingvalue = None
     expected = {'Year': ['2022', '2022', '2022', '2022', '2022'],
                 'PY': [38.5, 38.9, 39.4, 39.7, 40.2],
                 'PL': [38.9, 39.8, 39.8, 41.8, 40.6],
@@ -1858,6 +1897,7 @@ def test__check_and_process_data():
     testvar.force_zero_decimals = False
     testvar.force_max_one_decimals = False
     testvar.sort_dataframe = True
+    testvar.scalingvalue = None
     expected = {'Year': ['2022', '2022', '2022', '2022', '2022'],
                 'PY': [38.5, 38.9, 39.4, 39.7, 40.2],
                 'PL': [38.9, 39.8, 39.8, 41.8, 40.6],
@@ -1903,6 +1943,7 @@ def test__check_and_process_data():
     testvar.force_zero_decimals = False
     testvar.force_max_one_decimals = False
     testvar.sort_dataframe = True
+    testvar.scalingvalue = None
     expected = {'_Category': ['Spain', 'Greece', 'Sweden', 'Germany', 'Russia', 'Great Britain', 'Italy', 'Slovenia', 'Denmark', 'Netherlands', 'France', 'OTHER'],
                 'PY': [30.0, 38.0, 38.0, 90.0, 60.0, 15.0, 15.0, 4.0, 29.0, 39.0, 60.0, 40.0],
                 'PL': [33.0, 33.0, 35.0, 89.0, 56.0, 13.0, 12.0, 5.0, 35.0, 42.0, 77.0, 37.0],
@@ -1954,6 +1995,7 @@ OTHER, 40 , 37 , 44 , 15
     testvar.force_zero_decimals = False
     testvar.force_max_one_decimals = False
     testvar.sort_dataframe = True
+    testvar.scalingvalue = None
     expected = {'_Category': ['Spain', 'Greece', 'Sweden', 'Germany', 'Russia', 'Great Britain', 'Italy', 'Slovenia', 'Denmark', 'Netherlands', 'France', 'OTHER'],
                 'PY': [30.0, 38.0, 38.0, 90.0, 60.0, 15.0, 15.0, 4.0, 29.0, 39.0, 60.0, 40.0],
                 'PL': [33.0, 33.0, 35.0, 89.0, 56.0, 13.0, 12.0, 5.0, 35.0, 42.0, 77.0, 37.0],
@@ -2515,7 +2557,7 @@ def test__determine_y_ax_total_labels():
         testvar._determine_y_ax_total_labels()
 
 
-def test_BarWithWaterfall():
+def test_BarWithWaterfall_001():
     # Test barchart_001
     dataset =  { 'HEADERS'      : ['PY','PL','AC','FC'],  # Special keyword 'HEADERS' to indicate the scenario of the value columns
                  'Spain'        : [ 30 , 33 , 53 ,  0 ],
@@ -2553,6 +2595,7 @@ def test_BarWithWaterfall():
     message  = "Test barchart_001.png - BarWithWaterfall returned {0} instead of {1}".format(actual, expected)
     assert actual == expected, message
 
+def test_BarWithWaterfall_002():
     # Test barchart_002
     dataset =  { 'HEADERS'      : ['PY','PL','AC','FC'],  # Special keyword 'HEADERS' to indicate the scenario of the value columns
                  'Spain'        : [ 30 , 33 , 53 ,  0 ],
@@ -2590,3 +2633,17 @@ def test_BarWithWaterfall():
     message  = "Test barchart_002.png - BarWithWaterfall returned {0} instead of {1}".format(actual, expected)
     assert actual == expected, message
 
+
+def test__calculate_y_value_of_compare_total_bar():
+    # Test 1 - Dataframe with fancy numbers for y-coordinate
+    dataset =  pd.DataFrame({'_CBC_Y2'      : [-0.08125, 10, -7.08125, 5.29837]})
+    testvar  = BarWithWaterfall(test=True)
+    expected =  -8.58125
+    actual   = testvar._calculate_y_value_of_compare_total_bar(dataframe=dataset)
+    message  = "Test 1 - BarWithWaterfall._calculate_y_value_of_compare_total_bar returned {0} instead of {1}".format(actual, expected)
+    assert actual == pytest.approx(expected), message
+
+    # Test 2 - String instead of DataFrame
+    with pytest.raises(TypeDataFrameError):
+        testvar = BarWithWaterfall(test=True)
+        testvar._calculate_y_value_of_compare_total_bar(dataframe='This is a string')

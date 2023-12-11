@@ -103,12 +103,14 @@ class BarWithWaterfall(GeneralChart):
     translate_scenario      : Dictionary for renaming standard scenarios in charts. Only standard scenarios have impact on the translations.
                               Use case: You want to indicate "Previous Month" instead of PY (Previous Year). translate_scenario = {'PY':'PM'}. PM will be visible instead of PY.
                               Default: None (no translation of scenarios)
+    scalingvalue            : Integer or float in the same multiplier as the normal data and will be used to draw a scaling band
+                              Default: None (no scaling band will be displayed)
     """
 
     def __init__(self, data=None, positive_is_good=True, base_scenarios=None, compare_scenarios=None, title=None, measure=True, multiplier='1', 
                  filename=None, force_pl_is_zero=False, force_zero_decimals=False, force_max_one_decimals=False, translate_headers=None, 
                  category_of_interest=None, previous_year=False, total_text=None, total_line=True, remove_lines_with_zeros=True, other=None,
-                 sort_chart=True, footnote=None, footnote_size='normal', figsize=None, translate_scenario=None, test=False, do_not_show=False):
+                 sort_chart=True, footnote=None, footnote_size='normal', figsize=None, translate_scenario=None, scalingvalue=None, test=False, do_not_show=False):
         """
         The function __init__ is the first function that will be called automatically. Here you'll find all the possible parameters to customize your experience.
         """
@@ -142,6 +144,7 @@ class BarWithWaterfall(GeneralChart):
         self.footnote_size              = footnote_size
         self.figsize                    = figsize
         self.translate_scenario         = translate_scenario
+        self.scalingvalue               = scalingvalue
 
         # Check scenarios
         self.simple_first_check_scenario_parameters()     
@@ -192,24 +195,27 @@ class BarWithWaterfall(GeneralChart):
         # Scenarios
         self.base_scenarios    = None       # This variable will hold a list of max 2 base scenarios. Only the first is used in the detail chart
         self.compare_scenarios = None       # This variable will hold a list of max 2 scenarios that will be used in the comparison with the first base scenario.
-        
+
         # Decimals
         self.decimals_details  = 0          # Number of decimals used in the numbers of the detail chart
         self.decimals_totals   = 0          # Number of decimals used in the numbers of the total chart
-        
+
         # Multipliers
         self.multiplier             = None  # Initial value
         self.multiplier_denominator = 1     # Denominator is the diviser
-        
+
         # Other
         self.year_column = ['Year']            # Year column, needed for calculating previous year information
         self.filename    = None                # When filename is None, no export
         self.barshift    = self.barshift_value # Value to use with partly overlapping bars
-        
+
         # Chart
         self.fig         = None             # Figure variable for the chart. Initial value is None to easy check in automatic testing
         self.ax          = None             # Axis variable for the chart. Initial value is None to easy check in automatic testing
-        
+
+        # Transparancy for backgrounds of text
+        self.bbox_dict   = dict(boxstyle='square,pad=-0.05', facecolor=self.colors["textbackground"], edgecolor='none', alpha=0.5)  # Text with background and transparancy
+
         return
 
 
@@ -535,6 +541,7 @@ class BarWithWaterfall(GeneralChart):
         self.fontsize                : All text in a chart has the same height
         self.colors                  : Dictionary with colors
         self.barwidth                : A float with the width of the bars for measure or ratio
+        self.bbox_dict               : Dictionary for text-background with transparancy parameters
         self.data_total              : Dictionary (key=scenario) with the total value
         self.dict_totals             : Totals of the data (only one entry for the last total line underneath the detailed chart)
                                        One entry each for the base scenarios, only one entry with the name of the first item of the compare scenarios
@@ -551,7 +558,7 @@ class BarWithWaterfall(GeneralChart):
         # first_scenario_special_text : Does the upper bar needs to have its value-text placed on a special place?
         # first_scenario_line_start   : Does the line from the first scenario start at this first scenario or not? When not, start from the 2nd scenario.
 
-        # For each of the (max two) base scenarios        
+        # For each of the (max two) base scenarios
         for x, scenario in enumerate(scenarios):
             tot_base = self.data_total[scenario]
             yvalue = 2 + (([1, -1][x]) * barshift)   # x can only have a value of 0 or 1, so it takes the first value (1) or the second value (-1) out of the list
@@ -570,7 +577,7 @@ class BarWithWaterfall(GeneralChart):
                 # Put the label of the scenario half way on top of the bar
                 scenariotext = self.all_scenarios_translate[scenario]
                 ax.text(tot_base / 2, yvalue + self.barwidth*0.8, scenariotext, horizontalalignment='center', font=self.font,
-                        fontsize=self.fontsize, color=self.colors['text'])
+                        fontsize=self.fontsize, color=self.colors['text'], bbox=self.bbox_dict, zorder=100)
             else:
                 # The second scenario is running now, we need to set the first_scenario-variables to False
                 first_scenario_special_text = False
@@ -578,14 +585,15 @@ class BarWithWaterfall(GeneralChart):
                 # Put the label of the scenario half way underneath of the bar
                 scenariotext = self.all_scenarios_translate[scenario]
                 ax.text(tot_base / 2, yvalue - self.barwidth*1.4, scenariotext, horizontalalignment='center', font=self.font,
-                        fontsize=self.fontsize, color=self.colors['text'])
+                        fontsize=self.fontsize, color=self.colors['text'], bbox=self.bbox_dict, zorder=100)
            
             # Plot bar
-            self._plot_barh(y=yvalue, width=tot_base, scenario=scenario, height=self.barwidth, left=0, total=True)
+            self._plot_barh(y=yvalue, width=tot_base, scenario=scenario, height=self.barwidth, left=0, total=True, zorder=(60+x))
             # Add valuelabel of the bar
             if first_scenario_special_text:
                 ax.text(tot_base * 1.01, yvalue, str(tot_base), horizontalalignment='left', verticalalignment='bottom', 
-                        font=self.font, fontsize=self.fontsize, color=self.colors['text'], fontweight='bold')
+                        font=self.font, fontsize=self.fontsize, color=self.colors['text'], fontweight='bold',
+                        bbox=self.bbox_dict, zorder=100)
             else:
                 self._fill_ax_bar_label(scenario, total=True)
         
@@ -648,7 +656,7 @@ class BarWithWaterfall(GeneralChart):
         trans = ax.get_yaxis_transform()
 
         # Plot line
-        ax.plot([start_position, end_position], [y_coordinate_line, y_coordinate_line], color=self.colors['totalline'], transform=trans, clip_on=False)
+        ax.plot([start_position, end_position], [y_coordinate_line, y_coordinate_line], color=self.colors['totalline'], transform=trans, clip_on=False, zorder=90)
 
         return
 
@@ -684,7 +692,7 @@ class BarWithWaterfall(GeneralChart):
         data_base = list(dataframe[base_scenario])
         
         # Plot the bars
-        self._plot_barh(y=yvalue_base, width=data_base, scenario=base_scenario, height=self.barwidth, left=0)
+        self._plot_barh(y=yvalue_base, width=data_base, scenario=base_scenario, height=self.barwidth, left=0, zorder=60)
         
         return
 
@@ -724,7 +732,7 @@ class BarWithWaterfall(GeneralChart):
         data_compare1 = list(dataframe[dataframe['_CBC_TOPLAYER']==compare_scenario1][compare_scenario1])
 
         # Plot the bars and put the value-labels on.
-        self._plot_barh(y=yvalue_compare, width=data_compare1, scenario=compare_scenario1, height=self.barwidth, left=0)
+        self._plot_barh(y=yvalue_compare, width=data_compare1, scenario=compare_scenario1, height=self.barwidth, left=0, zorder=70)
         self._fill_ax_bar_label(compare_scenario1)
 
         # Scenario 1 - without numbers. Make a list of y-coordinates and data-values for those who are the 'bottom'-scenario.
@@ -732,7 +740,7 @@ class BarWithWaterfall(GeneralChart):
         data_compare1 = list(dataframe[dataframe['_CBC_TOPLAYER']!=compare_scenario1][compare_scenario1])
 
         # Plot only the bar (no value-labels)
-        self._plot_barh(y=yvalue_compare, width=data_compare1, scenario=compare_scenario1, height=self.barwidth, left=0)
+        self._plot_barh(y=yvalue_compare, width=data_compare1, scenario=compare_scenario1, height=self.barwidth, left=0, zorder=70)
 
         # Check if scenario1 is not equal to scenario2        
         if compare_scenario1 != compare_scenario2:
@@ -741,11 +749,32 @@ class BarWithWaterfall(GeneralChart):
             data_compare2 = list(dataframe[dataframe['_CBC_TOPLAYER']==compare_scenario2][compare_scenario2])
 
             # Plot the bars and put the value-labels on. The second scenario is always on top
-            self._plot_barh(y=yvalue_compare, width=data_compare2, scenario=compare_scenario2, height=self.barwidth, left=data_compare1)
+            self._plot_barh(y=yvalue_compare, width=data_compare2, scenario=compare_scenario2, height=self.barwidth, left=data_compare1, zorder=70)
             self._fill_ax_bar_label(compare_scenario2)
 
         return
 
+
+    def _calculate_y_value_of_compare_total_bar(self, dataframe):
+        """
+        The function _calculate_y_value_of_compare_total_bar calculates what the y-value of the total bar of the compare scenarios is
+
+        Parameters
+        ----------
+        dataframe   : pandas DataFrame with y-coordinates for compare-scenario
+
+        Returns:
+        --------
+        yvalue      : A float value with the y-coordinate for the total bar of the compare scenarios
+
+        """
+        # Check dataframe
+        error_not_isdataframe(dataframe, "dataframe")
+
+        # The Y-coordinate is 1.5 below the lowest detail horizontal bar
+        yvalue = dataframe['_CBC_Y2'].min() - 1.5
+
+        return yvalue
 
     def _plot_compare_scenario_totals(self, dataframe):
         """
@@ -795,28 +824,30 @@ class BarWithWaterfall(GeneralChart):
         tot_comp2 = self.data_total[compare_scenario2]
         
         # The Y-coordinate is 1.5 below the lowest detail horizontal bar
-        yvalue = dataframe['_CBC_Y2'].min() - 1.5 
+        yvalue = self._calculate_y_value_of_compare_total_bar(dataframe)
 
         # Prepare storage of the Y-coordinate in a dictionary and the total (later on in this function)
         total_dict = dict()
         total_dict['yvalue'] = yvalue
 
         # Plot the horizontal bar for the first compare scenario
-        self._plot_barh(y=yvalue, width=tot_comp1, scenario=compare_scenario1, height=self.barwidth, left=0, total=True, zorder=0)
+        self._plot_barh(y=yvalue, width=tot_comp1, scenario=compare_scenario1, height=self.barwidth, left=0, total=True, zorder=30)
         
         # Check if there are two separate compare scenarios or check that the first scenario is the same as the last scenario
         if compare_scenario1 != compare_scenario2:
             # Yes, there are two compare scenarios. In that case we set the scenario abbreviation underneath the bar near the center of the length of the bar
             scenariotext = self.all_scenarios_translate[compare_scenario1]
-            ax.text(tot_comp1 / 2, yvalue - self.barwidth*1.2, scenariotext, horizontalalignment='center', font=self.font, fontsize=self.fontsize, color=self.colors['text']) #, verticalalignment='center')
+            ax.text(tot_comp1 / 2, yvalue - self.barwidth*1.2, scenariotext, horizontalalignment='center', font=self.font, fontsize=self.fontsize,
+                    color=self.colors['text'], bbox=self.bbox_dict, zorder=100) #, verticalalignment='center')
 
             # Now plot the horizontal bar of the second compare scenario as a stacked bar on top of the first bar
             scenariotext = self.all_scenarios_translate[compare_scenario2]
-            self._plot_barh(y=yvalue, width=tot_comp2, scenario=scenariotext, height=self.barwidth, left=tot_comp1, total=True, zorder=0)
+            self._plot_barh(y=yvalue, width=tot_comp2, scenario=scenariotext, height=self.barwidth, left=tot_comp1, total=True, zorder=30)
             # Write the total sum of the lenght of both bars combines on the right of the second (stacked) bar
             self._fill_ax_bar_label(compare_scenario2, total=True)
             # Also here, set the scenario abbreviation of the second scenario underneath the second (stacked) bar near the center of this addition
-            ax.text(tot_comp1 + (tot_comp2 / 2), yvalue - self.barwidth*1.2, compare_scenario2, horizontalalignment='center', font=self.font, fontsize=self.fontsize, color=self.colors['text']) #, verticalalignment='center')
+            ax.text(tot_comp1 + (tot_comp2 / 2), yvalue - self.barwidth*1.2, compare_scenario2, horizontalalignment='center', font=self.font, fontsize=self.fontsize,
+                    color=self.colors['text'], bbox=self.bbox_dict, zorder=100) #, verticalalignment='center')
             # Sum both totals and store it in the dictionary
             total_dict['total']  = tot_comp1 + tot_comp2
         else:
@@ -826,7 +857,8 @@ class BarWithWaterfall(GeneralChart):
             total_dict['total']  = tot_comp1
             # Put the scenario text underneath the bar near the center of the length of the bar
             scenariotext = self.all_scenarios_translate[compare_scenario1]
-            ax.text(tot_comp1 / 2, yvalue - self.barwidth*1.4, scenariotext, horizontalalignment='center', font=self.font, fontsize=self.fontsize, color=self.colors['text']) #, verticalalignment='center')
+            ax.text(tot_comp1 / 2, yvalue - self.barwidth*1.4, scenariotext, horizontalalignment='center', font=self.font, fontsize=self.fontsize,
+                    color=self.colors['text'], bbox=self.bbox_dict, zorder=100) #, verticalalignment='center')
 
         
         # As the total for the compare scenarios is just one horizontal bar (one horizontal stacked bar in case of two compare scenarios)
@@ -889,18 +921,19 @@ class BarWithWaterfall(GeneralChart):
 
             ymin = ymin_start - (y_extra * 1.4)
 
-            # Plot a line at the total level from one of the base scenarios to under the compare scenario bar
+            # Plot a line at the total level from one of the base scenarios to go over the compare scenario bar to a more lower y-coordinate
             plot_line_within_ax(ax=ax, xbegin=total_base, ybegin=y_base-(self.barwidth/2), xend=total_base, yend=ymin, 
-                                linecolor=self.colors['line'], arrowstyle='-', linewidth=self.linewidth_line_n, endpoints=False, endpointcolor=None, zorder=0)
+                                linecolor=self.colors['line'], arrowstyle='-', linewidth=self.linewidth_line_n, endpoints=False, endpointcolor=None, zorder=50)
 
-            # Plot a line at the total level from the compare scenario to under the compare scenario bar
+            # Plot a line at the total level from the compare scenario to a more lower y-coordinate
             plot_line_within_ax(ax=ax, xbegin=total_comp, ybegin=y_comp-(self.barwidth/2), xend=total_comp, yend=ymin, 
-                                linecolor=self.colors['line'], arrowstyle='-', linewidth=self.linewidth_line_n, endpoints=False, endpointcolor=None, zorder=0)
+                                linecolor=self.colors['line'], arrowstyle='-', linewidth=self.linewidth_line_n, endpoints=False, endpointcolor=None, zorder=25)
 
             color = self.good_or_bad_color(differencevalue=total_comp-total_base)
 
             # Plot horizontal bar in a good or bad color
-            plot_line_within_ax(ax=ax, xbegin=total_comp, ybegin=ymin, xend=total_base, yend=ymin, endpoints=False, linecolor=color, arrowstyle='-', linewidth=self.linewidth_delta)
+            plot_line_within_ax(ax=ax, xbegin=total_comp, ybegin=ymin, xend=total_base, yend=ymin, endpoints=False, linecolor=color, arrowstyle='-',
+                                linewidth=self.linewidth_delta, zorder=55)
 
             # Set the value next to the horizontal bar
             value = optimize_data(data=(total_comp-total_base), numerator=1, denominator=1, decimals=self.decimals_totals)
@@ -910,7 +943,7 @@ class BarWithWaterfall(GeneralChart):
             ax.text(total_comp - (total_comp-total_base)/2, ymin-0.8,
                     s=convert_number_to_string(data=value, decimals=self.decimals_totals, delta_value=True),
                     horizontalalignment='center', #verticalalignment='center', 
-                    font=self.font, fontsize=self.fontsize, color=self.colors['text'], zorder=10)
+                    font=self.font, fontsize=self.fontsize, color=self.colors['text'], bbox=self.bbox_dict, zorder=100)
 
         return
 
@@ -1057,6 +1090,7 @@ class BarWithWaterfall(GeneralChart):
         self.ax                      : Axesobject for the generated subplot
         self.barwidth                : A float with the width of the bars for measure or ratio
         self.base_scenarios          : List of base scenarios
+        self.bbox_dict               : Dictionary for text-background with transparancy parameters
         self.colors                  : Dictionary with colors
         self.compare_scenarios       : List of compare scenarios
         self.data_text               : Dictionary with the number of the matplotllib-ax-containers of the bar-data including the texts of the bars
@@ -1097,7 +1131,7 @@ class BarWithWaterfall(GeneralChart):
             point1 = ( xvalue, (yvalue_van - (self.barwidth / 2)) )
             point2 = ( xvalue, (yvalue_tot + (self.barwidth / 2)) )
             plot_line_within_ax(ax=ax, xbegin=point1[0], ybegin=point1[1], xend=point2[0], yend=point2[1], linecolor=self.colors['line'], 
-                                arrowstyle='-', linewidth=self.linewidth_line_n, endpoints=False, endpointcolor=None, zorder=0)
+                                arrowstyle='-', linewidth=self.linewidth_line_n, endpoints=False, endpointcolor=None, zorder=20)
 
         # Prepare the last line from the delta to the total-bar
         comp_scenario = self.compare_scenarios[0]
@@ -1111,7 +1145,7 @@ class BarWithWaterfall(GeneralChart):
         # Plot the last line
         plot_line_within_ax(ax=ax, xbegin=delta_comp_value, ybegin=yvalues[-1] - (self.barwidth / 2), xend=delta_comp_value, 
                             yend=yvalue_tot + (self.barwidth / 2), linecolor=self.colors['line'], arrowstyle='-', 
-                            linewidth=self.linewidth_line_n, endpoints=False, endpointcolor=None, zorder=0)
+                            linewidth=self.linewidth_line_n, endpoints=False, endpointcolor=None, zorder=20)
 
         # Step 2: Plot the delta-bars
         # Prepare the bars
@@ -1124,7 +1158,7 @@ class BarWithWaterfall(GeneralChart):
         
         # Plot the bars
         ax.barh(y=yvalues, width=height, color=colors, height=self.barwidth, left=delta_lines, linewidth=self.linewidth_bar, 
-                        edgecolor=colors, label='AC', hatch=None)
+                        edgecolor=colors, label='AC', hatch=None, zorder=80)
         
         self.data_text['delta'] = len(ax.containers)-1
         
@@ -1132,18 +1166,18 @@ class BarWithWaterfall(GeneralChart):
         
         if len(label_value_list) > 0:
             ax.bar_label(ax.containers[self.data_text['delta']], labels=label_value_list, label_type='edge', padding = self.padding, 
-                         font=self.font, fontsize=self.fontsize, zorder=10)
+                         font=self.font, fontsize=self.fontsize, color=self.colors["text"], bbox=self.bbox_dict, zorder=100)
 
         # Plot the downarrow (\u2193). The up-arrow has code: \u2191. \u0394 is a delta-sign
         scenariotext = self.all_scenarios_translate[base_scenario]
         if self.sort_dataframe:
             # Yes, the dataframe is sorted, so we need to add the arrow
             ax.text(base_value, yvalues[0]+0.75, "\u0394"+scenariotext+"(\u2193)", horizontalalignment='left', font=self.font,
-                                 fontsize=self.fontsize, color=self.colors['text'])
+                                 fontsize=self.fontsize, color=self.colors['text'], bbox=self.bbox_dict, zorder=100)
         else:
             # No, the dataframe is not sorted, so no need for an arrow
             ax.text(base_value, yvalues[0]+0.75, "\u0394"+scenariotext, horizontalalignment='left', font=self.font,
-                                 fontsize=self.fontsize, color=self.colors['text'])
+                                 fontsize=self.fontsize, color=self.colors['text'], bbox=self.bbox_dict, zorder=100)
         return
 
 
@@ -1316,11 +1350,13 @@ class BarWithWaterfall(GeneralChart):
         # This is the "Zeroline" (line on the y-axis) for the detail bars
         ymax = max(yvalue1) + 0.75
         ymin = min(yvalue1) - 0.6
-        plot_line_within_ax(ax=ax, xbegin=0, ybegin=ymax, xend=0, yend=ymin, linecolor=self.colors['zeroline'], arrowstyle='-', linewidth=self.linewidth_zero, endpoints=False, endpointcolor=None)
+        plot_line_within_ax(ax=ax, xbegin=0, ybegin=ymax, xend=0, yend=ymin, linecolor=self.colors['zeroline'], arrowstyle='-', linewidth=self.linewidth_zero,
+                            endpoints=False, endpointcolor=None, zorder=90)
         
         # These are the "Zerolines" (line on the y-axis) for the total bars
         for y in yvalue_zero:
-            plot_line_within_ax(ax=ax, xbegin=0, ybegin=y+self.barwidth*0.8, xend=0, yend=y-self.barwidth*0.8, linecolor=self.colors['zeroline'], arrowstyle='-', linewidth=self.linewidth_zero, endpoints=False, endpointcolor=None)
+            plot_line_within_ax(ax=ax, xbegin=0, ybegin=y+self.barwidth*0.8, xend=0, yend=y-self.barwidth*0.8, linecolor=self.colors['zeroline'],
+                                arrowstyle='-', linewidth=self.linewidth_zero, endpoints=False, endpointcolor=None, zorder=90)
         
         # Put the category-names on the chart
         ax.set_yticks(yvalue, bar_names, font=self.font, fontsize=self.fontsize)
@@ -1374,7 +1410,7 @@ class BarWithWaterfall(GeneralChart):
         self._plot_y_axis_labels(dataframe=dataframe)
 
         # Plot the scaling bar (optional)
-####        self._plot_scaling_bar()  ## Future version
+        self._plot_scaling_bar()
 
         return 
 
@@ -1392,17 +1428,43 @@ class BarWithWaterfall(GeneralChart):
         self.linewidth_bar : The width of the lines from a bar
         self.scalingvalue  : The value of the scaling band
         """
+        # Check wish for a scaling band
+        if self.scalingvalue is None:
+           # No scaling band wanted
+           return
+
+        # Check for valid scalingvalue
+        error_not_isnumber(self.scalingvalue, "self.scalingvalue")
+        # Scalingvalue is now a float or an integer
+
         # Check axis-object
         error_not_isaxes(self.ax, "self.ax")
+        # Ax is now an axis-object
         ax = self.ax
 
-        # This needs to be improved
-        limits = ax.axis()
-        height = abs(limits[2]) + abs(limits[3])
-        y = sum(limits[2:])/2
+        # Check totals dictionary
+        error_not_isdictionary(self.dict_totals, "self.dict_totals")
+        # Totals dictionary is now a dictionary
 
-        ax.barh(y, width=self.scalingvalue, color=self.colors["highlight"], height=height, linewidth=self.linewidth_bar,
-                         edgecolor=self.colors["highlight"], alpha=0.2, label="Scaling bar",zorder=0)
+        # Calculate coordinates to draw scaling band
+        ybaselist = []
+        ycomparelist = []
+        for key in self.dict_totals.keys():
+            if key in self.base_scenarios:
+                ybaselist.append(self.dict_totals[key]["yvalue"])
+            if key in self.compare_scenarios:
+                ycomparelist.append(self.dict_totals[key]["yvalue"])
+        ybase = max(ybaselist) + 1
+        ycompare = min(ycomparelist) - 1
+        height = abs(ybase) + abs(ycompare)
+        y = (ybase + ycompare) / 2
+
+        ax.barh(y, width=self.scalingvalue, color=self.colors["highlight"], height=height, linewidth=0, #self.linewidth_bar,
+                         edgecolor=self.colors["highlight"], alpha=0.05, label="Scaling bar", zorder=10)
+        ax.plot([self.scalingvalue, self.scalingvalue], [ybase, ycompare], color=self.colors["highlight"], zorder=11)
+
+        ax.text(self.scalingvalue, ybase, str(self.scalingvalue), horizontalalignment='center', verticalalignment='bottom', font=self.font,
+                        fontsize=self.fontsize, color=self.colors["highlight"], fontweight='bold', bbox=self.bbox_dict, zorder=100)
 
         return
 
@@ -1449,14 +1511,8 @@ class BarWithWaterfall(GeneralChart):
         # PY, PL or AC
         if scenario in ['PY', 'PL', 'AC']:
              # Scenario is PY or PL or AC
-             if zorder is None:
-                 # Zorder has no defined value
-                 ax.barh(y=y, width=width, color=self.colors[scenario][0], height=height, linewidth=self.linewidth_bar, 
-                         edgecolor=self.colors[scenario][1], label=scenario)
-             else:
-                 # Zorder has a defined value
-                 ax.barh(y=y, width=width, color=self.colors[scenario][0], height=height, linewidth=self.linewidth_bar, 
-                         edgecolor=self.colors[scenario][1], label=scenario, zorder=zorder)
+             ax.barh(y=y, width=width, color=self.colors[scenario][0], height=height, linewidth=self.linewidth_bar,
+                     edgecolor=self.colors[scenario][1], label=scenario, zorder=zorder)
 
         # FC
         if scenario == 'FC':
@@ -1473,12 +1529,12 @@ class BarWithWaterfall(GeneralChart):
                     left2 = [i for j,i in enumerate(left) if width[j] != 0]   # Left-values for widths <> 0
                 # Plot the horizontal bar based on the new lists without widths==0
                 ax.barh(y=y2, width=width2, color=self.colors['FC'][0], height=height, left=left2, linewidth=self.linewidth_bar, 
-                        edgecolor=self.colors['FC'][1], label='FC', hatch=self.hatch)
+                        edgecolor=self.colors['FC'][1], label='FC', hatch=self.hatch, zorder=zorder)
 
             else:
                 # Just plot a single horizontal bar
                 ax.barh(y=y, width=width, color=self.colors['FC'][0], height=height, left=left, linewidth=self.linewidth_bar, 
-                        edgecolor=self.colors['FC'][1], label='FC', hatch=self.hatch)
+                        edgecolor=self.colors['FC'][1], label='FC', hatch=self.hatch, zorder=zorder)
 
         # Will the label be of a total bar (True) or not (False)
         if not total:
@@ -1504,6 +1560,7 @@ class BarWithWaterfall(GeneralChart):
         Self variables
         --------------
         self.ax               : Axesobject for the generated subplot
+        self.bbox_dict        : Dictionary for text-background with transparancy parameters
         self.colors           : Dictionary with colors
         self.data_scenarios   : List of available scenarios
         self.data_text        : A dictionary with the number of the matplotlib-ax-containers of the bar-data including the texts of the bars
@@ -1545,7 +1602,8 @@ class BarWithWaterfall(GeneralChart):
             
         # Puts the values after the horizontal bars.
         return_value = ax.bar_label(ax.containers[self.data_text[used_scenario]], fmt=format_string, label_type='edge', padding=self.padding, 
-                                    font=self.font, fontsize=self.fontsize, fontweight=fontweight, color=self.colors['text'])
+                                    font=self.font, fontsize=self.fontsize, fontweight=fontweight, color=self.colors['text'],
+                                    bbox=self.bbox_dict, zorder=100)
 
         return return_value  # Return_value only for automatic testing
     
@@ -1939,16 +1997,17 @@ class BarWithWaterfall(GeneralChart):
 
         Parameters:
         -----------
-        numerator       : numerator is the number to multiply with.
-                          Default: 1 (multiply with 1, which is the same as keeping the value)
-        denominator     : denominator is the number to divide by.
-                          Default: 1 (dividy by 1, which is the same as keeping the value)
-        decimals        : number of decimals with which the totals are rounded and stored.
-                          Default: 0 (zero decimals)
+        numerator         : numerator is the number to multiply with.
+                            Default: 1 (multiply with 1, which is the same as keeping the value)
+        denominator       : denominator is the number to divide by.
+                            Default: 1 (dividy by 1, which is the same as keeping the value)
+        decimals          : number of decimals with which the totals are rounded and stored.
+                            Default: 0 (zero decimals)
 
         Self variables
         --------------
-        self.data_total : dictionary (key=scenario) with the adjusted total value
+        self.data_total   : dictionary (key=scenario) with the adjusted total value
+        self.scalingvalue : Integer or float in the same multiplier as the normal data and will be used to draw a scaling band
         """
         # Check if the parameters are integers
         error_not_isinteger(numerator, "numerator")
@@ -1962,7 +2021,12 @@ class BarWithWaterfall(GeneralChart):
         for element in self.data_total.keys():
             value = self.data_total[element]
             self.data_total[element] = optimize_data(data=value, numerator=numerator, denominator=denominator, decimals=decimals)
- 
+
+        # Process scalingvalue
+        if not self.scalingvalue is None:
+            # There is a scalingvalue, adjust is like all other values in this function
+            self.scalingvalue = optimize_data(data=self.scalingvalue, numerator=numerator, denominator=denominator, decimals=decimals)
+
         return
 
 
@@ -2660,4 +2724,25 @@ class BarWithWaterfall(GeneralChart):
         fig.text(s=self.footnote, font=self.font, fontsize=self.footnote_fontsize[self.footnote_size],
                      color=self.colors['text'], ha='left', va='bottom',x=0,y=0.00)  #### x=-0.01??
 
+        return
+
+    def __zorder_documentation(self):
+        """
+        The function __zorder_documentation is only here to document the zorder information
+
+        # zorder documentation
+        # zorder=100 -> text always on top
+        # zorder=60 or 61 base_totals
+        # zorder=60 base details
+        # zorder=70 compare details
+        # zorder=30 compare totals
+        # zorder=80 delta-bars
+        # zorder=20 waterfall line for delta-bars
+        # zorder=10 or 11 scalingband
+        # zorder=90 totalline and y-axis line
+        # zorder=50 lines from base-total to go over compare-total and even more lower y-coordinate
+        # zorder=25 line from compare-total to even more lower y-coordinate
+        # zorder=55 good/bad color fat blocks
+        """
+        pass
         return
