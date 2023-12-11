@@ -110,25 +110,20 @@ class GeneralChart:
         --------------
         self.colors : a dictionary of colors needed for the consistent look of the charts
         """
-        self.colors['text']      = '#000000'
-        self.colors['AC']        = ('#404040', '#404040', '#FFFFFF') #index 0= color, 1= bordercolor, 2=textcolor stacked bar
-        # From book sample
-        #self.colors['AC']        = ('#404040', '#404040', '#FFFFFF') #index 0= color, 1= bordercolor, 2=textcolor stacked bar
-        self.colors['PY']        = ('#B0B0B0', '#B0B0B0')
-        self.colors['PL']        = ('#FFFFFF', '#404040')
-        # From book sample
-        #self.colors['PL']        = ('#FFFFFF', '#000000')
-        self.colors['FC']        = ('#FFFFFF', '#404040', '#000000', '#FFFFFF') #index 0= color, 1= bordercolor, 2=textcolor stacked bar, 3=background color text stacked bar
-        # From book sample
-        #self.colors['FC']        = ('#FFFFFF', '#000000', '#000000', '#FFFFFF') #index 0= color, 1= bordercolor, 2=textcolor stacked bar, 3=background color text stacked bar
-        self.colors['line']      = '#C0C0C0'
-        self.colors['barborder'] = self.colors['AC']
-        self.colors['good']      = 'lightgreen'
-        self.colors['bad']       = 'red'
-        self.colors['highlight'] = '#0064FF'
-        self.colors['endpoint']  = ('#FFFFFF', '#000000')  # index 0= outercircle color, 1= innercirclecolor
-        self.colors['zeroline']  = '#000000'
-        self.colors['totalline'] = '#000000'
+        self.colors['text']           = '#000000'   # Text is in black (exception: scalingband -> highlight)
+        self.colors['textbackground'] = '#FFFFFF'   # Background of text is in white
+        self.colors['AC']             = ('#404040', '#404040', '#FFFFFF') #index 0= color, 1= bordercolor, 2=textcolor stacked bar
+        self.colors['PY']             = ('#B0B0B0', '#B0B0B0')
+        self.colors['PL']             = ('#FFFFFF', '#404040')
+        self.colors['FC']             = ('#FFFFFF', '#404040', '#000000', '#FFFFFF') #index 0= color, 1= bordercolor, 2=textcolor stacked bar, 3=background color text stacked bar
+        self.colors['line']           = '#C0C0C0'
+        self.colors['barborder']      = self.colors['AC']
+        self.colors['good']           = 'lightgreen'
+        self.colors['bad']            = 'red'
+        self.colors['highlight']      = '#0064FF'
+        self.colors['endpoint']       = ('#FFFFFF', '#000000')  # index 0= outercircle color, 1= innercirclecolor
+        self.colors['zeroline']       = '#000000'
+        self.colors['totalline']      = '#000000'
 
         
     def _fill_month(self, language="EN"):
