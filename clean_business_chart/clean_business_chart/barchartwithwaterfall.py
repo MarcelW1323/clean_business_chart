@@ -6,7 +6,7 @@ import pandas as pd                               # for easy pandas support
 
 from clean_business_chart.clean_business_chart import GeneralChart 
 from clean_business_chart.general_functions    import plot_line_accross_axes, plot_line_within_ax, prepare_title, formatstring, optimize_data, \
-                                                      islist, isdictionary, isinteger, isstring, isfloat, isboolean, isdataframe, isaxes, isfigure, \
+                                                      islist, istuple, isdictionary, isinteger, isstring, isfloat, isnumber, isboolean, isdataframe, isaxes, isfigure, \
                                                       error_not_islist, error_not_istuple, error_not_isdictionary, error_not_isinteger, \
                                                       error_not_isstring, error_not_isboolean, error_not_isdataframe, error_not_isaxes, \
                                                       error_not_isfigure, error_not_isnumber, convert_to_native_python_type, \
@@ -95,10 +95,10 @@ class BarWithWaterfall(GeneralChart):
     footnote_size           : Size of the text of the footnote. Use 'small' for small sized footnote. 
                               Use 'normal' for the normal textsize like all other texts in the chart.
                               Default: 'normal' (for normal sized footnote-text)
-    figsize                 : Size of the matplotlib-figure in inches in tuple-format (x-size, y-size).
+    figsize                 : Size of the matplotlib-figure in inches in tuple-format (x-size, y-size) or an integer or float format for the x-size only.
                               This parameter is optional and overwrites the default calculated standard size. This can be handy if you
                               want to make the figure scale with an other figure by hand.
-                              More info about figsize on matplotlib.org.
+                              More info about figsize in tuple-format on matplotlib.org.
                               Default: None (no explicit size)
     translate_scenario      : Dictionary for renaming standard scenarios in charts. Only standard scenarios have impact on the translations.
                               Use case: You want to indicate "Previous Month" instead of PY (Previous Year). translate_scenario = {'PY':'PM'}. PM will be visible instead of PY.
@@ -2559,45 +2559,56 @@ class BarWithWaterfall(GeneralChart):
 
         Self variables
         --------------
-        self.figsize   : Tuple or List with two positive values representing the X-size and the Y-size in inches
+        self.figsize   : Tuple or List with two positive values representing the X-size and the Y-size in inches, or a float or integer value for the X-size
 
         Returns
         -------
-        export_figsize : tuple with two positive values representing the X-size and Y-size of the figure in inches
+        export_figsize : tuple with two positive values representing the X-size and Y-size of the figure in inches or a float or integer value for the X-size
         """
         export_figsize = self.figsize
         # Is it default (None)?
         if not export_figsize is None:
             # No the value is not default None
 
-            # Is it a list? Turn it into a tuple!
-            if islist(export_figsize):
-                # Yes, it is a list
-                export_figsize = tuple(export_figsize)
-
-            # It should be a tuple now
-            error_not_istuple(export_figsize, "parameter figsize")
-            # Now it is a tuple for sure!
-
-            # Check the number of values
-            if len(export_figsize) != 2:
-                raise ValueError("Parameter figsize, when given, needs to be a tuple with 2 values. Number of values now: "+ \
-                                 str(len(export_figsize)))
-
-            # Check the values
-            for value in export_figsize:
-                error_not_isnumber(value, "element of parameter figsize")
-                # Value is now an integer or a float
-                if value <= 0:
+            # Is it a float or an integer?
+            if isnumber(export_figsize):
+                # Yes, it is a float or an integer
+                # Is the value positive?
+                if export_figsize <= 0:
                     # Value needs to be bigger than zero
-                    raise ValueError("This element does not have value bigger than zero: " + str(value))
-            # Now every value in the tuple is an integer or a float and has a value bigger than zero
+                    raise ValueError("The figsize does not have value bigger than zero: " + str(export_figsize))
+            else: # if not isnumber()
+                # No, it is not a float and not an integer
+
+                # Is it a list? Turn it into a tuple!
+                if islist(export_figsize):
+                    # Yes, it is a list
+                    export_figsize = tuple(export_figsize)
+
+                # It should be a tuple now
+                error_not_istuple(export_figsize, "parameter figsize")
+                # Now it is a tuple for sure!
+
+                # Check the number of values
+                if len(export_figsize) != 2:
+                    raise ValueError("Parameter figsize, when given, needs to be a tuple with 2 values (or a float or an integer). Number of values now: "+ \
+                                     str(len(export_figsize)))
+
+                # Check the values
+                for value in export_figsize:
+                    error_not_isnumber(value, "element of parameter figsize")
+                    # Individual value of the tuple is now an integer or a float
+                    if value <= 0:
+                        # Value needs to be bigger than zero
+                        raise ValueError("This element does not have value bigger than zero: " + str(value))
+                # Now every value in the tuple is an integer or a float and has a value bigger than zero
 
             # A figure size is only valid when there is no figure and axis parameter
             if not self.fig is None or not self.ax is None:
                 raise ValueError("Parameter figsize is correct, but the figure and/or axis parameter is also available and that is not valid.")
-        #else:
+        else:
             # Yes, the value is None (default-value)
+            export_figsize = 8  # Default x-value when nothing is given
 
         return export_figsize
 
@@ -2617,10 +2628,11 @@ class BarWithWaterfall(GeneralChart):
         """
         # Get the figure size of the parameter and check for validness
         figsize = self._check_figsize()
+        # Figsize is now a tuple with x-size and y-size or figsize is now a float or an integer
 
-        # Is there a figure size given?
-        if figsize is None:
-            # No figure size is given, use default x-value and calculate y-value
+        # Is figsize a tuple or not?
+        if not istuple(figsize):
+            # No, figure size is not a tuple, so it is a given x-size, use this x-value and calculate y-value
             # Check dataframe
             error_not_isdataframe(self.data, "self.data")
 
@@ -2633,12 +2645,13 @@ class BarWithWaterfall(GeneralChart):
             # Number of title_rows
             num_titles = 0
             if not self.title is None:
-                num_titles = sum([(x in self.title.keys()) for x in ('Reporting_unit', 'Business_measure', 'Time')])
+                num_titles = len([(x in self.title.keys()) for x in ('Reporting_unit', 'Business_measure', 'Time')])
 
             # Default width (x-value) is 8. Height (y-value) is calculated
-            figsize = (8, 1.63 + (num_titles*0.35) + (num_scenarios + dataframe_rows) * 0.38)
+            figsize = (figsize, 1.63 + (num_titles*0.35) + (num_scenarios + dataframe_rows) * 0.38)
+            # figsize is now a tuple with x-size and y-size
         #else:
-            # Yes, a figure size is given
+            # Yes, figure size is tuple
 
         # Create the figure-object and the axis-object
         self.fig, self.ax = plt.subplots(nrows=1, ncols=1, figsize=figsize, dpi=72) # dpi=72 solves some strange linewidth issues.

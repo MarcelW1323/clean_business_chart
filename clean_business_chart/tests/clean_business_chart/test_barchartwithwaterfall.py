@@ -2045,7 +2045,7 @@ def test__check_figsize():
     # Test 1 - figsize = None
     testvar  = BarWithWaterfall(test=True)
     testvar.figsize = None
-    expected = None
+    expected = 8
     actual   = testvar._check_figsize()
     message  = "Test 1 - BarWithWaterfall._check_figsize returned {0} instead of {1}".format(actual, expected)
     assert actual == pytest.approx(expected), message
@@ -2066,38 +2066,60 @@ def test__check_figsize():
     message  = "Test 3 - BarWithWaterfall._check_figsize returned {0} instead of {1}".format(actual, expected)
     assert actual == pytest.approx(expected), message
 
-    # Test 4 - String instead of list/tuple
+    # Test 4 - figsize = float
+    testvar  = BarWithWaterfall(test=True)
+    testvar.figsize = 11.3
+    expected = 11.3
+    actual   = testvar._check_figsize()
+    message  = "Test 4 - BarWithWaterfall._check_figsize returned {0} instead of {1}".format(actual, expected)
+    assert actual == pytest.approx(expected), message
+
+    # Test 5 - figsize = integer
+    testvar  = BarWithWaterfall(test=True)
+    testvar.figsize = 12
+    expected = 12
+    actual   = testvar._check_figsize()
+    message  = "Test 5 - BarWithWaterfall._check_figsize returned {0} instead of {1}".format(actual, expected)
+    assert actual == pytest.approx(expected), message
+
+    # Test 6 - String instead of list/tuple or integer/float
     with pytest.raises(TypeTupleError):
         testvar  = BarWithWaterfall(test=True)
         testvar.figsize = "This is a string"
         testvar._check_figsize()
 
-    # Test 5 - List with 3 values
+    # Test 7 - Float value of 0
+    with pytest.raises(ValueError):
+        testvar  = BarWithWaterfall(test=True)
+        testvar.figsize = 0.0
+        testvar._check_figsize()
+
+    # Test 8 - List with 3 values
     with pytest.raises(ValueError):
         testvar  = BarWithWaterfall(test=True)
         testvar.figsize = [1, 2, 3]
         testvar._check_figsize()
 
-    # Test 6 - Tuple with 1 value
+    # Test 9 - Tuple with 1 value
     with pytest.raises(ValueError):
         testvar  = BarWithWaterfall(test=True)
         testvar.figsize = tuple([1])
         testvar._check_figsize()
 
-    # Test 7 - Tuple with 2 value, one value is < 0
+    # Test 10 - Tuple with 2 value, one value is < 0
     with pytest.raises(ValueError):
         testvar  = BarWithWaterfall(test=True)
         testvar.figsize = (10, -10)
         testvar._check_figsize()
 
-    # Test 8 - Tuple with 2 value and fig has a value
+    # Test 11 - Tuple with 2 value and fig has a value
     with pytest.raises(ValueError):
         testvar  = BarWithWaterfall(test=True)
         testvar.figsize = (11, 12)
         testvar.fig = "Just a value is enough"
         testvar._check_figsize()
 
-    # Test 9 - Tuple with 2 value and ax has a value
+    # Test 12 - Tuple with 2 value and ax has a value
     with pytest.raises(ValueError):
         testvar  = BarWithWaterfall(test=True)
         testvar.figsize = (11, 12)
