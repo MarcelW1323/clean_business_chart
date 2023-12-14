@@ -40,6 +40,8 @@ Features
   * better calculation of vertical part of figsize in version 0.2.8 for automatic sizing of the chart
 
   * added support for parameter translate_scenario in version 0.2.9 for optional translating the standard scenarios on the output of the chart
+  
+  * added support for parameter scalingvalue in version 0.2.10 for optional visualizing a scaling band. Also better visibility of texts. And added support for parameter figsize to only use x-size in float or integer
 
 * General
 

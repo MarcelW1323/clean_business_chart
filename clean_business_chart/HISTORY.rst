@@ -2,6 +2,12 @@
 History
 =======
 
+0.2.10 (2023-12-14)
+-------------------
+
+* Added parameter 'scalingvalue' in bar chart with waterfall for optional visualizing a scaling band. Improved chart with better visibility of texts. And added support for parameter 'figsize' for providing the x-size
+
+
 0.2.9 (2023-11-26)
 ------------------
 
@@ -13,10 +19,12 @@ History
 
 * Better calculation of vertical part of figsize for automatic sizing of the bar chart with waterfall.
 
+
 0.2.7 (2023-11-12)
 ------------------
 
 * Added parameter 'figsize' in bar chart with waterfall for optional (manual) sizing of the chart.
+
 
 0.2.6 (2023-10-29)
 ------------------
