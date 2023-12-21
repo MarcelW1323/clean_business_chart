@@ -1587,7 +1587,7 @@ def test__optimize_data_adjust_decimals():
 
 
 def test__optimize_data_dataframe_details():
-    # Test 1 - Good dataframe with all data_scenarios and a normal denominator and 2 decimals
+    # Test 1 - Good dataframe with all data_scenarios and a normal denominator
     dataset  = pd.DataFrame({'Year'       : ['2022', '2022', '2022', '2022', '2022'],
                              'PY'         : [39364.4, 39710.1, 40165.2, 38875.8, 38539.8],
                              'PL'         : [39846.8, 41769.6, 40615.4, 39770.7, 38879.1],
@@ -1599,21 +1599,20 @@ def test__optimize_data_dataframe_details():
     testvar  = BarWithWaterfall(test=True)
     testvar.data_scenarios = ['PY', 'PL', 'FC', 'AC']
     testvar.multiplier_denominator = 1000
-    testvar.decimals_details = 2
     expected =  {'Year'       : ['2022', '2022', '2022', '2022', '2022'],
-                 'PY'         : [39.36, 39.71, 40.17, 38.88, 38.54],
-                 'PL'         : [39.85, 41.77, 40.62, 39.77, 38.88],
+                 'PY'         : [39.3644, 39.7101, 40.1652, 38.875800000000005, 38.5398],    # lots of decimals due to representation of values. less decimals gives errors
+                 'PL'         : [39.8468, 41.7696, 40.6154, 39.7707, 38.8791],
                  '_Category'  : ['Airbus', 'Boeing', 'OTHER', 'General Dynamics', 'Lockheed Martin'],
-                 'AC'         : [40.3, 39.44, 41.7, 40.33, 41.21],
-                 'FC'         : [38.39, 41.97, 41.42, 39.89, 40.88],
-                 '_CBC_DELTA1': [0.45, -2.33, 1.09, 0.56, 2.33],
-                 '_CBC_DELTA2': [38.84, 39.65, 42.51, 40.45, 43.21]}
+                 'AC'         : [40.2992, 39.4431, 41.7028, 40.331900000000005, 41.207300000000004],
+                 'FC'         : [38.3898, 41.9728, 41.420199999999994, 39.889199999999995, 40.879400000000004],
+                 '_CBC_DELTA1': [0.45239999999999997, -2.3265, 1.0874000000000001, 0.5612, 2.3282],
+                 '_CBC_DELTA2': [38.8422, 39.646300000000004, 42.5076, 40.4504, 43.2076]}
     actual   = testvar._optimize_data_dataframe_details(dataframe=dataset)
     actual   = actual.to_dict(orient='list')
     message  = "Test 1 - BarWithWaterfall._optimize_data_dataframe_details returned {0} instead of {1}".format(actual, expected)
     assert actual == pytest.approx(expected), message
 
-    # Test 2 - Good dataframe with not all data_scenarios and a less normal denominator and 1 decimal
+    # Test 2 - Good dataframe with not all data_scenarios and a less normal denominator
     dataset  = pd.DataFrame({'Year'       : ['2022', '2022', '2022', '2022', '2022'],
                              'PL'         : [39846.8, 41769.6, 40615.4, 39770.7, 38879.1],
                              '_Category'  : ['Airbus', 'Boeing', 'OTHER', 'General Dynamics', 'Lockheed Martin'],
@@ -1624,20 +1623,19 @@ def test__optimize_data_dataframe_details():
     testvar  = BarWithWaterfall(test=True)
     testvar.data_scenarios = ['PL', 'FC', 'AC']
     testvar.multiplier_denominator = 300
-    testvar.decimals_details = 1
     expected =  {'Year'       : ['2022', '2022', '2022', '2022', '2022'],
-                 'PL'         : [132.8, 139.2, 135.4, 132.6, 129.6],
+                 'PL'         : [132.82266666666666, 139.232, 135.38466666666667, 132.569, 129.597],
                  '_Category'  : ['Airbus', 'Boeing', 'OTHER', 'General Dynamics', 'Lockheed Martin'],
-                 'AC'         : [134.3, 131.5, 139.0, 134.4, 137.4],
-                 'FC'         : [128.0, 139.9, 138.1, 133.0, 136.3],
-                 '_CBC_DELTA1': [1.5, -7.8, 3.6, 1.9, 7.8],
-                 '_CBC_DELTA2': [129.5, 132.2, 141.7, 134.8, 144.0]}
+                 'AC'         : [134.33066666666664, 131.477, 139.00933333333333, 134.43966666666668, 137.3576666666667],
+                 'FC'         : [127.96600000000001, 139.90933333333334, 138.06733333333332, 132.964, 136.26466666666667],
+                 '_CBC_DELTA1': [1.508, -7.755, 3.624666666666667, 1.870666666666667, 7.760666666666666],
+                 '_CBC_DELTA2': [129.474, 132.15433333333334, 141.692, 134.83466666666666, 144.02533333333332]}
     actual   = testvar._optimize_data_dataframe_details(dataframe=dataset)
     actual   = actual.to_dict(orient='list')
     message  = "Test 2 - BarWithWaterfall._optimize_data_dataframe_details returned {0} instead of {1}".format(actual, expected)
     assert actual == pytest.approx(expected), message
 
-    # Test 3 - Good dataframe with all data_scenarios and a less normal denominator and 0 decimals
+    # Test 3 - Good dataframe with all data_scenarios and a less normal denominator
     dataset  = pd.DataFrame({'Year'       : ['2022', '2022', '2022', '2022', '2022'],
                              'PY'         : [39364.4, 39710.1, 40165.2, 38875.8, 38539.8],
                              'PL'         : [39846.8, 41769.6, 40615.4, 39770.7, 38879.1],
@@ -1649,15 +1647,14 @@ def test__optimize_data_dataframe_details():
     testvar  = BarWithWaterfall(test=True)
     testvar.data_scenarios = ['PY', 'PL', 'FC', 'AC']
     testvar.multiplier_denominator = 250
-    testvar.decimals_details = 0
     expected =  {'Year'       : ['2022', '2022', '2022', '2022', '2022'],
-                 'PY'         : [157, 159, 161, 156, 154],
-                 'PL'         : [159, 167, 162, 159, 156],
+                 'PY'         : [157.4576, 158.8404, 160.6608, 155.50320000000002, 154.1592],
+                 'PL'         : [159.3872, 167.0784, 162.4616, 159.0828, 155.5164],
                  '_Category'  : ['Airbus', 'Boeing', 'OTHER', 'General Dynamics', 'Lockheed Martin'],
-                 'AC'         : [161, 158, 167, 161, 165],
-                 'FC'         : [154, 168, 166, 160, 164],
-                 '_CBC_DELTA1': [2, -9, 4, 2, 9],
-                 '_CBC_DELTA2': [155, 159, 170, 162, 173]}
+                 'AC'         : [161.1968, 157.7724, 166.8112, 161.32760000000002, 164.82920000000001],
+                 'FC'         : [153.5592, 167.8912, 165.68079999999998, 159.55679999999998, 163.51760000000002],
+                 '_CBC_DELTA1': [1.8095999999999999, -9.306, 4.349600000000001, 2.2448, 9.3128],
+                 '_CBC_DELTA2': [155.3688, 158.58520000000001, 170.0304, 161.8016, 172.8304]}
     actual   = testvar._optimize_data_dataframe_details(dataframe=dataset)
     actual   = actual.to_dict(orient='list')
     message  = "Test 3 - BarWithWaterfall._optimize_data_dataframe_details returned {0} instead of {1}".format(actual, expected)
@@ -1669,7 +1666,6 @@ def test__optimize_data_dataframe_details():
         testvar  = BarWithWaterfall(test=True)
         testvar.data_scenarios = ['PY', 'PL', 'FC', 'AC']
         testvar.multiplier_denominator = 1000
-        testvar.decimals_details = 2
         testvar._optimize_data_dataframe_details(dataframe=dataset)
 
     # Test 5 - String instead of list of data_scenarios
@@ -1678,7 +1674,6 @@ def test__optimize_data_dataframe_details():
         testvar  = BarWithWaterfall(test=True)
         testvar.data_scenarios = "This is a string"
         testvar.multiplier_denominator = 1000
-        testvar.decimals_details = 2
         testvar._optimize_data_dataframe_details(dataframe=dataset)
 
     # Test 6 - String instead of integer denominator
@@ -1687,16 +1682,6 @@ def test__optimize_data_dataframe_details():
         testvar  = BarWithWaterfall(test=True)
         testvar.data_scenarios = ['PY', 'PL', 'FC', 'AC']
         testvar.multiplier_denominator = "This is a string"
-        testvar.decimals_details = 2
-        testvar._optimize_data_dataframe_details(dataframe=dataset)
-
-    # Test 7 - String instead of integer decimals
-    with pytest.raises(TypeError):
-        dataset  = pd.DataFrame()
-        testvar  = BarWithWaterfall(test=True)
-        testvar.data_scenarios = ['PY', 'PL', 'FC', 'AC']
-        testvar.multiplier_denominator = 1000
-        testvar.decimals_details = "This is a string"
         testvar._optimize_data_dataframe_details(dataframe=dataset)
 
 
@@ -1718,14 +1703,14 @@ def test__optimize_data():
     testvar.force_zero_decimals = False
     testvar.force_max_one_decimals = False
     testvar.scalingvalue = 38207.237138
-    expected1 =  {'Year'       : ['2022', '2022', '2022', '2022', '2022'],
-                 'PY'         : [39.4, 39.7, 40.2, 38.9, 38.5],
-                 'PL'         : [39.8, 41.8, 40.6, 39.8, 38.9],
-                 '_Category'  : ['Airbus', 'Boeing', 'OTHER', 'General Dynamics', 'Lockheed Martin'],
-                 'AC'         : [40.3, 39.4, 41.7, 40.3, 41.2],
-                 'FC'         : [38.4, 42.0, 41.4, 39.9, 40.9],
-                 '_CBC_DELTA1': [0.5, -2.3, 1.1, 0.6, 2.3],
-                 '_CBC_DELTA2': [38.8, 39.6, 42.5, 40.5, 43.2]}
+    expected1 = {'Year': ['2022', '2022', '2022', '2022', '2022'],
+                 'PY': [39.3644, 39.7101, 40.1652, 38.875800000000005, 38.5398],    # lots of decimals due to representation of values. less decimals gives errors
+                 'PL': [39.8468, 41.7696, 40.6154, 39.7707, 38.8791],
+                 '_Category': ['Airbus', 'Boeing', 'OTHER', 'General Dynamics', 'Lockheed Martin'],
+                 'AC': [40.2992, 39.4431, 41.7028, 40.331900000000005, 41.207300000000004],
+                 'FC': [38.3898, 41.9728, 41.420199999999994, 39.889199999999995, 40.879400000000004],
+                 '_CBC_DELTA1': [0.45239999999999997, -2.3265, 1.0874000000000001, 0.5612, 2.3282],
+                 '_CBC_DELTA2': [38.8422, 39.646300000000004, 42.5076, 40.4504, 43.2076]}
     expected2 = {'PY': 197, 'PL': 201, 'AC': 203, 'FC': 203}
     expected3 = 38
     actual1   = testvar._optimize_data(dataframe=dataset)
@@ -1858,18 +1843,18 @@ def test__process_dataframe():
     testvar.force_max_one_decimals = False
     testvar.sort_dataframe = True
     testvar.scalingvalue = None
-    expected = {'Year': ['2022', '2022', '2022', '2022', '2022'],
-                'PY': [38.5, 38.9, 39.4, 39.7, 40.2],
-                'PL': [38.9, 39.8, 39.8, 41.8, 40.6],
-                '_Category': ['Lockheed Martin', 'General Dynamics', 'Airbus', 'Boeing', 'OTHER'],
-                'AC': [41.2, 40.3, 40.3, 39.4, 41.7],
-                'FC': [40.9, 39.9, 38.4, 42.0, 41.4],
+    expected = {'Year'         : ['2022', '2022', '2022', '2022', '2022'],
+                'PY'           : [38.5398, 38.875800000000005, 39.3644, 39.7101, 40.1652],    # lots of decimals due to representation of values. less decimals gives errors
+                'PL'           : [38.8791, 39.7707, 39.8468, 41.7696, 40.6154],
+                '_Category'    : ['Lockheed Martin', 'General Dynamics', 'Airbus', 'Boeing', 'OTHER'],
+                'AC'           : [41.207300000000004, 40.331900000000005, 40.2992, 39.4431, 41.7028],
+                'FC'           : [40.879400000000004, 39.889199999999995, 38.3898, 41.9728, 41.420199999999994],
                 '_CBC_TOPLAYER': ['AC', 'AC', 'AC', 'AC', 'AC'],
-                '_CBC_DELTA1': [2.3, 0.6, 0.5, -2.3, 1.1],
-                '_CBC_DELTA2': [0.0, 0.0, 0.0, 0.0, 0.0],
-                '_CBC_Y': [0.0, -1.0, -2.0, -3.0, -4.5],
-                '_CBC_Y1': [0.0625, -0.9375, -1.9375, -2.9375, -4.4375],
-                '_CBC_Y2': [-0.0625, -1.0625, -2.0625, -3.0625, -4.5625]}
+                '_CBC_DELTA1'  : [2.3282000000000043, 0.5612000000000044, 0.4523999999999942, -2.3265, 1.0874000000000015],
+                '_CBC_DELTA2'  : [0.0, 0.0, 0.0, 0.0, 0.0],
+                '_CBC_Y'       : [-0.0, -1.0, -2.0, -3.0, -4.5],
+                '_CBC_Y1'      : [0.0625, -0.9375, -1.9375, -2.9375, -4.4375],
+                '_CBC_Y2'      : [-0.0625, -1.0625, -2.0625, -3.0625, -4.5625]}
     actual   = testvar._process_dataframe(dataframe=dataset)
     actual   = actual.to_dict(orient='list')
     message  = "Test 1 - BarWithWaterfall._process_dataframe returned {0} instead of {1}".format(actual, expected)
@@ -1898,18 +1883,18 @@ def test__check_and_process_data():
     testvar.force_max_one_decimals = False
     testvar.sort_dataframe = True
     testvar.scalingvalue = None
-    expected = {'Year': ['2022', '2022', '2022', '2022', '2022'],
-                'PY': [38.5, 38.9, 39.4, 39.7, 40.2],
-                'PL': [38.9, 39.8, 39.8, 41.8, 40.6],
-                '_Category': ['Lockheed Martin', 'General Dynamics', 'Airbus', 'Boeing', 'OTHER'],
-                'AC': [41.2, 40.3, 40.3, 39.4, 41.7],
-                'FC': [40.9, 39.9, 38.4, 42.0, 41.4],
+    expected = {'Year'         : ['2022', '2022', '2022', '2022', '2022'],
+                '_Category'    : ['Lockheed Martin', 'General Dynamics', 'Airbus', 'Boeing', 'OTHER'],
+                'PY'           : [38.5398, 38.875800000000005, 39.3644, 39.7101, 40.1652],
+                'PL'           : [38.8791, 39.7707, 39.8468, 41.7696, 40.6154],
+                'AC'           : [41.207300000000004, 40.331900000000005, 40.2992, 39.4431, 41.7028],
+                'FC'           : [40.879400000000004, 39.889199999999995, 38.3898, 41.9728, 41.420199999999994],
                 '_CBC_TOPLAYER': ['AC', 'AC', 'AC', 'AC', 'AC'],
-                '_CBC_DELTA1': [2.3, 0.6, 0.5, -2.3, 1.1],
-                '_CBC_DELTA2': [0.0, 0.0, 0.0, 0.0, 0.0],
-                '_CBC_Y': [0.0, -1.0, -2.0, -3.0, -4.5],
-                '_CBC_Y1': [0.0625, -0.9375, -1.9375, -2.9375, -4.4375],
-                '_CBC_Y2': [-0.0625, -1.0625, -2.0625, -3.0625, -4.5625]}
+                '_CBC_DELTA1'  : [2.3282000000000043, 0.5612000000000044, 0.4523999999999942, -2.3265, 1.0874000000000015],
+                '_CBC_DELTA2'  : [0.0, 0.0, 0.0, 0.0, 0.0],
+                '_CBC_Y'       : [-0.0, -1.0, -2.0, -3.0, -4.5],
+                '_CBC_Y1'      : [0.0625, -0.9375, -1.9375, -2.9375, -4.4375],
+                '_CBC_Y2'      : [-0.0625, -1.0625, -2.0625, -3.0625, -4.5625]}
     testvar._check_and_process_data(data=dataset)
     actual   = testvar.data
     actual   = actual.to_dict(orient='list')

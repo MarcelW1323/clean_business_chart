@@ -2238,7 +2238,7 @@ class BarWithWaterfall(GeneralChart):
 
     def _optimize_data_dataframe_details(self, dataframe):
         """
-        The function _optimize_data_dataframe_details optimizes the detail information in the dataframe so that it will have a maximum of 3 significant digits.
+        The function _optimize_data_dataframe_details optimizes the detail information in the dataframe.
 
         Parameters:
         -----------
@@ -2261,8 +2261,6 @@ class BarWithWaterfall(GeneralChart):
         error_not_islist(self.data_scenarios, 'self.data_scenarios')
         if not isinteger(self.multiplier_denominator) and not isfloat(self.multiplier_denominator):
             raise TypeError('self.multiplier_denominator "'+str(self.multiplier_denominator)+'" is not a float or an integer, but of type '+str(type(self.multiplier_denominator)))
-        if not isinteger(self.decimals_details) and not isfloat(self.decimals_details):
-            raise TypeError('self.decimals_details "'+str(self.decimals_details)+'" is not a float or an integer, but of type '+str(type(self.decimals_details)))
 
         # Prepare the return value
         export_dataframe = dataframe.copy()
@@ -2270,7 +2268,7 @@ class BarWithWaterfall(GeneralChart):
         # Adjust each column with scenarios and delta values so that they are optimized
         for element in filter_lists(self.data_scenarios + ['_CBC_DELTA1', '_CBC_DELTA2'], list(dataframe.columns)):
             export_dataframe[element] = optimize_data(data=list(export_dataframe[element]), numerator=1, denominator=self.multiplier_denominator,
-                                                      decimals=self.decimals_details)
+                                                      decimals=None)
 
         return export_dataframe
 
