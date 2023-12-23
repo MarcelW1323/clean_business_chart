@@ -43,6 +43,8 @@ Features
   
   * added support for parameter scalingvalue in version 0.2.10 for optional visualizing a scaling band. Also better visibility of texts. And added support for parameter figsize to only use x-size in float or integer
 
+  * later rounding in the process leads to better connection between the waterfall and the total bars in version 0.2.11
+
 * General
 
   * better rounding support for values of chart-labels in version 0.2.5
