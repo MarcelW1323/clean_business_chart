@@ -386,6 +386,9 @@ class ColumnWithWaterfall(GeneralChart):
             else:
                 self.base_scenario = temp_list[0]
 
+        # Update centrally store the available scenarios (for filter_scenarios-function)
+        self.data_scenarios = list(self.data_total.keys())
+
         # Optimize multiplier and data        
         self._optimize_multiplier()
 

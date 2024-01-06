@@ -29,6 +29,8 @@ Features
 
   * added date column support for pandas DataFrame and added translation of column headers inside the call in version 0.1.2
 
+  * fixed error with FC-scenario when all FC-values were zero in version 0.2.12
+
 * BarWithWaterfall, the second chart released in version 0.2.2
 
   * added support for parameter sort_chart in version 0.2.4

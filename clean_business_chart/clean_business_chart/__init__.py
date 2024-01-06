@@ -2,7 +2,7 @@
 
 __author__ = """Marcel Wuijtenburg"""
 __email__ = 'marcelw1323@gmail.com'
-__version__ = '0.2.11'
+__version__ = '0.2.12'
 
 from .clean_business_chart import *              # Class GeneralChart with general variables for unity
 from .general_functions import *                 # Diverse set of functions to be used with all kind of charts

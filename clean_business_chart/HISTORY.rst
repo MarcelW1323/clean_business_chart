@@ -2,6 +2,18 @@
 History
 =======
 
+0.2.12 (2024-01-06)
+-------------------
+
+* Fixed error with FC-scenario when all FC-values were zero
+
+
+0.2.11 (2023-12-23)
+-------------------
+
+* Later rounding in the process leads to better connection between the waterfall and the total bars
+
+
 0.2.10 (2023-12-14)
 -------------------
 
