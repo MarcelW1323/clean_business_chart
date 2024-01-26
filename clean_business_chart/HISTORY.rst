@@ -2,6 +2,12 @@
 History
 =======
 
+0.2.13 (2024-01-26)
+-------------------
+
+* Fixed cosmetic bug with AC-scenario when total equals zero in column chart with waterfall
+
+
 0.2.12 (2024-01-06)
 -------------------
 

@@ -884,6 +884,9 @@ class ColumnWithWaterfall(GeneralChart):
 
         scenarios = self.filter_scenarios(scenario_list=['AC', 'FC'])
 
+        # Remove scenarios when total is 0
+        scenarios = [scenario for scenario in scenarios if self.data_total[scenario]!=0]
+
         for scenario in scenarios:
             # Determine the hatch
             hatch = None

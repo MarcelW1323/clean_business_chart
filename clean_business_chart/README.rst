@@ -30,6 +30,8 @@ Features
   * added date column support for pandas DataFrame and added translation of column headers inside the call in version 0.1.2
 
   * fixed error with FC-scenario when all FC-values were zero in version 0.2.12
+  
+  * fixed cosmetic bug with AC-scenario when total equals 0, stacked bar on the right has an element of zero in version 0.2.13 
 
 * BarWithWaterfall, the second chart released in version 0.2.2
 
