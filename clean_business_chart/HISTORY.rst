@@ -2,6 +2,12 @@
 History
 =======
 
+0.2.14 (2024-01-26)
+-------------------
+
+* Fixed waterfall pattern-bug in bar chart with waterfall
+
+
 0.2.13 (2024-01-26)
 -------------------
 

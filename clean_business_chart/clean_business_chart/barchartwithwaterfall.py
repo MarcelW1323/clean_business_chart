@@ -1155,10 +1155,24 @@ class BarWithWaterfall(GeneralChart):
         delta_lines   = [base_value]+list(dataframe['_CBC_BASE'])[:-1]
         height        = list(dataframe['_CBC_DELTA1'])
         colors        = [self.good_or_bad_color(differencevalue=x) for x in height]
+        edgecolors    = colors
+
+        # Adjust colors and hatch-values for Forecast or Plan/Budget
+        if comp_scenario == 'FC':
+            # Compare scenario is Forecast
+            hatch = self.hatch_pattern
+            colors = self.colors[comp_scenario][0]
+        elif comp_scenario == 'PL':
+            # Compare scenario is Plan/Budget
+            colors = self.colors[comp_scenario][0]
+            hatch = None
+        else:
+            # All other scenarios don't need hatch-values
+            hatch = None
         
         # Plot the bars
-        ax.barh(y=yvalues, width=height, color=colors, height=self.barwidth, left=delta_lines, linewidth=self.linewidth_bar, 
-                        edgecolor=colors, label='AC', hatch=None, zorder=80)
+        ax.barh(y=yvalues, width=height, color=colors, height=self.barwidth, left=delta_lines, linewidth=self.linewidth_bar,
+                        edgecolor=edgecolors, label=comp_scenario, hatch=hatch, zorder=80)
         
         self.data_text['delta'] = len(ax.containers)-1
         
