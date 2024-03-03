@@ -120,6 +120,7 @@ def test_isfigure():
     expected = False
     actual   = isfigure('not a figure')
     assert actual == expected, "isfigure('not a figure') gives back "+str(actual)+" instead of "+str(expected)
+    plt.close(figure1)
 
 
 def test_error_not_islist():
@@ -386,10 +387,12 @@ def test_error_not_isfigure():
     # Test 1 with a figure only, no error will occur
     figure1, _ = plt.subplots()
     error_not_isfigure(figure1)
+    plt.close(figure1)
 
     # Test 2 with a figure and name of variable, no error will occur
     figure1, _ = plt.subplots()
     error_not_isfigure(figure1, name_inputvariable_in_text='figure1')
+    plt.close(figure1)
 
     # Test 3 with a list
     with pytest.raises(TypeFigureError) as exceptioninfo:
@@ -1398,6 +1401,79 @@ def test_check_scenario_translation():
     with pytest.raises(TypeDictionaryError):
         check_scenario_translation(standardscenarios={'PY':'PY', 'PL':'PL', 'AC':'AC', 'FC':'FC'}, translation="This is a string")
 
+
+def test_footnote_figure():
+    # Test 1 - No footnote
+    expected = False
+    actual   = footnote_figure(figure=None, x=None, y=None, footnote=None, footnote_size=None, footnote_fontsize=None, font=None, colors=None)
+    message     = "Test 1 - footnote_figure returned {0} instead of {1}".format(actual, expected)
+    assert actual == expected, message
+
+    # Test 2 - footnote is float instead of string
+    with pytest.raises(TypeStringError):
+        footnote_figure(figure=None, x=None, y=None, footnote=3.14, footnote_size=None, footnote_fontsize=None, font=None, colors=None)
+
+    # Test 3 - footnote_fontsize is text instead of dictionary
+    with pytest.raises(TypeDictionaryError):
+        footnote_figure(figure=None, x=None, y=None, footnote="Source: clean_business_chart", footnote_size=None, footnote_fontsize="This is a text", font=None, colors=None)
+
+    # Test 4 - footnote_size is integer instead of text
+    with pytest.raises(TypeStringError):
+        footnote_fontsize = {'great': 10, 'super': 12}
+        footnote_figure(figure=None, x=None, y=None, footnote="Source: clean_business_chart", footnote_size=12, footnote_fontsize=footnote_fontsize, font=None, colors=None)
+
+    # Test 5 - footnote_size is text but has wrong value
+    with pytest.raises(ValueError):
+        footnote_fontsize = {'great': 10, 'super': 12}
+        footnote_figure(figure=None, x=None, y=None, footnote="Source: clean_business_chart", footnote_size="big", footnote_fontsize=footnote_fontsize, font=None, colors=None)
+
+    # Test 6 - figure is text instead of figure
+    with pytest.raises(TypeFigureError):
+        footnote_fontsize = {'great': 10, 'super': 12}
+        footnote_figure(figure="This is a text", x=None, y=None, footnote="Source: clean_business_chart", footnote_size="great", footnote_fontsize=footnote_fontsize,
+                        font=None, colors=None)
+
+    # Test 7 - x is text instead of integer or float
+    with pytest.raises(TypeNumberError):
+        footnote_fontsize = {'great': 10, 'super': 12}
+        figure1, _        = plt.subplots()
+        footnote_figure(figure=figure1, x="This is a text", y=None, footnote="Source: clean_business_chart", footnote_size="great", footnote_fontsize=footnote_fontsize,
+                        font=None, colors=None)
+        plt.close(figure1)
+
+    # Test 8 - y is text instead of integer or float
+    with pytest.raises(TypeNumberError):
+        footnote_fontsize = {'great': 10, 'super': 12}
+        figure1, _        = plt.subplots()
+        footnote_figure(figure=figure1, x=0, y="This is a text", footnote="Source: clean_business_chart", footnote_size="great", footnote_fontsize=footnote_fontsize,
+                        font=None, colors=None)
+        plt.close(figure1)
+
+    # Test 9 - colors is text instead of dictionary
+    with pytest.raises(TypeDictionaryError):
+        footnote_fontsize = {'great': 10, 'super': 12}
+        figure1, _        = plt.subplots()
+        footnote_figure(figure=figure1, x=0, y=0.01, footnote="Source: clean_business_chart", footnote_size="great", footnote_fontsize=footnote_fontsize,
+                        font=None, colors="This is a text")
+        plt.close(figure1)
+
+    # Test 10 - colors is dictionary but missing entry for 'text'
+    with pytest.raises(ValueError):
+        footnote_fontsize = {'great': 10, 'super': 12}
+        figure1, _        = plt.subplots()
+        colors            = {'black': '#000000'}
+        footnote_figure(figure=figure1, x=0, y=0.01, footnote="Source: clean_business_chart", footnote_size="great", footnote_fontsize=footnote_fontsize,
+                        font=None, colors=colors)
+        plt.close(figure1)
+
+    # Test 11 - font is integer instead of text
+    with pytest.raises(TypeStringError):
+        footnote_fontsize = {'great': 10, 'super': 12}
+        figure1, _        = plt.subplots()
+        colors            = {'text': '#000000'}
+        footnote_figure(figure=figure1, x=0, y=0.01, footnote="Source: clean_business_chart", footnote_size="great", footnote_fontsize=footnote_fontsize,
+                        font=15, colors=colors)
+        plt.close(figure1)
 
 
 #### Need to add more test-functions for automatic testing

@@ -13,7 +13,7 @@ from clean_business_chart.general_functions    import plot_line_accross_axes, pl
                                                       string_to_value, filter_lists, convert_data_string_to_pandas_dataframe, convert_data_list_of_lists_to_pandas_dataframe, \
                                                       dataframe_translate_field_headers, dataframe_search_for_headers, dataframe_keep_only_relevant_columns, \
                                                       dataframe_date_to_year_and_month, dataframe_convert_year_month_to_string, list1_is_subset_list2, \
-                                                      convert_dataframe_scenario_columns_to_value, convert_number_to_string, check_scenario_translation
+                                                      convert_dataframe_scenario_columns_to_value, convert_number_to_string, check_scenario_translation, footnote_figure
                                                       
 from clean_business_chart.multiplier           import Multiplier
 from clean_business_chart.exceptions           import *  # for custom errors/exceptions
@@ -2729,27 +2729,12 @@ class BarWithWaterfall(GeneralChart):
         self.footnote_fontsize : Dictionary of predefined fontsizes for footnotes
         self.footnote_size     : Textvalues as keys for the predefined fontsizes for footnotes ('small' or 'normal')
         """
-        # Check if there is a footnote
-        if self.footnote is None:
-           # No footnote
-           return False  # For test purpose only
-        error_not_isstring(self.footnote,"footnote")
-        # self.footnote has a stringvalue
-
-        # Check if valid size of footnote-text
-        if not self.footnote_size in self.footnote_fontsize.keys():
-            raise ValueError('footnote_size (' + str(self.footnote_size) + ') does not match valid values:'+ \
-                             str(self.footnote_fontsize.keys()))
-
-        # Check figure
-        error_not_isfigure(self.fig, "self.fig")
-        fig = self.fig
-
+        # All checks are provided in the function footnote_figure
         #### TECHNICAL DEBT: How to determine the right x and y values?
-        fig.text(s=self.footnote, font=self.font, fontsize=self.footnote_fontsize[self.footnote_size],
-                     color=self.colors['text'], ha='left', va='bottom',x=0,y=0.00)  #### x=-0.01??
-
+        footnote_figure(figure=self.fig, x=0, y=0, footnote=self.footnote, footnote_size=self.footnote_size,
+                        footnote_fontsize=self.footnote_fontsize, font=self.font, colors=self.colors)
         return
+
 
     def __zorder_documentation(self):
         """

@@ -1157,3 +1157,70 @@ def check_scenario_translation(standardscenarios, translation=None):
     export_dictionary = {key: translation.get(key, standardscenarios[key]) for key in standardscenarios}
 
     return export_dictionary
+
+
+def footnote_figure(figure=None, x=None, y=None, footnote=None, footnote_size=None, footnote_fontsize=None, font=None, colors=None):
+    """
+    The function footnote_figure puts a footnote in the lower left corner of the chart.
+
+    Self variables
+    --------------
+    colors                 : Dictionary with colors
+    figure                 : Figure-object for the generated plot and subplots
+    font                   : All text in a chart has the same font
+    footnote               : Text that will be displayed on the bottom of the chart, starting at the left
+    footnote_fontsize      : Dictionary of predefined fontsizes for footnotes
+    footnote_size          : Textvalues as keys for the predefined fontsizes for footnotes ('small' or 'normal')
+
+    Returns
+    -------
+    text_instance          : Matplotlib text instance
+    """
+    # Check if there is a footnote
+    if footnote is None:
+       # No footnote
+       return False  # For test purpose only
+    error_not_isstring(footnote,"footnote")
+    # footnote has a stringvalue
+
+    # Check footnote_fontsize
+    error_not_isdictionary(footnote_fontsize,"footnote_fontsize")
+    # footnote_fontsize is a dictionary
+
+    # Check if valid size of footnote-text
+    error_not_isstring(footnote_size,"footnote_size")
+    # footnote_size is a text
+    if not footnote_size in footnote_fontsize.keys():
+        raise ValueError('footnote_size (' + str(footnote_size) + ') does not match valid values:'+ \
+                         str(footnote_fontsize.keys()))
+    # footnote_size is a defined text
+
+    # Check figure
+    error_not_isfigure(figure, "figure")
+    # figure is a matplotlib-figure-object
+
+    # Check x-coordinate
+    error_not_isnumber(x,"x")
+    # x is an integer or a float
+
+    # Check y-coordinate
+    error_not_isnumber(y,"y")
+    # y is an integer or a float
+
+    # Check colors
+    error_not_isdictionary(colors,"colors")
+    # colors is a dictionary
+    if not "text" in colors.keys():
+        raise ValueError('colors (' + str(colors) + ') does not contain key "text":'+ \
+                         str(colors.keys()))
+    # colors has a key "text"
+
+    # check font
+    error_not_isstring(font,"font")
+    # font has a stringvalue
+
+    #### TECHNICAL DEBT: How to determine the right x and y values?
+    text_instance = figure.text(s=footnote, font=font, fontsize=footnote_fontsize[footnote_size],
+                                color=colors['text'], ha='left', va='bottom', x=x, y=y)
+
+    return text_instance  # return value for test purpose only

@@ -11,7 +11,7 @@ from clean_business_chart.general_functions    import plot_line_accross_axes, pl
                                                       convert_data_string_to_pandas_dataframe, convert_data_list_of_lists_to_pandas_dataframe, \
                                                       dataframe_translate_field_headers, dataframe_search_for_headers, \
                                                       dataframe_date_to_year_and_month, dataframe_keep_only_relevant_columns, \
-                                                      dataframe_convert_year_month_to_string, convert_number_to_string
+                                                      dataframe_convert_year_month_to_string, convert_number_to_string, footnote_figure
 from clean_business_chart.multiplier           import Multiplier
 
 
@@ -59,13 +59,19 @@ class ColumnWithWaterfall(GeneralChart):
     translate_headers       : Dictionary where you can translate field headers, example 
                               {'Orderdate':'Date', 'Revenue':'AC'}
                               Default: None (no translation of headers will occur)
-    test                    : If True, only variables from the parent class are defined, together with other 
+    footnote                : Text that will be displayed on the bottom of the chart, starting at the left.
+                              Default: None (no text will be displayed)
+    footnote_size           : Size of the text of the footnote. Use 'small' for small sized footnote.
+                              Use 'normal' for the normal textsize like all other texts in the chart.
+                              Default: 'normal' (for normal sized footnote-text)
+    test                    : If True, only variables from the parent class are defined, together with other
                               self-variables. This makes this module testable in an automatic way
                               Default: False (this call it is not an automatic test)
     """
 
     def __init__(self, data=None, positive_is_good=True, preferred_base_scenario=None, title=None, measure=True, multiplier='1', filename=None, 
-                 force_pl_is_zero=False, force_zero_decimals=False, force_max_one_decimals=False, translate_headers=None, test=False, do_not_show=False):
+                 force_pl_is_zero=False, force_zero_decimals=False, force_max_one_decimals=False, translate_headers=None, footnote=None, footnote_size='normal',
+                 test=False, do_not_show=False):
         """
         This is the first function that will be called automatically. Here you'll find all the possible parameters to customize your experience.
         """
@@ -87,6 +93,9 @@ class ColumnWithWaterfall(GeneralChart):
         self.force_zero_decimals    = force_zero_decimals
         self.force_max_one_decimals = force_max_one_decimals
         self.translate_headers      = translate_headers
+        self.footnote               = footnote
+        self.footnote_size          = footnote_size
+
         
         # Make chart
         self.get_barwidth(measure)
@@ -100,6 +109,9 @@ class ColumnWithWaterfall(GeneralChart):
         self._fill_main_ax()
         self._show_delta()
         self._fill_delta_ax_text()
+
+        # Add the footnote
+        self._footnote_figure()
 
         # Add the title as the last element        
         self._title(title)
@@ -1071,6 +1083,26 @@ class ColumnWithWaterfall(GeneralChart):
 
         ax.tick_params(top=False, bottom=False, left=False, right=False, labelleft=False, labelbottom=False)
         ax.spines[['top', 'left', 'right', 'bottom']].set_visible(False)
+
+
+    def _footnote_figure(self):
+        """
+        The function _footnote_figure puts a footnote in the lower left corner of the chart.
+
+        Self variables
+        --------------
+        self.colors            : Dictionary with colors
+        self.fig               : Figure-object for the generated plot and subplots
+        self.font              : All text in a chart has the same font
+        self.footnote          : Text that will be displayed on the bottom of the chart, starting at the left
+        self.footnote_fontsize : Dictionary of predefined fontsizes for footnotes
+        self.footnote_size     : Textvalues as keys for the predefined fontsizes for footnotes ('small' or 'normal')
+        """
+        # All checks are provided in the function footnote_figure
+        #### TECHNICAL DEBT: How to determine the right x and y values?
+        footnote_figure(figure=self.fig, x=0.11, y=0, footnote=self.footnote, footnote_size=self.footnote_size,
+                        footnote_fontsize=self.footnote_fontsize, font=self.font, colors=self.colors)
+        return
 
 
     def _title(self, title=None):
