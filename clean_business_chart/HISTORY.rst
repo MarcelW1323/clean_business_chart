@@ -2,6 +2,13 @@
 History
 =======
 
+0.2.15 (2024-03-04)
+-------------------
+
+* Added parameter 'footnote' and related 'footnote_size' in column chart with waterfall for supporting footnotes for example to mention the source.
+* Centralized function for display of the footnote so bar chart with waterfall and column chart with waterfall share the same code base
+
+
 0.2.14 (2024-01-26)
 -------------------
 

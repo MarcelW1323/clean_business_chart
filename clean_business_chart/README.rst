@@ -33,6 +33,8 @@ Features
   
   * fixed cosmetic bug with AC-scenario when total equals 0, stacked bar on the right has an element of zero in version 0.2.13 
 
+  * added support for parameter footnote in version 0.2.15
+
 * BarWithWaterfall, the second chart released in version 0.2.2
 
   * added support for parameter sort_chart in version 0.2.4
