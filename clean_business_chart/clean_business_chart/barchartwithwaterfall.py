@@ -591,11 +591,11 @@ class BarWithWaterfall(GeneralChart):
             self._plot_barh(y=yvalue, width=tot_base, scenario=scenario, height=self.barwidth, left=0, total=True, zorder=(60+x))
             # Add valuelabel of the bar
             if first_scenario_special_text:
-                ax.text(tot_base * 1.01, yvalue, str(tot_base), horizontalalignment='left', verticalalignment='bottom', 
-                        font=self.font, fontsize=self.fontsize, color=self.colors['text'], fontweight='bold',
+                ax.text(tot_base * 1.01, yvalue, convert_number_to_string(data=tot_base, decimals=self.decimals_totals, delta_value=False), horizontalalignment='left',
+                        verticalalignment='bottom', font=self.font, fontsize=self.fontsize, color=self.colors['text'], fontweight='bold',
                         bbox=self.bbox_dict, zorder=100)
             else:
-                self._fill_ax_bar_label(scenario, total=True)
+                self._fill_ax_bar_label(scenario, total=True, value=tot_base)
         
             #Save values for later
             total_dict = dict()
@@ -822,7 +822,7 @@ class BarWithWaterfall(GeneralChart):
         # Get the sum of both scenarios
         tot_comp1 = self.data_total[compare_scenario1]
         tot_comp2 = self.data_total[compare_scenario2]
-        
+
         # The Y-coordinate is 1.5 below the lowest detail horizontal bar
         yvalue = self._calculate_y_value_of_compare_total_bar(dataframe)
 
@@ -844,7 +844,7 @@ class BarWithWaterfall(GeneralChart):
             scenariotext = self.all_scenarios_translate[compare_scenario2]
             self._plot_barh(y=yvalue, width=tot_comp2, scenario=scenariotext, height=self.barwidth, left=tot_comp1, total=True, zorder=30)
             # Write the total sum of the lenght of both bars combines on the right of the second (stacked) bar
-            self._fill_ax_bar_label(compare_scenario2, total=True)
+            self._fill_ax_bar_label(compare_scenario2, total=True, value=tot_comp1+tot_comp2)
             # Also here, set the scenario abbreviation of the second scenario underneath the second (stacked) bar near the center of this addition
             ax.text(tot_comp1 + (tot_comp2 / 2), yvalue - self.barwidth*1.2, compare_scenario2, horizontalalignment='center', font=self.font, fontsize=self.fontsize,
                     color=self.colors['text'], bbox=self.bbox_dict, zorder=100) #, verticalalignment='center')
@@ -852,7 +852,7 @@ class BarWithWaterfall(GeneralChart):
             total_dict['total']  = tot_comp1 + tot_comp2
         else:
             # No, there is just one compare scenario. Write the length of this one horizontal bar on the right
-            self._fill_ax_bar_label(compare_scenario1, total=True)
+            self._fill_ax_bar_label(compare_scenario1, total=True, value=tot_comp1)
             # Store this total in the dictionary
             total_dict['total']  = tot_comp1
             # Put the scenario text underneath the bar near the center of the length of the bar
@@ -860,7 +860,6 @@ class BarWithWaterfall(GeneralChart):
             ax.text(tot_comp1 / 2, yvalue - self.barwidth*1.4, scenariotext, horizontalalignment='center', font=self.font, fontsize=self.fontsize,
                     color=self.colors['text'], bbox=self.bbox_dict, zorder=100) #, verticalalignment='center')
 
-        
         # As the total for the compare scenarios is just one horizontal bar (one horizontal stacked bar in case of two compare scenarios)
         self.dict_totals[compare_scenario1] = total_dict    # Always assign the information to the first compare scenario
 
@@ -1561,7 +1560,7 @@ class BarWithWaterfall(GeneralChart):
         return
 
 
-    def _fill_ax_bar_label(self, scenario, total=False):
+    def _fill_ax_bar_label(self, scenario, total=False, value=None):
         """
         The function _fill_ax_bar_label fills the valuelabels for the horizontal bars.
         
@@ -1570,6 +1569,7 @@ class BarWithWaterfall(GeneralChart):
         scenario              : String with the scenario
         total                 : Boolean switch for indicating a total value of this scenario (True) or detail values of this scenario (False)
                                 Default value: False (detail values)
+        value                 : Value or list of values what needs to be displayed. At the moment only for total values
 
         Self variables
         --------------
@@ -1607,15 +1607,24 @@ class BarWithWaterfall(GeneralChart):
             # Yes, label will be of a total bar
             fontweight = 'bold'
             used_scenario = scenario+"TOT"
-            format_string = formatstring(self.decimals_totals)
+            # Put the value (or all the values) in a list
+            if islist(value):
+                # The value is a list of values, no need to encapsulate this list with an other list
+                label_value_list = convert_number_to_string(data=value, decimals=self.decimals_totals, delta_value=False)
+            else:
+                # The value is an elementary value (integer or float). Encapsulate this value in a list
+                error_not_isnumber(value, "value")
+                label_value_list = [ convert_number_to_string(data=value, decimals=self.decimals_totals, delta_value=False) ]
+            return_value = ax.bar_label(ax.containers[self.data_text[used_scenario]], labels=label_value_list, label_type='edge', padding = self.padding, 
+                                        font=self.font, fontsize=self.fontsize, fontweight=fontweight, color=self.colors["text"], bbox=self.bbox_dict, zorder=100)
         else:
             # No, label will be of a normal bar
             fontweight = 'normal'
             used_scenario = scenario
+            #### TECHNICAL DEBT: Eliminate the "format_string" because it doesn't round, but cuts instead.
             format_string = formatstring(self.decimals_details)
-            
-        # Puts the values after the horizontal bars.
-        return_value = ax.bar_label(ax.containers[self.data_text[used_scenario]], fmt=format_string, label_type='edge', padding=self.padding, 
+            # Puts the values after the horizontal bars.
+            return_value = ax.bar_label(ax.containers[self.data_text[used_scenario]], fmt=format_string, label_type='edge', padding=self.padding, 
                                     font=self.font, fontsize=self.fontsize, fontweight=fontweight, color=self.colors['text'],
                                     bbox=self.bbox_dict, zorder=100)
 
@@ -2003,11 +2012,13 @@ class BarWithWaterfall(GeneralChart):
         return
 
 
-    def _optimize_data_total(self, numerator=1, denominator=1, decimals=0):
+    def _optimize_data_total(self, numerator=1, denominator=1):
         """
-        The function _optimize_data_total makes each element up to the desired number of significant figures and store these in the dictionary self.data_total.
-        Every value will be multiplied with the numerator, divided with the denominator and then round to the desired number of decimals.
-        In formula: ROUND( value * numerator / denominator, number of decimals)
+        The function _optimize_data_total optimizes each element with the nominator and denominator and store these in the dictionary self.data_total.
+        Every value will be multiplied with the numerator, divided with the denominator.
+        In formula: value * numerator / denominator
+
+        There will be no rounding to a number of decimals so the chart will have maximum precision.
 
         Parameters:
         -----------
@@ -2015,8 +2026,6 @@ class BarWithWaterfall(GeneralChart):
                             Default: 1 (multiply with 1, which is the same as keeping the value)
         denominator       : denominator is the number to divide by.
                             Default: 1 (dividy by 1, which is the same as keeping the value)
-        decimals          : number of decimals with which the totals are rounded and stored.
-                            Default: 0 (zero decimals)
 
         Self variables
         --------------
@@ -2026,7 +2035,6 @@ class BarWithWaterfall(GeneralChart):
         # Check if the parameters are integers
         error_not_isinteger(numerator, "numerator")
         error_not_isinteger(denominator, "denominator")
-        error_not_isinteger(decimals, "decimals")
      
         # Check if data_total is a dictionary
         error_not_isdictionary(self.data_total, "self.data_total")
@@ -2034,12 +2042,12 @@ class BarWithWaterfall(GeneralChart):
         # Process for each value in the dictionary
         for element in self.data_total.keys():
             value = self.data_total[element]
-            self.data_total[element] = optimize_data(data=value, numerator=numerator, denominator=denominator, decimals=decimals)
+            self.data_total[element] = optimize_data(data=value, numerator=numerator, denominator=denominator, decimals=None)
 
         # Process scalingvalue
         if not self.scalingvalue is None:
             # There is a scalingvalue, adjust is like all other values in this function
-            self.scalingvalue = optimize_data(data=self.scalingvalue, numerator=numerator, denominator=denominator, decimals=decimals)
+            self.scalingvalue = optimize_data(data=self.scalingvalue, numerator=numerator, denominator=denominator, decimals=None)
 
         return
 
@@ -2348,9 +2356,9 @@ class BarWithWaterfall(GeneralChart):
         # Update details in dataframe based on denominator and decimals
         export_dataframe = self._optimize_data_dataframe_details(dataframe)
 
-        # Update totals based on denominator and decimals.
+        # Update totals based on denominator.
         # Note: We also adjust the totals from within this function because it should be an "atomic" transaction together with the details
-        self._optimize_data_total(numerator=1, denominator=self.multiplier_denominator, decimals=self.decimals_totals)
+        self._optimize_data_total(numerator=1, denominator=self.multiplier_denominator)
 
         return export_dataframe
 
