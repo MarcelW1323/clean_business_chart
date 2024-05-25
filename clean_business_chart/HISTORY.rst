@@ -2,6 +2,12 @@
 History
 =======
 
+0.2.16 (2024-05-25)
+-------------------
+
+* Fixed disconnected lines bug in some cases by later rounding in the total values of the bar chart
+
+
 0.2.15 (2024-03-04)
 -------------------
 

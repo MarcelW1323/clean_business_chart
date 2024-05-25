@@ -52,6 +52,8 @@ Features
   * later rounding in the process leads to better connection between the waterfall and the total bars in version 0.2.11
   
   * fixed waterfall pattern-bug so FC-comparison looks different than AC-comparison in version 0.2.14
+  
+  * fixed disconnected lines bug in some cases by later rounding in the total values of the bar chart in version 0.2.16
 
 * General
 
