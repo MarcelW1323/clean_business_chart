@@ -1970,9 +1970,9 @@ class BarWithWaterfall(GeneralChart):
         wanted_headers = ['_Category'] + self.year_column
         dataframe = self._dataframe_aggregate(dataframe, wanted_headers=wanted_headers)
 
-        # Convert year and month to strings and sort the dataframe on year
+        # Convert year and month to strings
         wanted_headers = ['_Category'] + self.year_column
-        dataframe = dataframe_convert_year_month_to_string(dataframe, wanted_headers, year_field=self.year_column, month_field=self.month_column)
+        dataframe = dataframe_convert_year_month_to_string(dataframe, wanted_headers, year_field=self.year_column, month_field=self.month_column, sort_dataframe_parameter=self.sort_dataframe)
 
         # Handle previous year information
         dataframe = self._dataframe_handle_previous_year(dataframe)

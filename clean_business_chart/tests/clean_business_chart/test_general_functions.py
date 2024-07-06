@@ -1079,16 +1079,16 @@ def test_dataframe_search_for_headers():
         dataframe_search_for_headers(dataframe=dataset, search_for_headers=search_for_headers, error_not_found=error_not_found)
 
     # Test 4 - only DataFrame supported as first parameter
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeDataFrameError):
         dataframe_search_for_headers(dataframe="This is a string", search_for_headers=list())
 
     # Test 5 - only list supported as second parameter
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeListError):
         dataset = pd.DataFrame({'Year' : [2023]})
         dataframe_search_for_headers(dataframe=dataset, search_for_headers="This is a string")
 
     # Test 6 - only boolean supported as third parameter
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeBooleanError):
         dataset = pd.DataFrame({'Year' : [2023]})
         dataframe_search_for_headers(dataframe=dataset, search_for_headers=list(), error_not_found="This is a string")
 
@@ -1169,7 +1169,7 @@ def test_dataframe_date_to_year_and_month():
     assert actual == expected, message
 
     # Test 4 - only dataframe supported for first parameter
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeDataFrameError):
         dataframe_date_to_year_and_month(dataframe="This is a string", date_field=[1], year_field=[2], month_field=[3])
 
     # Test 5a - only list supported for date_field
@@ -1231,7 +1231,7 @@ def test_dataframe_keep_only_relevant_columns():
     assert actual == expected, message
 
     # Test 2 - only dataframe supported as dataset
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeDataFrameError):
         dataframe_keep_only_relevant_columns(dataframe="This is a string", wanted_headers=[1,2])
 
     # Test 3 - only list supported as wanted headers
@@ -1241,49 +1241,87 @@ def test_dataframe_keep_only_relevant_columns():
 
 def test_dataframe_convert_year_month_to_string():
     # Test 1 - good dataframe with string year values and integer and float values
-    dataset = pd.DataFrame({'Year' : [2022.0, '2021', '2018', 2019],
-                            'Month': ['02', 4, '07', 8.0],
-                            'AC'   : [35, 33, 17, 41]})
-    expected = {'Year': {2: '2018', 3: '2019', 1: '2021', 0: '2022'},
+    dataset   = pd.DataFrame({'Year' : [2022.0, '2021', '2018', 2019],
+                              'Month': ['02', 4, '07', 8.0],
+                              'AC'   : [35, 33, 17, 41]})
+    expected1 = {'Year': {2: '2018', 3: '2019', 1: '2021', 0: '2022'},
                 'Month': {2: '07', 3: '08', 1: '04', 0: '02'},
                 'AC': {2: 17, 3: 41, 1: 33, 0: 35}}
+    expected2 = {'Year': {2: '2018', 3: '2019', 1: '2021', 0: '2022'},
+                 'Month': {2: '07', 3: '08', 1: '04', 0: '02'},
+                 'AC': {2: 17, 3: 41, 1: 33, 0: 35}}
     wanted_headers = ['Year', 'Month']
-    actual   = dataframe_convert_year_month_to_string(dataset, wanted_headers=wanted_headers, year_field=['Year'], month_field=['Month'])
-    actual   = actual.to_dict()
-    message  = "Test 1 - dataframe_convert_year_month_to_string returned {0} instead of {1}".format(actual, expected)
-    assert actual == expected, message
+    actual1   = dataframe_convert_year_month_to_string(dataset, wanted_headers=wanted_headers, year_field=['Year'], month_field=['Month'], sort_dataframe_parameter=True)
+    actual1   = actual1.to_dict()
+    message1  = "Test 1a - dataframe_convert_year_month_to_string returned {0} instead of {1}".format(actual1, expected1)
+    actual2   = dataframe_convert_year_month_to_string(dataset, wanted_headers=wanted_headers, year_field=['Year'], month_field=['Month'], sort_dataframe_parameter=False)
+    actual2   = actual2.to_dict()
+    message2  = "Test 1b - dataframe_convert_year_month_to_string returned {0} instead of {1}".format(actual2, expected2)
+    assert actual1 == expected1, message1
+    assert actual2 == expected2, message2
 
     # Test 2 - good dataframe with string year values and integer and float values, also a category of interest is available
-    dataset = pd.DataFrame({'_Category' : ['sales', 'finance', 'sales', 'marketing', 'finance', 'sales'],
+    dataset   = pd.DataFrame({'_Category' : ['sales', 'finance', 'sales', 'marketing', 'finance', 'sales'],
                             'Year'      : [2022.0 , '2021'   , '2018' , 2018       , 2018     , 2019   ],
                             'Month'     : ['02'   , 4        , '07'   , 6          , '6'      , 8.0    ],
                             'AC'        : [35     , 33       , 17     , 3          , 26       , 41     ]})
-    expected = {'_Category': ['finance', 'marketing', 'sales', 'sales', 'finance', 'sales'],
-                'Year'     : ['2018', '2018', '2018', '2019', '2021', '2022'],
-                'Month'    : ['06', '06', '07', '08', '04', '02'],
-                'AC'       : [26, 3, 17, 41, 33, 35]}
+    expected1 = {'_Category': ['finance', 'marketing', 'sales', 'sales', 'finance', 'sales'],
+                 'Year'     : ['2018', '2018', '2018', '2019', '2021', '2022'],
+                 'Month'    : ['06', '06', '07', '08', '04', '02'],
+                 'AC'       : [26, 3, 17, 41, 33, 35]}
+    expected2 = {'_Category': ['sales', 'finance', 'sales', 'marketing', 'finance', 'sales'],
+                 'Year': ['2022', '2021', '2018', '2018', '2018', '2019'],
+                 'Month': ['02', '04', '07', '06', '06', '08'],
+                 'AC': [35, 33, 17, 3, 26, 41]}
     wanted_headers = ['Year', 'Month', '_Category']
-    actual   = dataframe_convert_year_month_to_string(dataset, wanted_headers=wanted_headers, year_field=['Year'], month_field=['Month'])
-    actual   = actual.to_dict(orient='list')
-    message  = "Test 2 - dataframe_convert_year_month_to_string returned {0} instead of {1}".format(actual, expected)
-    assert actual == expected, message
+    actual1   = dataframe_convert_year_month_to_string(dataset, wanted_headers=wanted_headers, year_field=['Year'], month_field=['Month'], sort_dataframe_parameter=True)
+    actual1   = actual1.to_dict(orient='list')
+    message1  = "Test 2a - dataframe_convert_year_month_to_string returned {0} instead of {1}".format(actual1, expected1)
+    actual2   = dataframe_convert_year_month_to_string(dataset, wanted_headers=wanted_headers, year_field=['Year'], month_field=['Month'], sort_dataframe_parameter=False)
+    actual2   = actual2.to_dict(orient='list')
+    message2  = "Test 2b - dataframe_convert_year_month_to_string returned {0} instead of {1}".format(actual2, expected2)
+    assert actual1 == expected1, message1
+    assert actual2 == expected2, message2
 
     # Test 3 - good dataframe without year values or month values, but with a category-of-interest
-    dataset = pd.DataFrame({'_Category' : ['sales', 'finance', 'operations', 'marketing'],
+    dataset   = pd.DataFrame({'_Category' : ['sales', 'finance', 'operations', 'marketing'],
                             'AC'        : [35     , 33       , 17          , 3          ],
                             'PY'        : [32     , 37       , 19          , 2          ]})
-    expected = {'_Category': ['sales', 'finance', 'operations', 'marketing'], 
+    expected1 = {'_Category': ['sales', 'finance', 'operations', 'marketing'], 
+                'AC': [35, 33, 17, 3], 
+                'PY': [32, 37, 19, 2]}
+    expected2 = {'_Category': ['sales', 'finance', 'operations', 'marketing'], 
                 'AC': [35, 33, 17, 3], 
                 'PY': [32, 37, 19, 2]}
     wanted_headers = ['_Category']
-    actual   = dataframe_convert_year_month_to_string(dataset, wanted_headers=wanted_headers, year_field=['Year'], month_field=['Month'])
-    actual   = actual.to_dict(orient='list')
-    message  = "Test 3 - dataframe_convert_year_month_to_string returned {0} instead of {1}".format(actual, expected)
-    assert actual == expected, message
+    actual1   = dataframe_convert_year_month_to_string(dataset, wanted_headers=wanted_headers, year_field=['Year'], month_field=['Month'], sort_dataframe_parameter=True)
+    actual1   = actual1.to_dict(orient='list')
+    message1  = "Test 3a - dataframe_convert_year_month_to_string returned {0} instead of {1}".format(actual1, expected1)
+    actual2   = dataframe_convert_year_month_to_string(dataset, wanted_headers=wanted_headers, year_field=['Year'], month_field=['Month'], sort_dataframe_parameter=False)
+    actual2   = actual2.to_dict(orient='list')
+    message2  = "Test 3b - dataframe_convert_year_month_to_string returned {0} instead of {1}".format(actual2, expected2)
+    assert actual1 == expected1, message1
+    assert actual2 == expected2, message2
 
     # Test 4 - only dataframe supported
-    with pytest.raises(TypeError):
-        dataframe_convert_year_month_to_string("This is a string", wanted_headers=['Year', 'Month'], year_field=['Year'], month_field=['Month'])
+    with pytest.raises(TypeDataFrameError):
+        dataframe_convert_year_month_to_string("This is a string", wanted_headers=['Year', 'Month'], year_field=['Year'], month_field=['Month'], sort_dataframe_parameter=True)
+
+    # Test 5 - only list supported
+    with pytest.raises(TypeListError):
+        dataframe_convert_year_month_to_string(pd.DataFrame({'_Category' : ['sales'], 'AC' : [35]}), wanted_headers="This is a string", year_field=['Year'], month_field=['Month'], sort_dataframe_parameter=True)
+
+    # Test 6 - only list supported
+    with pytest.raises(TypeListError):
+        dataframe_convert_year_month_to_string(pd.DataFrame({'_Category' : ['sales'], 'AC' : [35]}), wanted_headers=['Year', 'Month'], year_field="This is a string", month_field=['Month'], sort_dataframe_parameter=True)
+
+    # Test 7 - only list supported
+    with pytest.raises(TypeListError):
+        dataframe_convert_year_month_to_string(pd.DataFrame({'_Category' : ['sales'], 'AC' : [35]}), wanted_headers=['Year', 'Month'], year_field=['Year'], month_field="This is a string", sort_dataframe_parameter=True)
+
+    # Test 8 - only boolean supported
+    with pytest.raises(TypeBooleanError):
+        dataframe_convert_year_month_to_string(pd.DataFrame({'_Category' : ['sales'], 'AC' : [35]}), wanted_headers=['Year', 'Month'], year_field=['Year'], month_field=['Month'], sort_dataframe_parameter="This is a string")
 
 
 def test_convert_dataframe_scenario_columns_to_value():

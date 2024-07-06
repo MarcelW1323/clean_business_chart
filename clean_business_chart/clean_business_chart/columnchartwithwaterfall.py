@@ -13,6 +13,7 @@ from clean_business_chart.general_functions    import plot_line_accross_axes, pl
                                                       dataframe_date_to_year_and_month, dataframe_keep_only_relevant_columns, \
                                                       dataframe_convert_year_month_to_string, convert_number_to_string, footnote_figure
 from clean_business_chart.multiplier           import Multiplier
+from clean_business_chart.exceptions           import *  # for custom errors/exceptions
 
 
 class ColumnWithWaterfall(GeneralChart):
