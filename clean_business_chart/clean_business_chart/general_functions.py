@@ -913,16 +913,13 @@ def dataframe_search_for_headers(dataframe, search_for_headers, error_not_found=
     available_headers  : The headers out of the list of search_for_headers who are found in the DataFrame
     """
     # Check if the dataframe is a pandas DataFrame or not. Error when not a DataFrame.
-    if not isdataframe(dataframe):
-        raise TypeError(str(dataframe)+" is not a pandas DataFrame.")
+    error_not_isdataframe(dataframe, "dataframe")
 
     # Check if search_for_headers is a list. Error when not a list
-    if not islist(search_for_headers):
-        raise TypeError(str(search_for_headers)+" is not a list")
+    error_not_islist(search_for_headers, "search_for_headers")
 
     # Check if error_not_found is a boolean
-    if not isboolean(error_not_found):
-        raise TypeError(str(error_not_found)+" is not a boolean")
+    error_not_isboolean(error_not_found, "error_not_found")
 
     # Determine which headers are available in the dataframe
     available_headers = filter_lists(list1=search_for_headers, list2=list(dataframe.columns))
@@ -1027,7 +1024,7 @@ def dataframe_keep_only_relevant_columns(dataframe, wanted_headers):
     return export_dataframe
 
 
-def dataframe_convert_year_month_to_string(dataframe, wanted_headers, year_field, month_field):
+def dataframe_convert_year_month_to_string(dataframe, wanted_headers, year_field, month_field, sort_dataframe_parameter=True):
     """
     If the data is a pandas DataFrame, this function will convert the year and month to string values (containing numbers) for convenient sorting.
 
@@ -1035,15 +1032,21 @@ def dataframe_convert_year_month_to_string(dataframe, wanted_headers, year_field
 
     Parameters
     ----------
-    dataframe        : pandas DataFrame, aggregated by wanted headers.
-    wanted_headers   : a list of column names
-    year_field       : a list with one element representing the header for the year-column
-    month_field      : a list with one element representing the header for the month-column
+    dataframe                : pandas DataFrame, aggregated by wanted headers.
+    wanted_headers           : a list of column names
+    year_field               : a list with one element representing the header for the year-column
+    month_field              : a list with one element representing the header for the month-column
+    sort_dataframe_parameter : a boolean for sorting when there is a year and/or a month field
 
     Returns
     -------
-    export_dataframe : pandas DataFrame sorted by available headers if year and/or month are in available headers
+    export_dataframe : pandas DataFrame sorted by available headers if year and/or month are in available headers and the parameter for sorting is True
     """
+    # Check parameter
+    error_not_islist(year_field, "year_field")
+    error_not_islist(month_field, "month_field")
+    error_not_isboolean(sort_dataframe_parameter, "sort_dataframe_parameter")
+
     # Search for available headers
     available_headers = dataframe_search_for_headers(dataframe, search_for_headers=wanted_headers, error_not_found=False)
 
@@ -1058,14 +1061,14 @@ def dataframe_convert_year_month_to_string(dataframe, wanted_headers, year_field
     if year in available_headers:
         # Yes, year is available in the headers, so we can sort on that
         export_dataframe[year] = export_dataframe[year].apply(int).apply(str)
-        sort_dataframe = True
+        sort_dataframe = sort_dataframe_parameter
 
     # Convert month to string with length=2, filled with leading zeros if value < 10
     month = month_field[0]
     if month in available_headers:
         # Yes, month is available in the headers, so we can sort on that
         export_dataframe[month] = export_dataframe[month].apply(int).apply(str).str.zfill(2)
-        sort_dataframe = True
+        sort_dataframe = sort_dataframe_parameter
 
     # Do we need to sort?
     if sort_dataframe:
