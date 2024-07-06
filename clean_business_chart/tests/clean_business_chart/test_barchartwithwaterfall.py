@@ -796,7 +796,7 @@ def test__dataframe_handle_previous_year():
         testvar._dataframe_handle_previous_year(dataframe=dataset)
 
     # Test 7 - Parameter dataframe is a string and not a dataframe
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeDataFrameError):
         testvar  = BarWithWaterfall(test=True)
         testvar._dataframe_handle_previous_year(dataframe="This is a string")
 

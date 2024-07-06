@@ -30,7 +30,7 @@ def test__dataframe_aggregate():
     assert actual == expected, message
 
     # Test 2 - only dataframe supported
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeDataFrameError):
         testvar = ColumnWithWaterfall(test=True)
         testvar._dataframe_aggregate("This is a string")
 
@@ -74,7 +74,7 @@ def test__dataframe_full_year():
     assert actual == expected, message
 
     # Test 3 - only dataframe supported
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeDataFrameError):
         testvar = ColumnWithWaterfall(test=True)
         testvar._dataframe_full_year("This is a string")
 
@@ -143,7 +143,7 @@ def test__dataframe_handle_previous_year():
         testvar._dataframe_handle_previous_year(dataset)
 
     # Test 5 - only dataframe supported
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeDataFrameError):
         testvar = ColumnWithWaterfall(test=True)
         testvar._dataframe_handle_previous_year("This is a string")
 
@@ -194,7 +194,7 @@ def test__dataframe_to_dictionary():
         testvar._dataframe_to_dictionary(dataset)
 
     # Test 5 - only dataframe supported
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeDataFrameError):
         testvar = ColumnWithWaterfall(test=True)
         testvar._dataframe_to_dictionary("This is a string")
 
