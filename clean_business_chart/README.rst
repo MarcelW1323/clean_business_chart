@@ -54,6 +54,8 @@ Features
   * fixed waterfall pattern-bug so FC-comparison looks different than AC-comparison in version 0.2.14
   
   * fixed disconnected lines bug in some cases by later rounding in the total values of the bar chart in version 0.2.16
+  
+  * improved support for parameter sort_chart also in combination with year or month fields in version 0.2.17
 
 * General
 

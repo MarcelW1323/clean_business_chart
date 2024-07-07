@@ -2,6 +2,12 @@
 History
 =======
 
+0.2.17 (2024-07-07)
+-------------------
+
+* Improved support for parameter sort_chart also in combination with year or month fields in bar chart with waterfall
+
+
 0.2.16 (2024-05-25)
 -------------------
 
