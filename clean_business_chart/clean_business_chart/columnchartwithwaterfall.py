@@ -361,36 +361,25 @@ class ColumnWithWaterfall(GeneralChart):
             # Both AC and FC are in the data sets
             if len(self.data['AC']) >= len(self.data['FC']):
                 # Actual is long enough to cover all columns. Can we delete FC so it don't disturbs outcomes?
-                twin_value = 0
-                ac_serie = 0
-                fc_serie = 0
-                for number, (ac, fc) in enumerate(zip(self.data['AC'],self.data['FC']), start=1):
-                    if ac != 0 and ac_serie == number-1:
-                        ac_serie = number
-                        if fc is not None and fc != 0:
-                            twin_value += 1  # Both ac and fc has a value
-                    elif fc is not None and fc != 0:
-                        if fc_serie == 0: fc_serie = number
-                        if ac != 0: twin_value += 1
+                # FC can be deleted if the length of AC is equal or longer than FC and all FC-values are 0 or None.
+                while (self.data['AC'][-1] is None or self.data['AC'][-1] == 0) and len(self.data['AC'])>0:
+                    self.data['AC'].pop()
+                temp_list = self.data['FC'][:len(self.data['AC'])]
+                fc_value_during_ac_value = sum([1 for value in temp_list if value != 0 and value != None])
+                if fc_value_during_ac_value != 0:
+                    raise ValueError("AC and FC overlapping not supported yet.\nAC:"+str(self.data['AC'])+".\nFC:"+str(self.data['FC'])+".")
 
-                temp_list = self.data["AC"][:]
-                self.data["AC"] = temp_list[:ac_serie]
-                if fc_serie == 0 or len(self.data["AC"]) == len(self.data["FC"]):
+                # Now the values of FC and AC will not overlap
+                if len(self.data["AC"]) >= len(self.data["FC"]):
+                    # There are equal or more AC-values than FC-values
                     del self.data['FC']           # delete the dictionary-element with key FC from the data detailinformation
                     del self.data_total['FC']     # delete the dictionary-element with key FC from the data total-information
-                    twin_value = 0
-                if twin_value != 0:
-                    raise ValueError("AC and FC overlapping not supported yet")
-            
+                #else:
+                    # There are less AC-values than FC-values, do nothing
+
             if "FC" in self.data.keys():
-                # Make sure that overlapping values are None, but only if the current FC-value is 0 or None
-                temp_list = self.data['FC'][:]
-                for index in range(len(self.data['AC'])):
-                    if temp_list[index] == 0 or temp_list[index] == None:
-                        temp_list[index] = None
-                    else:
-                        raise ValueError("Actuals overlap Forecast while Forecast has values: "+str(self.data['FC']))
-                self.data['FC'] = temp_list[:]
+                # All overlapping positions needs to be None
+                self.data['FC'] = [None] * len(self.data['AC']) + self.data['FC'][len(self.data['AC']):]
         
         if self.base_scenario not in self.data_total.keys():
             temp_list = self.filter_scenarios(scenario_list=self.p_scenarios)
