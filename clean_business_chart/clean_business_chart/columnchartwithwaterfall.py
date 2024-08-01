@@ -65,6 +65,9 @@ class ColumnWithWaterfall(GeneralChart):
     footnote_size           : Size of the text of the footnote. Use 'small' for small sized footnote.
                               Use 'normal' for the normal textsize like all other texts in the chart.
                               Default: 'normal' (for normal sized footnote-text)
+    latest_closed_month     : Number of the latest closed month. Usefull if actual values can be zero in case
+                              you can't determine the latest closed month based on actual values.
+                              Default: None (latest closed month can be determined as latest month with actual values)
     test                    : If True, only variables from the parent class are defined, together with other
                               self-variables. This makes this module testable in an automatic way
                               Default: False (this call it is not an automatic test)
@@ -72,7 +75,7 @@ class ColumnWithWaterfall(GeneralChart):
 
     def __init__(self, data=None, positive_is_good=True, preferred_base_scenario=None, title=None, measure=True, multiplier='1', filename=None, 
                  force_pl_is_zero=False, force_zero_decimals=False, force_max_one_decimals=False, translate_headers=None, footnote=None, footnote_size='normal',
-                 test=False, do_not_show=False):
+                 latest_closed_month=None, test=False, do_not_show=False):
         """
         This is the first function that will be called automatically. Here you'll find all the possible parameters to customize your experience.
         """
@@ -96,6 +99,7 @@ class ColumnWithWaterfall(GeneralChart):
         self.translate_headers      = translate_headers
         self.footnote               = footnote
         self.footnote_size          = footnote_size
+        self.latest_closed_month    = latest_closed_month
 
         
         # Make chart
@@ -259,6 +263,64 @@ class ColumnWithWaterfall(GeneralChart):
             self.data[scenario]       = optimize_data(data=self.data[scenario]      , numerator=1, denominator=self.multiplier_denominator, decimals=None)
             self.data_total[scenario] = optimize_data(data=self.data_total[scenario], numerator=1, denominator=self.multiplier_denominator, decimals=None)
 
+
+    def _optimize_actual_forecast(self):
+        """
+        If there is data for AC and FC, we check if there is no overlap
+
+        Self variables
+        --------------
+        self.data                : Dataframe with detail data
+        self.data_total          : Dictionary (key=scenario) with the total value of each scenario
+        self.latest_closed_month : Parameter to indicate what the latest closed month is with actual values (usefull in case of zero-values)
+        """
+        # Is there forecast information which we can't use (because we have actual-information for all FC-columns) or do we have overlap in AC and FC information?
+        if len(self.filter_scenarios(["AC", "FC"])) == 2:
+            # Both AC and FC are in the data sets
+            if len(self.data['AC']) >= len(self.data['FC']):
+                # Actual is long enough to cover all columns. Can we delete FC so it don't disturbs outcomes?
+                # FC can be deleted if the length of AC is equal or longer than FC and all FC-values are 0 or None.
+
+                if isinteger(self.latest_closed_month):
+                    # Parameter of latest_closed_month is provided, we don't need to determine it based on actual values
+                    if self.latest_closed_month > 0 and self.latest_closed_month <= len(self.data['AC']):
+                        # Parameter of latest_closed_month is in the correct range
+                        # First, check if there will be AC-values cut off with this parameter
+                        temp_list = self.data['AC'][self.latest_closed_month:]
+                        ac_value_not_used = sum([1 for value in temp_list if value != 0 and value != None])
+                        if ac_value_not_used != 0:
+                            raise ValueError("AC-values for non-closed months not supported yet. AC-values for upcoming months:"+str(temp_list))
+
+                        # Now only the AC-values up to the latest_closed_month will be used
+                        self.data['AC'] = self.data['AC'][:self.latest_closed_month]
+                    else:
+                        # Parameter of latest_closed_month is not in the correct range
+                        raise ValueError("latest_closed_month value is not greater than 0 and is not equal or less than "+str(len(self.data['AC'])))
+                else:
+                    # Parameter of latest_closed_month is not provided (or not of the right type), determine latest closed month based on actual values
+                    while (self.data['AC'][-1] is None or self.data['AC'][-1] == 0) and len(self.data['AC'])>0:
+                        self.data['AC'].pop()
+
+                # self.data['AC'] now has the length of the used AC-values
+                temp_list = self.data['FC'][:len(self.data['AC'])]
+                fc_value_during_ac_value = sum([1 for value in temp_list if value != 0 and value != None])
+                if fc_value_during_ac_value != 0:
+                    raise ValueError("AC and FC overlapping not supported yet.\nAC:"+str(self.data['AC'])+".\nFC:"+str(self.data['FC'])+".")
+
+                # Now the values of FC and AC will not overlap
+                if len(self.data["AC"]) >= len(self.data["FC"]):
+                    # There are equal or more AC-values than FC-values
+                    del self.data['FC']           # delete the dictionary-element with key FC from the data detailinformation
+                    del self.data_total['FC']     # delete the dictionary-element with key FC from the data total-information
+                #else:
+                    # There are less AC-values than FC-values, do nothing
+
+            if "FC" in self.data.keys():
+                # All overlapping positions needs to be None
+                self.data['FC'] = [None] * len(self.data['AC']) + self.data['FC'][len(self.data['AC']):]
+
+        return None
+
  
     def _check_data(self, data=None):
         """Check if the keys of the dictionary are supported (PL, PY, AC, FC) and that the details are of the needed length.
@@ -356,31 +418,9 @@ class ColumnWithWaterfall(GeneralChart):
             # Both PY and PL are in the data set
             self.barshift_leftside = self.barshift_value
 
-        # Is there forecast information which we can't use (because we have actual-information for all FC-columns) or do we have overlap in AC and FC information?
-        if len(self.filter_scenarios(["AC", "FC"])) == 2:
-            # Both AC and FC are in the data sets
-            if len(self.data['AC']) >= len(self.data['FC']):
-                # Actual is long enough to cover all columns. Can we delete FC so it don't disturbs outcomes?
-                # FC can be deleted if the length of AC is equal or longer than FC and all FC-values are 0 or None.
-                while (self.data['AC'][-1] is None or self.data['AC'][-1] == 0) and len(self.data['AC'])>0:
-                    self.data['AC'].pop()
-                temp_list = self.data['FC'][:len(self.data['AC'])]
-                fc_value_during_ac_value = sum([1 for value in temp_list if value != 0 and value != None])
-                if fc_value_during_ac_value != 0:
-                    raise ValueError("AC and FC overlapping not supported yet.\nAC:"+str(self.data['AC'])+".\nFC:"+str(self.data['FC'])+".")
+        # Optimize the actual and forecast data
+        self._optimize_actual_forecast()
 
-                # Now the values of FC and AC will not overlap
-                if len(self.data["AC"]) >= len(self.data["FC"]):
-                    # There are equal or more AC-values than FC-values
-                    del self.data['FC']           # delete the dictionary-element with key FC from the data detailinformation
-                    del self.data_total['FC']     # delete the dictionary-element with key FC from the data total-information
-                #else:
-                    # There are less AC-values than FC-values, do nothing
-
-            if "FC" in self.data.keys():
-                # All overlapping positions needs to be None
-                self.data['FC'] = [None] * len(self.data['AC']) + self.data['FC'][len(self.data['AC']):]
-        
         if self.base_scenario not in self.data_total.keys():
             temp_list = self.filter_scenarios(scenario_list=self.p_scenarios)
             if len(temp_list) == 0:
