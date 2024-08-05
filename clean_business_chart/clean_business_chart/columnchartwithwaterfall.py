@@ -266,7 +266,8 @@ class ColumnWithWaterfall(GeneralChart):
 
     def _optimize_actual_forecast(self):
         """
-        If there is data for AC and FC, we check if there is no overlap
+        If there is data for AC and FC, we check if there is no overlap. And we try to find what the latest month is containing actuals, so the forecast can start
+        after that month.
 
         Self variables
         --------------

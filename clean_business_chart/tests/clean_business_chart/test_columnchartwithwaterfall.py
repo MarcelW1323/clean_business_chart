@@ -9,6 +9,26 @@ import requests                                             # Needed in test_Col
 import pytest
         
 
+def test__optimize_actual_forecast():
+    # Test 1 - good AC and FC
+    testvar  = ColumnWithWaterfall(test=True)
+    testvar.data['AC'] = [35, 33, 17, 41, 41, 37, 37,  0,  0,  0,  0,  0,  0]
+    testvar.data['FC'] = [ 0,  0,  0,  0,  0,  0,  0, 38, 44, 46, 48, 44, 44]
+    testvar.data_total['AC'] = sum(testvar.data['AC'])
+    testvar.data_total['FC'] = sum(testvar.data['FC'])
+    testvar.data_scenarios = ['AC', 'FC']
+    testvar.latest_closed_month = None
+    expected_AC = [35, 33, 17, 41, 41, 37, 37]
+    expected_FC = [None, None, None, None, None, None, None, 38, 44, 46, 48, 44, 44]
+    testvar._optimize_actual_forecast()
+    actual_AC = testvar.data['AC']
+    actual_FC = testvar.data['FC']
+    message_AC  = "Test 1a - ColumnWithWaterfall._optimize_actual_forecast returned {0} instead of {1}".format(actual_AC, expected_AC)
+    message_FC  = "Test 1b - ColumnWithWaterfall._optimize_actual_forecast returned {0} instead of {1}".format(actual_FC, expected_FC)
+    assert actual_AC == expected_AC, message_AC
+    assert actual_FC == expected_FC, message_FC
+
+
 def test__dataframe_aggregate():
     # Test 1 - good dataframe with extra month entries
     dataset = pd.DataFrame({'Year' : [2022, 2022, 2022, 2022, 2022, 2022, 2022, 2022, 2022, 2022, 2022, 2022, 2022], 
