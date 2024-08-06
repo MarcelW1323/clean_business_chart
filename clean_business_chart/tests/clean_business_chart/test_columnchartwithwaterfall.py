@@ -28,6 +28,66 @@ def test__optimize_actual_forecast():
     assert actual_AC == expected_AC, message_AC
     assert actual_FC == expected_FC, message_FC
 
+    # Test 2 - good AC and FC, but hard to determine what the latest_closed_month is
+    testvar  = ColumnWithWaterfall(test=True)
+    testvar.data['AC'] = [35, 33,  0, 41, 41,  0,  0,  0,  0,  0,  0,  0,  0]
+    testvar.data['FC'] = [ 0,  0,  0,  0,  0,  0,  0, 38, 44, 46, 48, 44, 44]
+    testvar.data_total['AC'] = sum(testvar.data['AC'])
+    testvar.data_total['FC'] = sum(testvar.data['FC'])
+    testvar.data_scenarios = ['AC', 'FC']
+    testvar.latest_closed_month = None
+    expected_AC = [35, 33, 0, 41, 41]
+    expected_FC = [None, None, None, None, None, 0, 0, 38, 44, 46, 48, 44, 44]
+    testvar._optimize_actual_forecast()
+    actual_AC = testvar.data['AC']
+    actual_FC = testvar.data['FC']
+    message_AC  = "Test 2a - ColumnWithWaterfall._optimize_actual_forecast returned {0} instead of {1}".format(actual_AC, expected_AC)
+    message_FC  = "Test 2b - ColumnWithWaterfall._optimize_actual_forecast returned {0} instead of {1}".format(actual_FC, expected_FC)
+    assert actual_AC == expected_AC, message_AC
+    assert actual_FC == expected_FC, message_FC
+
+    # Test 3 - good AC and FC, latest_closed_month is given
+    testvar  = ColumnWithWaterfall(test=True)
+    testvar.data['AC'] = [35, 33,  0, 41, 41,  0,  0,  0,  0,  0,  0,  0,  0]
+    testvar.data['FC'] = [ 0,  0,  0,  0,  0,  0,  0, 38, 44, 46, 48, 44, 44]
+    testvar.data_total['AC'] = sum(testvar.data['AC'])
+    testvar.data_total['FC'] = sum(testvar.data['FC'])
+    testvar.data_scenarios = ['AC', 'FC']
+    testvar.latest_closed_month = 7
+    expected_AC = [35, 33, 0, 41, 41, 0, 0]
+    expected_FC = [None, None, None, None, None, None, None, 38, 44, 46, 48, 44, 44]
+    testvar._optimize_actual_forecast()
+    actual_AC = testvar.data['AC']
+    actual_FC = testvar.data['FC']
+    message_AC  = "Test 3a - ColumnWithWaterfall._optimize_actual_forecast returned {0} instead of {1}".format(actual_AC, expected_AC)
+    message_FC  = "Test 3b - ColumnWithWaterfall._optimize_actual_forecast returned {0} instead of {1}".format(actual_FC, expected_FC)
+    assert actual_AC == expected_AC, message_AC
+    assert actual_FC == expected_FC, message_FC
+
+    # Test 4 - good AC but no FC
+    testvar  = ColumnWithWaterfall(test=True)
+    testvar.data['AC'] = [35, 33,  0, 41, 41,  0,  0,  0,  0,  0,  0,  0,  0]
+    testvar.data_total['AC'] = sum(testvar.data['AC'])
+    testvar.data_scenarios = ['AC']
+    testvar.latest_closed_month = None
+    expected_AC = [35, 33,  0, 41, 41,  0,  0,  0,  0,  0,  0,  0,  0]
+    testvar._optimize_actual_forecast()
+    actual_AC = testvar.data['AC']
+    message_AC  = "Test 4 - ColumnWithWaterfall._optimize_actual_forecast returned {0} instead of {1}".format(actual_AC, expected_AC)
+    assert actual_AC == expected_AC, message_AC
+
+    # Test 5 - good FC but no AC
+    testvar  = ColumnWithWaterfall(test=True)
+    testvar.data['FC'] = [ 0,  0,  0,  0,  0,  0,  0, 38, 44, 46, 48, 44, 44]
+    testvar.data_total['FC'] = sum(testvar.data['FC'])
+    testvar.data_scenarios = ['FC']
+    testvar.latest_closed_month = None
+    expected_FC = [0, 0, 0, 0, 0, 0, 0, 38, 44, 46, 48, 44, 44]
+    testvar._optimize_actual_forecast()
+    actual_FC = testvar.data['FC']
+    message_FC  = "Test 5 - ColumnWithWaterfall._optimize_actual_forecast returned {0} instead of {1}".format(actual_FC, expected_FC)
+    assert actual_FC == expected_FC, message_FC
+
 
 def test__dataframe_aggregate():
     # Test 1 - good dataframe with extra month entries
