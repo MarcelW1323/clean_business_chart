@@ -2264,6 +2264,77 @@ def test__check_base_scenario_totals():
         testvar.data_total = "This is a string"
         testvar._check_base_scenario_totals()
 
+def test__create_highlight_color_list_for_bar():
+    # Test 1 - Color not white, labellist of 6 items, highlight is part of the labels
+    labels   = ['Denmark', 'Sweden', 'Norway', 'Belgium', 'Luxemburg', 'Netherlands']
+    testvar  = BarWithWaterfall(test=True)
+    testvar.highlight = {'bar':{'Sweden':'X'}}
+    actual   = testvar._create_highlight_color_list_for_bar(color='#404040', labels=labels)
+    expected = ['#404040', '#0064FF', '#404040', '#404040', '#404040', '#404040']
+    message  = "Test 1 - BarWithWaterfall._create_highlight_color_list_for_bar() returned {0} instead of {1}".format(actual, expected)
+    assert actual == expected, message
+
+    # Test 2 - Color not white, labellist of 6 items, highlight has 2 values which are part of the labels
+    labels   = ['Denmark', 'Sweden', 'Norway', 'Belgium', 'Luxemburg', 'Netherlands']
+    testvar  = BarWithWaterfall(test=True)
+    testvar.highlight = {'bar':{'Sweden':'X', 'Netherlands':'X'}}
+    actual   = testvar._create_highlight_color_list_for_bar(color='#505050', labels=labels)
+    expected = ['#505050', '#0064FF', '#505050', '#505050', '#505050', '#0064FF']
+    message  = "Test 2 - BarWithWaterfall._create_highlight_color_list_for_bar() returned {0} instead of {1}".format(actual, expected)
+    assert actual == expected, message
+
+    # Test 3 - Color not white, labellist of 6 items, highlight has 3 values where only 2 are part of the labels
+    labels   = ['Denmark', 'Sweden', 'Norway', 'Belgium', 'Luxemburg', 'Netherlands']
+    testvar  = BarWithWaterfall(test=True)
+    testvar.highlight = {'bar':{'Germany':'X', 'Sweden':'X', 'Netherlands':'X'}}
+    actual   = testvar._create_highlight_color_list_for_bar(color='#606060', labels=labels)
+    expected = ['#606060', '#0064FF', '#606060', '#606060', '#606060', '#0064FF']
+    message  = "Test 3 - BarWithWaterfall._create_highlight_color_list_for_bar() returned {0} instead of {1}".format(actual, expected)
+    assert actual == expected, message
+
+    # Test 4 - Color white, labellist of 6 items, highlight has 3 values where only 2 are part of the labels
+    labels   = ['Denmark', 'Sweden', 'Norway', 'Belgium', 'Luxemburg', 'Netherlands']
+    testvar  = BarWithWaterfall(test=True)
+    testvar.highlight = {'bar':{'Germany':'X', 'Sweden':'X', 'Netherlands':'X'}}
+    actual   = testvar._create_highlight_color_list_for_bar(color='#FFFFFF', labels=labels)
+    expected = '#FFFFFF'
+    message  = "Test 4 - BarWithWaterfall._create_highlight_color_list_for_bar() returned {0} instead of {1}".format(actual, expected)
+    assert actual == expected, message
+
+    # Test 5 - Color not white, labellist of 6 items, no highlight
+    labels   = ['Denmark', 'Sweden', 'Norway', 'Belgium', 'Luxemburg', 'Netherlands']
+    testvar  = BarWithWaterfall(test=True)
+    testvar.highlight = None
+    actual   = testvar._create_highlight_color_list_for_bar(color='#010203', labels=labels)
+    expected = '#010203'
+    message  = "Test 5 - BarWithWaterfall._create_highlight_color_list_for_bar() returned {0} instead of {1}".format(actual, expected)
+    assert actual == expected, message
+
+    # Test 6 - Color not white, no labels, highlight has 2 values
+    testvar  = BarWithWaterfall(test=True)
+    testvar.highlight = {'bar':{'Sweden':'X', 'Netherlands':'X'}}
+    actual   = testvar._create_highlight_color_list_for_bar(color='#040506', labels=None)
+    expected = '#040506'
+    message  = "Test 6 - BarWithWaterfall._create_highlight_color_list_for_bar() returned {0} instead of {1}".format(actual, expected)
+    assert actual == expected, message
+
+    # Test 7 - Color not white, no labels, highlight has 2 values
+    testvar  = BarWithWaterfall(test=True)
+    testvar.highlight = {'bar':{'Sweden':'X', 'Netherlands':'X'}}
+    actual   = testvar._create_highlight_color_list_for_bar(color='#040506', labels=None)
+    expected = '#040506'
+    message  = "Test 7 - BarWithWaterfall._create_highlight_color_list_for_bar() returned {0} instead of {1}".format(actual, expected)
+    assert actual == expected, message
+
+    # Test 8 - Color not white, labellist of 6 items, highlight has 3 values where only 2 are part of the labels but they are not bar-highlights
+    labels   = ['Denmark', 'Sweden', 'Norway', 'Belgium', 'Luxemburg', 'Netherlands']
+    testvar  = BarWithWaterfall(test=True)
+    testvar.highlight = {'value':{'Germany':'X', 'Sweden':'X', 'Netherlands':'X'}}
+    actual   = testvar._create_highlight_color_list_for_bar(color='#070809', labels=labels)
+    expected = '#070809'
+    message  = "Test 8 - BarWithWaterfall._create_highlight_color_list_for_bar() returned {0} instead of {1}".format(actual, expected)
+    assert actual == expected, message
+
 
 def test__fill_ax_bar_label():
     # Test 1 - Dataframe with 4 rows, 2 decimals and no total indicator

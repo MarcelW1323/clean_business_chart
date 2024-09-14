@@ -105,12 +105,16 @@ class BarWithWaterfall(GeneralChart):
                               Default: None (no translation of scenarios)
     scalingvalue            : Integer or float in the same multiplier as the normal data and will be used to draw a scaling band
                               Default: None (no scaling band will be displayed)
+    highlight               : Dictionary of dictionaries for highlighting parts of the chart. At this moment only highlighting bars are supported.
+                              Use case: You have a chart with countries. Sweden is also in there and you want to highlight the bar of Sweden. highlight = {'bar':{'Sweden':'X'}}
+                              Default: None (no highlighting will be displayed)
     """
 
     def __init__(self, data=None, positive_is_good=True, base_scenarios=None, compare_scenarios=None, title=None, measure=True, multiplier='1', 
                  filename=None, force_pl_is_zero=False, force_zero_decimals=False, force_max_one_decimals=False, translate_headers=None, 
                  category_of_interest=None, previous_year=False, total_text=None, total_line=True, remove_lines_with_zeros=True, other=None,
-                 sort_chart=True, footnote=None, footnote_size='normal', figsize=None, translate_scenario=None, scalingvalue=None, test=False, do_not_show=False):
+                 sort_chart=True, footnote=None, footnote_size='normal', figsize=None, translate_scenario=None, scalingvalue=None, highlight=None,
+                 test=False, do_not_show=False):
         """
         The function __init__ is the first function that will be called automatically. Here you'll find all the possible parameters to customize your experience.
         """
@@ -145,6 +149,7 @@ class BarWithWaterfall(GeneralChart):
         self.figsize                    = figsize
         self.translate_scenario         = translate_scenario
         self.scalingvalue               = scalingvalue
+        self.highlight                  = highlight
 
         # Check scenarios
         self.simple_first_check_scenario_parameters()     
@@ -729,27 +734,30 @@ class BarWithWaterfall(GeneralChart):
 
         # Scenario 1 - with numbers. Make a list of y-coordinates and data-values for those who are the 'top'-scenario.
         yvalue_compare = list(dataframe[dataframe['_CBC_TOPLAYER']==compare_scenario1]['_CBC_Y2'])
-        data_compare1 = list(dataframe[dataframe['_CBC_TOPLAYER']==compare_scenario1][compare_scenario1])
+        data_compare1  = list(dataframe[dataframe['_CBC_TOPLAYER']==compare_scenario1][compare_scenario1])
+        labels         = list(dataframe[dataframe['_CBC_TOPLAYER']==compare_scenario1]['_Category'])
 
         # Plot the bars and put the value-labels on.
-        self._plot_barh(y=yvalue_compare, width=data_compare1, scenario=compare_scenario1, height=self.barwidth, left=0, zorder=70)
+        self._plot_barh(y=yvalue_compare, width=data_compare1, scenario=compare_scenario1, height=self.barwidth, left=0, zorder=70, labels=labels)
         self._fill_ax_bar_label(compare_scenario1)
 
         # Scenario 1 - without numbers. Make a list of y-coordinates and data-values for those who are the 'bottom'-scenario.
         yvalue_compare = list(dataframe[dataframe['_CBC_TOPLAYER']!=compare_scenario1]['_CBC_Y2'])
-        data_compare1 = list(dataframe[dataframe['_CBC_TOPLAYER']!=compare_scenario1][compare_scenario1])
+        data_compare1  = list(dataframe[dataframe['_CBC_TOPLAYER']!=compare_scenario1][compare_scenario1])
+        labels         = list(dataframe[dataframe['_CBC_TOPLAYER']!=compare_scenario1]['_Category'])
 
         # Plot only the bar (no value-labels)
-        self._plot_barh(y=yvalue_compare, width=data_compare1, scenario=compare_scenario1, height=self.barwidth, left=0, zorder=70)
+        self._plot_barh(y=yvalue_compare, width=data_compare1, scenario=compare_scenario1, height=self.barwidth, left=0, zorder=70, labels=labels)
 
         # Check if scenario1 is not equal to scenario2        
         if compare_scenario1 != compare_scenario2:
             # There are two scenarios. Make a list of y-coordinates and data-values
             yvalue_compare = list(dataframe[dataframe['_CBC_TOPLAYER']==compare_scenario2]['_CBC_Y2'])
-            data_compare2 = list(dataframe[dataframe['_CBC_TOPLAYER']==compare_scenario2][compare_scenario2])
+            data_compare2  = list(dataframe[dataframe['_CBC_TOPLAYER']==compare_scenario2][compare_scenario2])
+            labels         = list(dataframe[dataframe['_CBC_TOPLAYER']!=compare_scenario2]['_Category'])
 
             # Plot the bars and put the value-labels on. The second scenario is always on top
-            self._plot_barh(y=yvalue_compare, width=data_compare2, scenario=compare_scenario2, height=self.barwidth, left=data_compare1, zorder=70)
+            self._plot_barh(y=yvalue_compare, width=data_compare2, scenario=compare_scenario2, height=self.barwidth, left=data_compare1, zorder=70, labels=labels)
             self._fill_ax_bar_label(compare_scenario2)
 
         return
@@ -1481,8 +1489,56 @@ class BarWithWaterfall(GeneralChart):
 
         return
 
+    def _create_highlight_color_list_for_bar(self, color, labels):
+        """
+        The function _create_highlight_color_list_for_bar makes a list of colors in case of highlight-parameter has 'bar'-highlights.
 
-    def _plot_barh(self, y, width, scenario, height, left=0, total=False, zorder=None):
+        Parameters
+        ----------
+        color              : color to use when not highlighting
+        labels             : List of labels to check if highlighting is desirable
+
+        Self variables
+        --------------
+        self.highlight     : When given as parameter Dictionary with highlight-information or when not given as parameter then None
+        self.colors        : Dictionary with colors
+
+        Returns
+        -------
+        export_color       : color-value to use if no highlight is needed or list of color-values when highlight is needed
+        """
+        # fill export variables
+        export_color = color
+
+        # Check if we need to do something for highlighting
+        if not isdictionary(self.highlight):
+            return export_color
+        # self.highlight is now a dictionary
+
+        # Check if there are labels
+        if labels is None:
+            return export_color
+        # There are labels
+
+        if not 'bar' in self.highlight.keys():
+            return export_color
+        # Yes, we can check the bars for highlighting
+        bar_keys = self.highlight['bar'].keys()
+
+        # Do we need to use the highlight color or just white?
+        if color != '#FFFFFF':
+            # Color is not white, use highlight-color
+            highlight_color = self.colors['highlight']
+        else:
+            # Color is white, use white as export_color
+            return export_color
+
+        export_color = [highlight_color if label in bar_keys else color for label in labels]
+
+        return export_color
+
+
+    def _plot_barh(self, y, width, scenario, height, left=0, total=False, zorder=None, labels=None):
         """
         The function _plot_barh plots horizontal bars. With scenario FC it makes new lists of coordinates and values where there is something to plot.
 
@@ -1523,9 +1579,11 @@ class BarWithWaterfall(GeneralChart):
 
         # PY, PL or AC
         if scenario in ['PY', 'PL', 'AC']:
-             # Scenario is PY or PL or AC
-             ax.barh(y=y, width=width, color=self.colors[scenario][0], height=height, linewidth=self.linewidth_bar,
-                     edgecolor=self.colors[scenario][1], label=scenario, zorder=zorder)
+            # Scenario is PY or PL or AC
+            color     = self._create_highlight_color_list_for_bar(color=self.colors[scenario][0], labels=labels)
+            edgecolor = self._create_highlight_color_list_for_bar(color=self.colors[scenario][1], labels=labels)
+            ax.barh(y=y, width=width, color=color, height=height, linewidth=self.linewidth_bar,
+                    edgecolor=edgecolor, label=scenario, zorder=zorder)
 
         # FC
         if scenario == 'FC':
@@ -1540,9 +1598,12 @@ class BarWithWaterfall(GeneralChart):
                 else:
                     # Left is a list of values
                     left2 = [i for j,i in enumerate(left) if width[j] != 0]   # Left-values for widths <> 0
+                labels2 = [label for j,label in enumerate(labels) if width[j] != 0]
+                color     = self._create_highlight_color_list_for_bar(color=self.colors[scenario][0], labels=labels)
+                edgecolor = self._create_highlight_color_list_for_bar(color=self.colors[scenario][1], labels=labels)
                 # Plot the horizontal bar based on the new lists without widths==0
-                ax.barh(y=y2, width=width2, color=self.colors['FC'][0], height=height, left=left2, linewidth=self.linewidth_bar, 
-                        edgecolor=self.colors['FC'][1], label='FC', hatch=self.hatch, zorder=zorder)
+                ax.barh(y=y2, width=width2, color=color, height=height, left=left2, linewidth=self.linewidth_bar,
+                        edgecolor=edgecolor, label='FC', hatch=self.hatch, zorder=zorder)
 
             else:
                 # Just plot a single horizontal bar
