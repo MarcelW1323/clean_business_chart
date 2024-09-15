@@ -2,6 +2,13 @@
 History
 =======
 
+0.2.18 (2024-09-15)
+-------------------
+
+* Added parameter 'highlight' in bar chart with waterfall to highlight detail bars.
+* Added parameter 'last_closed_month' in column chart with waterfall to indicate last used month for actual values
+
+
 0.2.17 (2024-07-07)
 -------------------
 

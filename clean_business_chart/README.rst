@@ -6,9 +6,6 @@ Clean Business Chart
 .. image:: https://img.shields.io/pypi/v/clean_business_chart.svg
         :target: https://pypi.python.org/pypi/clean_business_chart
 
-.. image:: https://readthedocs.org/projects/clean-business-chart/badge/?version=latest
-        :target: https://clean-business-chart.readthedocs.io/en/latest/?version=latest
-        :alt: Documentation Status
 
 
 
@@ -34,6 +31,8 @@ Features
   * fixed cosmetic bug with AC-scenario when total equals 0, stacked bar on the right has an element of zero in version 0.2.13 
 
   * added support for parameter footnote in version 0.2.15
+  
+  * added parameter last_closed_month to indicate last used month for actual values in version 0.2.18
 
 * BarWithWaterfall, the second chart released in version 0.2.2
 
@@ -56,6 +55,8 @@ Features
   * fixed disconnected lines bug in some cases by later rounding in the total values of the bar chart in version 0.2.16
   
   * improved support for parameter sort_chart also in combination with year or month fields in version 0.2.17
+  
+  * added support for parameter highlight to highlight detail bars in version 0.2.18
 
 * General
 
