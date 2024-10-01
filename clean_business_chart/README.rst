@@ -57,6 +57,8 @@ Features
   * improved support for parameter sort_chart also in combination with year or month fields in version 0.2.17
   
   * added support for parameter highlight to highlight detail bars in version 0.2.18
+  
+  * fixed a small bug with forecast information in special cases when no usable visual was produced. Solved in version 0.2.19
 
 * General
 

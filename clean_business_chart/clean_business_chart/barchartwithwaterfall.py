@@ -1598,9 +1598,13 @@ class BarWithWaterfall(GeneralChart):
                 else:
                     # Left is a list of values
                     left2 = [i for j,i in enumerate(left) if width[j] != 0]   # Left-values for widths <> 0
-                labels2 = [label for j,label in enumerate(labels) if width[j] != 0]
-                color     = self._create_highlight_color_list_for_bar(color=self.colors[scenario][0], labels=labels)
-                edgecolor = self._create_highlight_color_list_for_bar(color=self.colors[scenario][1], labels=labels)
+
+                labels2 = None
+                if not labels is None:
+                    labels2 = [label for j,label in enumerate(labels) if width[j] != 0]
+                color     = self._create_highlight_color_list_for_bar(color=self.colors[scenario][0], labels=labels2)
+                edgecolor = self._create_highlight_color_list_for_bar(color=self.colors[scenario][1], labels=labels2)
+
                 # Plot the horizontal bar based on the new lists without widths==0
                 ax.barh(y=y2, width=width2, color=color, height=height, left=left2, linewidth=self.linewidth_bar,
                         edgecolor=edgecolor, label='FC', hatch=self.hatch, zorder=zorder)

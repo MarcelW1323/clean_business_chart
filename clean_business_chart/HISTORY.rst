@@ -2,6 +2,12 @@
 History
 =======
 
+0.2.19 (2024-10-01)
+-------------------
+
+* Fixed a small bug with forecast information in special cases when no usable visual was produced
+
+
 0.2.18 (2024-09-15)
 -------------------
 
