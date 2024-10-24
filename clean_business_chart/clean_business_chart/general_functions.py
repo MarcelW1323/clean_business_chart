@@ -224,6 +224,7 @@ def convert_to_native_python_type(value):
         return export_value
 
     # Value is not a native python integer or float
+    export_value = None  # Default value for export_value is None
     try:
         # We try to get the native format out of a pandas/numpy variable. The .item() is to get standard Python types back instead of numpy-types.
         export_value = value.item()
@@ -249,7 +250,10 @@ def convert_to_native_python_type(value):
         # Check the type of export_value
         if not isinteger(export_value) and not isfloat(export_value):
             # No, export_value is still not a native python integer or float. We unconditionally convert it to a float.
-            export_value = float(value)
+            try:
+                export_value = float(value)
+            except:
+                export_value = 0  # Default value for export_value is 0
 
     return export_value
 

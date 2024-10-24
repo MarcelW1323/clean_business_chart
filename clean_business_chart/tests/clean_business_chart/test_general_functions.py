@@ -1514,4 +1514,91 @@ def test_footnote_figure():
         plt.close(figure1)
 
 
-#### Need to add more test-functions for automatic testing
+def test_convert_to_native_python_type():
+    # Test 1 - integer
+    expected = 3
+    actual = convert_to_native_python_type(3)
+    message = "Test 1 - convert_to_native_python_type returned {0} instead of {1}".format(actual, expected)
+    assert actual == expected, message
+
+    # Test 2 - float
+    expected = 3.14
+    actual = convert_to_native_python_type(3.14)
+    message = "Test 2 - convert_to_native_python_type returned {0} instead of {1}".format(actual, expected)
+    assert actual == expected, message
+
+    # Test 3 - pandas Series integer
+    expected = 5
+    actual = convert_to_native_python_type(pd.Series([5])[0])
+    message = "Test 3 - convert_to_native_python_type returned {0} instead of {1}".format(actual, expected)
+    assert actual == expected, message
+
+    # Test 4 - pandas Series float
+    expected = 6.28
+    actual = convert_to_native_python_type(pd.Series([6.28])[0])
+    message = "Test 4 - convert_to_native_python_type returned {0} instead of {1}".format(actual, expected)
+    assert actual == expected, message
+
+    # Test 5 - string
+    expected = 0
+    actual = convert_to_native_python_type("This is a string")
+    message = "Test 5 - convert_to_native_python_type returned {0} instead of {1}".format(actual, expected)
+    assert actual == expected, message
+
+def test_plot_line_accross_axes():
+    fig, (ax1, ax2) = plt.subplots(1, 2)
+    plot_line_accross_axes(fig, ax1, 0, 0, ax2, 1, 1)
+    artist = fig.artists[0]  #first artists object
+    artist_path = artist.get_path()
+    expected_len = 1
+    expected_xyA = [0.125, 0.11]
+    expected_xyB = [0.5125, 0.495]
+    actual_len = len(fig.artists)
+    actual_xyA = list(artist_path.vertices[0])
+    actual_xyB = list(artist_path.vertices[1])
+    ## Print the attributes of the artist object
+    #if isinstance(artist, ConnectionPatch):
+    #    path = artist.get_path()
+    #    xyA, xyB = path.vertices[0], path.vertices[1]
+    #    coords1, coords2 = artist.coords1, artist.coords2
+    #    print(f"ConnectionPatch attributes:\n"
+    #          f"  xyA: {xyA}\n"
+    #          f"  xyB: {xyB}\n"
+    #          f"  coords1: {coords1}\n"
+    #          f"  coords2: {coords2}\n"
+    #          f"  axesA: {artist.axesA}\n"
+    #          f"  axesB: {artist.axesB}\n"
+    #          f"  color: {artist.get_edgecolor()}")
+    message_len = "Test 1a - plot_line_accross_axes returned {0} artists instead of {1}".format(actual_len, expected_len)
+    assert actual_len == expected_len, message_len
+    message_xyA = "Test 1b - plot_line_accross_axes returned {0} instead of {1}".format(actual_xyA, expected_xyA)
+    assert len(actual_xyA) == len(expected_xyA) and all([pytest.approx(a) == pytest.approx(b) for a, b in zip(actual_xyA, expected_xyA)]), message_xyA
+    message_xyB = "Test 1c - plot_line_accross_axes returned {0} instead of {1}".format(actual_xyB, expected_xyB)
+    assert len(actual_xyB) == len(expected_xyB) and all([pytest.approx(a) == pytest.approx(b) for a, b in zip(actual_xyB, expected_xyB)]), message_xyB
+    plt.close(fig)
+
+def test_plot_line_within_ax():
+    fig, ax = plt.subplots()
+    plot_line_within_ax(ax, 1, 2, 3, 4.5)
+    line_object = ax.lines[0]  #first lines object
+    expected_len = 1
+    expected_xdata = [1, 3]
+    expected_ydata = [2, 4.5]
+    actual_len = len(ax.lines)
+    actual_xdata = list(line_object.get_xdata())
+    actual_ydata = list(line_object.get_ydata())
+    ## Print the attributes of the Line2D object
+    #for line in ax.lines:
+    #    print(f"Line2D attributes:\n"
+    #          f"  xdata: {line.get_xdata()}\n"
+    #          f"  ydata: {line.get_ydata()}\n"
+    #          f"  color: {line.get_color()}\n"
+    #          f"  linewidth: {line.get_linewidth()}\n"
+    #          f"  linestyle: {line.get_linestyle()}")
+    message_len = "Test 1a - plot_line_within_ax returned {0} lines instead of {1}".format(actual_len, expected_len)
+    assert actual_len == expected_len, message_len
+    message_xdata = "Test 1b - plot_line_within_ax returned {0} instead of {1}".format(actual_xdata, expected_xdata)
+    assert len(actual_xdata) == len(expected_xdata) and all([pytest.approx(a) == pytest.approx(b) for a, b in zip(actual_xdata, expected_xdata)]), message_xdata
+    message_xdata = "Test 1c - plot_line_within_ax returned {0} instead of {1}".format(actual_ydata, expected_ydata)
+    assert len(actual_ydata) == len(expected_ydata) and all([pytest.approx(a) == pytest.approx(b) for a, b in zip(actual_ydata, expected_ydata)]), message_ydata
+    plt.close(fig)
