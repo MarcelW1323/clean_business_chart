@@ -1602,3 +1602,25 @@ def test_plot_line_within_ax():
     message_xdata = "Test 1c - plot_line_within_ax returned {0} instead of {1}".format(actual_ydata, expected_ydata)
     assert len(actual_ydata) == len(expected_ydata) and all([pytest.approx(a) == pytest.approx(b) for a, b in zip(actual_ydata, expected_ydata)]), message_ydata
     plt.close(fig)
+
+def test_plot_endpoint():
+    fig, ax = plt.subplots()
+    plot_endpoint(ax, 2, 5)
+    expected = {0: [ [2], [5], '#FFFFFF', 1.5, 'o', 7],
+                1: [ [2], [5], '#000000', 1.5, 'o', 3]}
+    for i, line in enumerate(ax.lines):
+        actual = [list(line.get_xdata()), list(line.get_ydata()), line.get_color(), 
+                  line.get_linewidth(), line.get_marker(), line.get_markersize()]
+        message = "Test 1.{0} - plot_endpoint returned {1} instead of {2}".format(i, actual, expected[i])
+        assert actual == expected[i], message
+    ## Print the attributes of the Line2D object
+    #for line in ax.lines:
+    #    print(f"Line2D attributes:\n"
+    #          f"  xdata: {line.get_xdata()}\n"
+    #          f"  ydata: {line.get_ydata()}\n"
+    #          f"  color: {line.get_color()}\n"
+    #          f"  linewidth: {line.get_linewidth()}\n"
+    #          f"  marker: {line.get_marker()}\n"
+    #          f"  markersize: {line.get_markersize()}")
+    plt.close(fig)
+
