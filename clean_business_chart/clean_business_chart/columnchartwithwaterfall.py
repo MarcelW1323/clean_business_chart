@@ -964,7 +964,9 @@ class ColumnWithWaterfall(GeneralChart):
         # add top label
         # Round the value with the desired number of decimals and make it a string
         value_string = convert_number_to_string(data=bottom, decimals=self.decimals_totals, delta_value=False)
-        ax.bar_label(ax.containers[-1], labels=[value_string], label_type='edge', padding=self.padding, font=self.font, fontsize=self.fontsize, color=self.colors['text'])
+        if len(ax.containers) > 0:
+            # Prevent adressing an index that is not available in an empty list
+            ax.bar_label(ax.containers[-1], labels=[value_string], label_type='edge', padding=self.padding, font=self.font, fontsize=self.fontsize, color=self.colors['text'])
 
         ax.tick_params(top=False, bottom=False, left=False, right=False, labelleft=False, labelbottom=True)
         ax.set_xticks([0], [str(self.year)], font=self.font, fontsize=self.fontsize)
