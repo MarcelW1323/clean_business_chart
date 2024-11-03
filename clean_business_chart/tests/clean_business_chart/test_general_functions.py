@@ -108,6 +108,7 @@ def test_isaxes():
     expected = False
     actual   = isaxes('not an axes')
     assert actual == expected, "isaxes('not an axes') gives back "+str(actual)+" instead of "+str(expected)
+    plt.close(_)
 
 
 def test_isfigure():
@@ -359,10 +360,12 @@ def test_error_not_isaxes():
     # Test 1 with an axes only, no error will occur
     _, axes1 = plt.subplots()
     error_not_isaxes(axes1)
+    plt.close(_)
 
     # Test 2 with an axes and name of variable, no error will occur
     _, axes1 = plt.subplots()
     error_not_isaxes(axes1, name_inputvariable_in_text='axes1')
+    plt.close(_)
 
     # Test 3 with a list
     with pytest.raises(TypeAxesError) as exceptioninfo:
@@ -461,27 +464,6 @@ def test_convert_to_native_python_type():
     actual2   = type(actual1)
     message   = "Test 4b - convert_to_native_python_type returned type {0} instead of type {1}".format(actual2, expected2)
     assert actual2 == expected2, message
-
-
-def test_plot_line_accross_axes():
-    # The function plot_line_accross_axes() draws a line in a figure object.
-    #### At the moment I have no idea how to test this function
-    assert 1 == 1
-
-def test_plot_line_within_ax():
-    # The function plot_line_within_ax() draws a line in a figure object.
-    #### At the moment I have no idea how to test this function
-    assert 1 == 1
-
-
-def test_plot_endpoint():
-    # Only testing the parameters, not the functionality of the function
-    with pytest.raises(ValueError):
-        plot_endpoint(ax=1, x=2, y=3, endpointcolor=dict())
-    with pytest.raises(ValueError):
-        plot_endpoint(ax=1, x=2, y=3, endpointcolor=[1,2,3])
-    with pytest.raises(ValueError):
-        plot_endpoint(ax=1, x=2, y=3, endpointcolor=[1,2], markersize_outercircle=5, markersize_innercircle=7)
 
 
 def test_string_to_value():
@@ -1546,6 +1528,7 @@ def test_convert_to_native_python_type():
     assert actual == expected, message
 
 def test_plot_line_accross_axes():
+    # Test 1 - plot a line accross 2 axes
     fig, (ax1, ax2) = plt.subplots(1, 2)
     plot_line_accross_axes(fig, ax1, 0, 0, ax2, 1, 1)
     artist = fig.artists[0]  #first artists object
@@ -1577,7 +1560,20 @@ def test_plot_line_accross_axes():
     assert len(actual_xyB) == len(expected_xyB) and all([pytest.approx(a) == pytest.approx(b) for a, b in zip(actual_xyB, expected_xyB)]), message_xyB
     plt.close(fig)
 
+    # Test 2 - no axbegin-object
+    with pytest.raises(TypeAxesError):
+        fig, (ax1, ax2) = plt.subplots(1, 2)
+        plot_line_accross_axes(fig=fig, axbegin="This is a string", xbegin=0, ybegin=0, axend=ax2, xend=1, yend=1)
+        plt.close(fig)
+
+    # Test 3 - no axend-object
+    with pytest.raises(TypeAxesError):
+        fig, (ax1, ax2) = plt.subplots(1, 2)
+        plot_line_accross_axes(fig=fig, axbegin=ax1, xbegin=0, ybegin=0, axend="This is a string", xend=1, yend=1)
+        plt.close(fig)
+
 def test_plot_line_within_ax():
+    # Test 1 - plot a line within 1 ax-object
     fig, ax = plt.subplots()
     plot_line_within_ax(ax, 1, 2, 3, 4.5)
     line_object = ax.lines[0]  #first lines object
@@ -1599,11 +1595,17 @@ def test_plot_line_within_ax():
     assert actual_len == expected_len, message_len
     message_xdata = "Test 1b - plot_line_within_ax returned {0} instead of {1}".format(actual_xdata, expected_xdata)
     assert len(actual_xdata) == len(expected_xdata) and all([pytest.approx(a) == pytest.approx(b) for a, b in zip(actual_xdata, expected_xdata)]), message_xdata
-    message_xdata = "Test 1c - plot_line_within_ax returned {0} instead of {1}".format(actual_ydata, expected_ydata)
+    message_ydata = "Test 1c - plot_line_within_ax returned {0} instead of {1}".format(actual_ydata, expected_ydata)
     assert len(actual_ydata) == len(expected_ydata) and all([pytest.approx(a) == pytest.approx(b) for a, b in zip(actual_ydata, expected_ydata)]), message_ydata
     plt.close(fig)
 
+    # Test 2 - no ax-object
+    with pytest.raises(TypeAxesError):
+        plot_line_within_ax(ax='This is a string', xbegin=1, ybegin=2, xend=3, yend=4.5)
+
+
 def test_plot_endpoint():
+    # Test 1 - plot an endpoint with default optional parameters
     fig, ax = plt.subplots()
     plot_endpoint(ax, 2, 5)
     expected = {0: [ [2], [5], '#FFFFFF', 1.5, 'o', 7],
@@ -1623,4 +1625,71 @@ def test_plot_endpoint():
     #          f"  marker: {line.get_marker()}\n"
     #          f"  markersize: {line.get_markersize()}")
     plt.close(fig)
+
+    # Test 2 - no ax-object
+    with pytest.raises(TypeAxesError):
+        plot_endpoint(ax='This is a string', x=1, y=2)
+
+    # Test 3 - x is a string
+    with pytest.raises(TypeNumberError):
+        fig, ax = plt.subplots()
+        plot_endpoint(ax=ax, x='This is a string', y=2)
+        plt.close(fig)
+
+    # Test 4 - y is a string
+    with pytest.raises(TypeNumberError):
+        fig, ax = plt.subplots()
+        plot_endpoint(ax=ax, x=1, y='This is a string')
+        plt.close(fig)
+
+    # Test 5 - endpointcolor is a string
+    with pytest.raises(TypeError):
+        fig, ax = plt.subplots()
+        plot_endpoint(ax=ax, x=1, y=2, endpointcolor='This is a string')
+        plt.close(fig)
+
+    # Test 6 - endpointcolor is a too long list
+    with pytest.raises(ValueError):
+        fig, ax = plt.subplots()
+        plot_endpoint(ax=ax, x=1, y=2, endpointcolor=['#000000', '#FFFFFF', '#0F0F0F'])
+        plt.close(fig)
+
+    # Test 7 - endpointcolor is a too short list
+    with pytest.raises(ValueError):
+        fig, ax = plt.subplots()
+        plot_endpoint(ax=ax, x=1, y=2, endpointcolor=['#000000'])
+        plt.close(fig)
+
+    # Test 8 - markersize_outercircle is a string
+    with pytest.raises(TypeNumberError):
+        fig, ax = plt.subplots()
+        plot_endpoint(ax=ax, x=1, y=2, markersize_outercircle='This is a string')
+        plt.close(fig)
+
+    # Test 9 - markersize_innercircle is a string 
+    with pytest.raises(TypeNumberError):
+        fig, ax = plt.subplots()
+        plot_endpoint(ax=ax, x=1, y=2, markersize_innercircle='This is a string')
+        plt.close(fig)
+
+     # Test 10 - markersize_innercircle is a negative number
+    with pytest.raises(ValueError):
+        fig, ax = plt.subplots()
+        plot_endpoint(ax=ax, x=1, y=2, markersize_innercircle=-1)
+        plt.close(fig)
+
+    # Test 11 - markersize_outercircle <= markersize_innercircle
+    with pytest.raises(ValueError):
+        fig, ax = plt.subplots()
+        plot_endpoint(ax=ax, x=1, y=2, markersize_outercircle=5, markersize_innercircle=7)
+        plt.close(fig)
+
+
+def test_dataframe_keep_only_relevant_columns():
+    # Test 1 - good dataframe with columns to keep
+    dataframe = pd.DataFrame({'column1': [1, 2], 'column2': [3, 4], 'column3': [5, 6], 'column4': [7, 8]})
+    expected = pd.DataFrame({'column1': [1, 2], 'column3': [5, 6]})
+    actual = dataframe_keep_only_relevant_columns(dataframe, ['column1', 'column3'])
+    message = "Test 1 - dataframe_keep_only_relevant_columns returned {0} instead of {1}".format(actual.to_dict(), expected.to_dict())
+    assert actual.equals(expected), message
 

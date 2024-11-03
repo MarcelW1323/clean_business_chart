@@ -293,7 +293,10 @@ def plot_line_accross_axes(fig, axbegin, xbegin, ybegin, axend, xend, yend, line
     -------
     None: This function has no real returnvalue. A line is added in the figure-object and optionally two endpoints are added on the end of this line on the related axes-object
     """
-    
+    # Check ax-parameter
+    error_not_isaxes(axbegin, "axbegin")
+    error_not_isaxes(axend, "axend")
+
     # Make the line on the figure-object accross the axes
     line = ConnectionPatch(
             xyA = (xbegin, ybegin), coordsA = axbegin.transData,          # Starting point of the line
@@ -339,6 +342,9 @@ def plot_line_within_ax(ax, xbegin, ybegin, xend, yend, linecolor='black', arrow
     -------
     None: This function has no real returnvalue. A line is added in the figure-object and optionally two endpoints are added on the end of this line on the related axes-object
     """
+    # Check ax-parameter
+    error_not_isaxes(ax, "ax")
+
     if zorder is None:
         # No, don't use zorder. That is different from zorder=0
         ax.plot([xbegin, xend], [ybegin, yend], color=linecolor, linewidth=linewidth, solid_capstyle='butt')
@@ -382,28 +388,40 @@ def plot_endpoint(ax, x, y, endpointcolor=None, markersize_outercircle=7, marker
     -------
     None: This function has no real returnvalue. An endpoint is added on the axes-object
     """
+    # Check ax-parameter
+    error_not_isaxes(ax, "ax")
 
-    # First, check the endpointcolor
+    # Check coordinates
+    error_not_isnumber(x, "x")
+    error_not_isnumber(y, "y")
+
+    # Check the endpointcolor
     if endpointcolor == None:
         # No colorinformation was passed for the endpoints
         endpointcolor = ('#FFFFFF', '#000000')                            # Color white for outercircle and black for innercircle
     elif type(endpointcolor) != type(tuple()) and type(endpointcolor) != type(list()):
         # endpointcolor is not a tuple and not a list
-        raise ValueError("Expected value for endpointcolor would be a tuple or a list of two colors. The first color would be the outercircle-color and the second color would be the innercircle-color")
+        raise TypeError("Expected value for endpointcolor would be a tuple or a list of two colors. The first color would be the outercircle-color and the second color would be the innercircle-color")
     elif len(endpointcolor) != 2:
         # enpointcolor does not contain two values. I do not check if these values are colors.
         raise ValueError("Expected value for endpointcolor would be a tuple or a list of two colors. The first color would be the outercircle-color and the second color would be the innercircle-color")
 
-    # Second, check the markersize
+    # Check the markersize
+    error_not_isnumber(markersize_outercircle, "markersize_outercircle")
+    error_not_isnumber(markersize_innercircle, "markersize_innercircle")
+    # Values are numbers, check if the outercircle is bigger than the innercircle
     if markersize_outercircle <= markersize_innercircle:
         raise ValueError("markersize_outercircle needs to be greater than markersize_innercircle. For example: markersize_outercircle=7 and markersize_innercircle=3")
+    if markersize_innercircle <= 0:
+        raise ValueError("markersize_innercircle needs to be greater than 0. For example: markersize_innercircle=3")
 
-    # Third, add the outercircle around the endpoint
+    # Add the outercircle around the endpoint
     ax.plot(x, y, color=endpointcolor[0], marker='o', markersize=markersize_outercircle)
 
-    # Fourth, add smaller innercircle around the endpoint
+    # Add smaller innercircle around the endpoint
     ax.plot(x, y, color=endpointcolor[1], marker='o', markersize=markersize_innercircle)
 
+    return
     
 def prepare_title(title=None, multiplier=None):
     """
@@ -1015,9 +1033,9 @@ def dataframe_keep_only_relevant_columns(dataframe, wanted_headers):
     -------
     export_dataframe : pandas DataFrame with at most the columns of the wanted headers
     """
-    # Check for the list of wanted headers
-    if not islist(wanted_headers):
-        raise TypeError("Parameter 'wanted_headers' ("+str(wanted_headers)+") is of type "+str(type(wanted_headers)))
+    # Check parameters
+    error_not_isdataframe(dataframe, "dataframe")
+    error_not_islist(wanted_headers, "wanted_headers")
 
     # Search for available headers
     available_headers = dataframe_search_for_headers(dataframe, search_for_headers=wanted_headers, error_not_found=False)
