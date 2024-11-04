@@ -2128,6 +2128,7 @@ def test__make_subplots():
     actual   = testvar.fig.dpi
     message  = "Test 1b - BarWithWaterfall._make_subplots returned {0} instead of {1}".format(actual, expected)
     assert actual == pytest.approx(expected), message
+    plt.close(testvar.fig)
 
     # Test 2 - Dataframe with 3 rows
     dataset  = pd.DataFrame({'Year'       : ['2022', '2022', '2022'],
@@ -2150,6 +2151,7 @@ def test__make_subplots():
     actual   = testvar.fig.dpi
     message  = "Test 2b - BarWithWaterfall._make_subplots returned {0} instead of {1}".format(actual, expected)
     assert actual == pytest.approx(expected), message
+    plt.close(testvar.fig)
 
     # Test 3 - String instead of dataframe
     with pytest.raises(TypeDataFrameError):
@@ -2157,6 +2159,7 @@ def test__make_subplots():
         testvar.data = "This is a string"
         testvar.figsize = None   # Not a given figure size (default value of this parameter)
         testvar._make_subplots()
+        plt.close(testvar.fig)
 
 
 def test__check_base_scenario_totals():
@@ -2356,6 +2359,7 @@ def test__fill_ax_bar_label():
     for item, actual_item, expected_item in zip(["a", "b", "c", "d"], actual, expected):
         message  = "Test 1{0} - BarWithWaterfall._check_base_scenario_totals() returned {1} instead of {2}".format(item, actual_item._text, expected_item)
         assert actual_item._text == pytest.approx(expected_item), message
+    plt.close(testvar.fig)
 
     # Test 2 - Dataframe with 4 rows, 1 decimal and total indicator.
     dataset  = pd.DataFrame({'Year'       : ['2021', '2021', '2021', '2021'],
@@ -2376,6 +2380,7 @@ def test__fill_ax_bar_label():
     for item, actual_item, expected_item in zip(["a", "b", "c", "d"], actual, expected):
         message  = "Test 2{0} - BarWithWaterfall._check_base_scenario_totals() returned {1} instead of {2}".format(item, actual_item._text, expected_item)
         assert actual_item._text == pytest.approx(expected_item), message
+    plt.close(testvar.fig)
 
     # Test 3 - None as Axes-object
     with pytest.raises(TypeAxesError):
@@ -2394,6 +2399,7 @@ def test__fill_ax_bar_label():
         testvar._make_subplots() # make_subplots is necessary to have an "ax"-object
         testvar.data_scenarios = ['AC']
         testvar._fill_ax_bar_label(scenario=404, total=True)
+        plt.close(testvar.fig)
 
     # Test 5 - String not in list
     with pytest.raises(ValueError):
@@ -2405,6 +2411,7 @@ def test__fill_ax_bar_label():
         testvar._make_subplots() # make_subplots is necessary to have an "ax"-object
         testvar.data_scenarios = ['AC']
         testvar._fill_ax_bar_label(scenario='PY', total=False)
+        plt.close(testvar.fig)
 
     # Test 6 - Integer instead of boolean
     with pytest.raises(TypeBooleanError):
@@ -2416,6 +2423,7 @@ def test__fill_ax_bar_label():
         testvar._make_subplots() # make_subplots is necessary to have an "ax"-object
         testvar.data_scenarios = ['AC']
         testvar._fill_ax_bar_label(scenario='AC', total=404)
+        plt.close(testvar.fig)
 
 
 def test__prepare_delta_bar():
