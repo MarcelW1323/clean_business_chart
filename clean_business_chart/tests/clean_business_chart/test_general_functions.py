@@ -1217,7 +1217,7 @@ def test_dataframe_keep_only_relevant_columns():
         dataframe_keep_only_relevant_columns(dataframe="This is a string", wanted_headers=[1,2])
 
     # Test 3 - only list supported as wanted headers
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeListError):
         dataframe_keep_only_relevant_columns(dataframe=pd.DataFrame({'Year' : [2022, 2023]}), wanted_headers="This is a string")
 
 
@@ -1527,6 +1527,7 @@ def test_convert_to_native_python_type():
     message = "Test 5 - convert_to_native_python_type returned {0} instead of {1}".format(actual, expected)
     assert actual == expected, message
 
+
 def test_plot_line_accross_axes():
     # Test 1 - plot a line accross 2 axes
     fig, (ax1, ax2) = plt.subplots(1, 2)
@@ -1571,6 +1572,7 @@ def test_plot_line_accross_axes():
         fig, (ax1, ax2) = plt.subplots(1, 2)
         plot_line_accross_axes(fig=fig, axbegin=ax1, xbegin=0, ybegin=0, axend="This is a string", xend=1, yend=1)
         plt.close(fig)
+
 
 def test_plot_line_within_ax():
     # Test 1 - plot a line within 1 ax-object
@@ -1685,11 +1687,34 @@ def test_plot_endpoint():
         plt.close(fig)
 
 
-def test_dataframe_keep_only_relevant_columns():
-    # Test 1 - good dataframe with columns to keep
-    dataframe = pd.DataFrame({'column1': [1, 2], 'column2': [3, 4], 'column3': [5, 6], 'column4': [7, 8]})
-    expected = pd.DataFrame({'column1': [1, 2], 'column3': [5, 6]})
-    actual = dataframe_keep_only_relevant_columns(dataframe, ['column1', 'column3'])
-    message = "Test 1 - dataframe_keep_only_relevant_columns returned {0} instead of {1}".format(actual.to_dict(), expected.to_dict())
-    assert actual.equals(expected), message
+def test_prepare_title():
+    # Test 1 - Complete title
+    title = {'Reporting_unit': 'Global Corporation',
+             'Business_measure': 'Net profit',
+             'Unit': 'CHF',
+             'Time': '2022: AC Jan..Aug, FC Sep..Dec'}
+    expected    = 'Global Corporation\n$\\bf{Net\\ profit}$ in mCHF\n2022: AC Jan..Aug, FC Sep..Dec'
+    actual      = prepare_title(title=title, multiplier='m')
+    message     = "Test 1a - prepare_title returned {0} instead of {1}".format(repr(actual), repr(expected))
+    assert actual == expected, message
+    if not actual is None:
+        if len(actual) > 0:
+            assert actual[-1:] != '\n', "Test 1b - prepare_title ended with a newline"
+
+    # Test 2 - No title
+    title         = None
+    expected      = None
+    actual        = prepare_title(title=title, multiplier='m')
+    message       = "Test 2 - prepare_title returned {0} instead of {1}".format(actual, expected)
+    assert actual == expected, message
+
+    # Test 3 - multiplier is None
+    title = {'Reporting_unit'  : 'ACME',
+             'Business_measure': 'Cost of goods sold',
+             'Unit': 'USD',
+             'Time': '2023'}
+    expected    = 'ACME\n$\\bf{Cost\\ of\\ goods\\ sold}$ in USD\n2023'
+    actual      = prepare_title(title=title, multiplier=None)
+    message     = "Test 3 - prepare_title returned {0} instead of {1}".format(repr(actual), repr(expected))
+    assert actual == expected, message
 
