@@ -1885,9 +1885,9 @@ class BarWithWaterfall(GeneralChart):
                     dtype_of_column = export_dataframe[column].dtype 
                     # Is it a integer or a float
                     if dtype_of_column == int or dtype_of_column == float:
-                        export_dataframe[column].fillna(0, inplace=True)
+                        export_dataframe[column] = export_dataframe[column].fillna(0)
                     else:
-                        export_dataframe[column].fillna("", inplace=True)
+                        export_dataframe[column] = export_dataframe[column].fillna("")
                 
             else:
                 # No, we don't have a category-of-interest-column
