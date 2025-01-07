@@ -1718,3 +1718,23 @@ def test_prepare_title():
     message     = "Test 3 - prepare_title returned {0} instead of {1}".format(repr(actual), repr(expected))
     assert actual == expected, message
 
+    # Test 4 - multiplier is '1'
+    title = {'Reporting_unit'  : 'ACME',
+             'Business_measure': 'Cost of goods sold',
+             'Unit': 'EUR',
+             'Time': '2023'}
+    expected    = 'ACME\n$\\bf{Cost\\ of\\ goods\\ sold}$ in EUR\n2023'
+    actual      = prepare_title(title=title, multiplier='1')
+    message     = "Test 4 - prepare_title returned {0} instead of {1}".format(repr(actual), repr(expected))
+    assert actual == expected, message
+
+    # Test 5 - multiplier is ''
+    title = {'Reporting_unit'  : 'ACME',
+             'Business_measure': 'Cost of goods sold',
+             'Unit': 'USD',
+             'Time': '2024'}
+    expected    = 'ACME\n$\\bf{Cost\\ of\\ goods\\ sold}$ in USD\n2024'
+    actual      = prepare_title(title=title, multiplier='')
+    message     = "Test 5 - prepare_title returned {0} instead of {1}".format(repr(actual), repr(expected))
+    assert actual == expected, message
+
