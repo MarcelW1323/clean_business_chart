@@ -118,8 +118,8 @@ class GeneralChart:
         self.colors['FC']             = ('#FFFFFF', '#404040', '#000000', '#FFFFFF') #index 0= color, 1= bordercolor, 2=textcolor stacked bar, 3=background color text stacked bar
         self.colors['line']           = '#C0C0C0'
         self.colors['barborder']      = self.colors['AC']
-        self.colors['good']           = 'lightgreen'
-        self.colors['bad']            = 'red'
+        self.colors['good']           = '#90EE90'   # 'lightgreen' (this value is also usable)
+        self.colors['bad']            = '#FF0000'   # 'red' (this value is also usable)
         self.colors['highlight']      = '#0064FF'
         self.colors['endpoint']       = ('#FFFFFF', '#000000')  # index 0= outercircle color, 1= innercirclecolor
         self.colors['zeroline']       = '#000000'

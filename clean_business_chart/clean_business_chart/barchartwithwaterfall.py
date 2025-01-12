@@ -160,7 +160,7 @@ class BarWithWaterfall(GeneralChart):
         # Calculate chart
         self.get_barwidth(measure)
         self._check_and_process_data(data)
-        
+
         # Make chart and fill the chart
         self._make_subplots()
         self._fill_chart()
@@ -170,15 +170,15 @@ class BarWithWaterfall(GeneralChart):
 
         # Add the title as the last element 
         self._title_figure(title)
-        
+
         # Check if you need to display the total_line
         if self.total_line:
             self._plot_total_line()
-        
+
         # We are exporting the chart if the filename has a value
         if self.filename is not None:
             plt.savefig(self.filename, bbox_inches='tight', dpi=150)
-        
+
         # For automatic testing of complete images of chart
         if not do_not_show:
             # No, no automatic testing of complete images of chart -> show the chart

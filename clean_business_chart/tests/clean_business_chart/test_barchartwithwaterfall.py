@@ -2674,6 +2674,7 @@ def test_BarWithWaterfall_001():
     expected=sha256_hash.hexdigest()
     message  = "Test barchart_001.png - BarWithWaterfall returned {0} instead of {1}".format(actual, expected)
     assert actual == expected, message
+    plt.close(testchart.fig)
 
 def test_BarWithWaterfall_002():
     # Test barchart_002
@@ -2712,6 +2713,7 @@ def test_BarWithWaterfall_002():
     expected=sha256_hash.hexdigest()
     message  = "Test barchart_002.png - BarWithWaterfall returned {0} instead of {1}".format(actual, expected)
     assert actual == expected, message
+    plt.close(testchart.fig)
 
 
 def test__calculate_y_value_of_compare_total_bar():
