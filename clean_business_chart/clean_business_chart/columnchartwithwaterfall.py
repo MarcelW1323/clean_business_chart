@@ -7,7 +7,7 @@ import pandas as pd                               # for easy pandas support
 
 from clean_business_chart.clean_business_chart import GeneralChart 
 from clean_business_chart.general_functions    import plot_line_accross_axes, plot_line_within_ax, prepare_title, formatstring, optimize_data, \
-                                                      islist, isdictionary, isinteger, isstring, isfloat, isboolean, isdataframe, string_to_value, \
+                                                      islist, isdictionary, isinteger, isstring, isfloat, isboolean, isdataframe, isfigure, isaxes, string_to_value, \
                                                       convert_data_string_to_pandas_dataframe, convert_data_list_of_lists_to_pandas_dataframe, \
                                                       dataframe_translate_field_headers, dataframe_search_for_headers, \
                                                       dataframe_date_to_year_and_month, dataframe_keep_only_relevant_columns, \
@@ -68,6 +68,12 @@ class ColumnWithWaterfall(GeneralChart):
     latest_closed_month     : Number of the latest closed month. Usefull if actual values can be zero in case
                               you can't determine the latest closed month based on actual values.
                               Default: None (latest closed month can be determined as latest month with actual values)
+    fig                     : Figure-object where you can determine in which figure the chart will be placed.
+                              Default: None (a new figure-object and a new axes-object will be created).
+                              When given, an axes-object needs to be given too, or else a new figure-object will be created.
+    ax                      : Axes-object, a subplot within a figure-object where you can determine in which axes the chart will be placed.
+                              Default: None (a new axes-object and a new figure-object will be created)
+                              When given, a figure-object needs to be given too, or else a new axes-object will be created.
     test                    : If True, only variables from the parent class are defined, together with other
                               self-variables. This makes this module testable in an automatic way
                               Default: False (this call it is not an automatic test)
@@ -75,7 +81,7 @@ class ColumnWithWaterfall(GeneralChart):
 
     def __init__(self, data=None, positive_is_good=True, preferred_base_scenario=None, title=None, measure=True, multiplier='1', filename=None, 
                  force_pl_is_zero=False, force_zero_decimals=False, force_max_one_decimals=False, translate_headers=None, footnote=None, footnote_size='normal',
-                 latest_closed_month=None, test=False, do_not_show=False):
+                 latest_closed_month=None, fig=None, ax=None, test=False, do_not_show=False):
         """
         This is the first function that will be called automatically. Here you'll find all the possible parameters to customize your experience.
         """
@@ -100,7 +106,11 @@ class ColumnWithWaterfall(GeneralChart):
         self.footnote               = footnote
         self.footnote_size          = footnote_size
         self.latest_closed_month    = latest_closed_month
+        self.fig                    = fig
+        self.ax                     = ax
 
+        # Check figure-object and axes-object
+        self.__check_figure_and_axes()
         
         # Make chart
         self.get_barwidth(measure)
@@ -114,6 +124,7 @@ class ColumnWithWaterfall(GeneralChart):
         self._fill_main_ax()
         self._show_delta()
         self._fill_delta_ax_text()
+        self._set_xticks()
 
         # Add the footnote
         self._footnote_figure()
@@ -153,34 +164,42 @@ class ColumnWithWaterfall(GeneralChart):
         self.multiplier_denominator = 1                               # Denominator is the diviser
         
         # Other
+        self.fig_ax_given      = False      # Default no fig and ax will be given
         self.filename          = None       # When filename is None, no export
+        self.xtickslist_x      = []         # X-coordinate for the xticks
+        self.xtickslist_label  = []         # Label for the xticks
         
+        # Transparancy for backgrounds of text
+        self.bbox_dict   = dict(boxstyle='square,pad=-0.05', facecolor=self.colors["textbackground"], edgecolor='none', alpha=0.5)  # Text with background and transparancy
+        
+
+    def __check_figure_and_axes(self):
+        """
+        This function checks if the figure and axes are given while calling this class. If so, it sets the self.fig_ax_given variable to True.
+        """
+        if isfigure(self.fig) and isaxes(self.ax):
+            self.fig_ax_given = True
+        # else, keep variable self.fig_ax_given = false
+            # self.fig_ax_given = False
+        return
+
 
     def _optimize_multiplier(self):
         """
         Optimizes the multiplier.
         First we are going to find the biggest number of the details.
         Then we try to divide the biggest number by one or more multiplications of 1000. If you still have a number which is bigger than or equal to one then you can go on.
-        
+
         Self variables
         --------------
-        self.multiplier             : Multiplier which we will use during the output
-
-        self.original_multiplier    : Original multiplier from the parameters of the calling of the class
-
-        self.multiplier_denominator : The factor where each numeric value will be divided with
-        
-        self.decimals_details       : The number of decimals where the detail data will be rounded to
-        
-        self.decimals_totals        : The number of decimals where the total data will be rounded to
-        
-        self.data                   : Detail values for each scenario. Scenario is the key for the list of detail values
-        
-        self.data_total             : Total values for each scenario. Scenario is the key for the total value
- 
-        self.force_zero_decimals    : If True, we use integers for output. This gives a more clean chart, but can lack some detail in some cases
-
-        self.force_max_one_decimals : If True, the maximum of decimals used is one. Know that force_zero_decimals has a higher priority than force_max_one_decimals
+        self.data                   : Dataframe with detail data
+        self.data_total             : Dictionary (key=scenario) with the total value of each scenario
+        self.decimals_details       : Number of decimals for detailed information
+        self.decimals_totals        : Number of decimals for total information
+        self.force_max_one_decimals : Boolean when True, the maximum of decimals used is one. Know that force_zero_decimals has a higher priority than force_max_one_decimals
+        self.force_zero_decimals    : Boolean when True, integers are used for output
+        self.multiplier             : Multiplier-type with the actual multiplier
+        self.multiplier_denominator : Diviser as a result of optimizing the multiplier
         """
         def _compare_values(old_value, new_value, type=None):
             """
@@ -249,19 +268,15 @@ class ColumnWithWaterfall(GeneralChart):
 
         Self variables
         --------------
-        self.multiplier_denominator : The factor where each numeric value will be divided with
-        
-        self.decimals_details       : The number of decimals where the detail data will be rounded to
-        
-        self.decimals_totals        : The number of decimals where the total data will be rounded to
-        
-        self.data                   : Detail values for each scenario. Scenario is the key for the list of detail values
-        
-        self.data_total             : Total values for each scenario. Scenario is the key for the total value
+        self.data                   : Dataframe with detail data
+        self.data_total             : Dictionary (key=scenario) with the total value of each scenario
+        self.multiplier_denominator : Diviser as a result of optimizing the multiplier
         """
         for scenario in self.data.keys():
             self.data[scenario]       = optimize_data(data=self.data[scenario]      , numerator=1, denominator=self.multiplier_denominator, decimals=None)
             self.data_total[scenario] = optimize_data(data=self.data_total[scenario], numerator=1, denominator=self.multiplier_denominator, decimals=None)
+
+        return
 
 
     def _optimize_actual_forecast(self):
@@ -320,7 +335,7 @@ class ColumnWithWaterfall(GeneralChart):
                 # All overlapping positions needs to be None
                 self.data['FC'] = [None] * len(self.data['AC']) + self.data['FC'][len(self.data['AC']):]
 
-        return None
+        return
 
  
     def _check_data(self, data=None):
@@ -334,17 +349,16 @@ class ColumnWithWaterfall(GeneralChart):
 
         Self variables
         --------------
-        self.barshift           : The barshift for the main part of the chart. This value will be overruled with barshift_value if there are other relevant scenario's available
-        
-        self.barshift_leftside  : The barshift for the left side part of the chart. This value will be overruled with barshift_value if there are relevant scenario's available
-        
-        self.barshift_value     : The portion a grouped bar chart will be out of the middle
-        
-        self.data               : Detail values for each scenario. Scenario is the key for the list of detail values
-        
-        self.data_total         : Total values for each scenario. Scenario is the key for the total value
-        
-        self.year               : Year of the data
+        self.barshift          : Float-value about how much we need to shift the column to the left or right to make it a grouped column
+        self.barshift_leftside : The barshift for the left side part of the chart. This value will be overruled with barshift_value if there are relevant scenarios available
+        self.barshift_value    : The portion a grouped bar chart will be out of the middle
+        self.base_scenario     : Scenario to use for comparison bars, next to AC and/or FC
+        self.data              : Dataframe with detail data
+        self.data_scenarios    : List of scenarios available in the column headers of the dataframe out of the list of all supported scenarios
+        self.data_total        : Dictionary (key=scenario) with the total value of each scenario
+        self.force_pl_is_zero  : If PL are all zeros, can PL be ignored (False) or force that PL can be zero (True)
+        self.p_scenarios       : Supported scenarios starting with a P (PY and PL)
+        self.year              : Year of the data
         """
         # Do we need to convert the data to a dictionary? We support string (as CSV-file), list (of lists) and pandas DataFrame.
         if isstring(data):
@@ -359,11 +373,11 @@ class ColumnWithWaterfall(GeneralChart):
             # data is in the form of a pandas DataFrame
             data = self._prepare_dataframe(data)
             # data is now in the form of a dictionary
-        
+
         # Check for existence of data
         if data is None:
             raise ValueError("No data available. Dictionary expected {'PY': [12x#], 'PL': [12x#], 'AC': [up to 12x#], 'FC': [up to 12x] }")
-        
+
         # Was the parameter preferred_base_scenario given?
         if self.base_scenario is None:
             # No the parameter preferred_base_scenario was not given. We instead define this preference as most wanted 'PL' and less wanted 'PY'
@@ -372,7 +386,7 @@ class ColumnWithWaterfall(GeneralChart):
             if len(scenarios) > 0:
                 # Yes, we can use a base_scenario
                 self.base_scenario = scenarios[0]
-        
+
         # Check if the base_scenario is in the data
         if self.base_scenario not in data.keys():
             raise ValueError("Variable preferred_base_scenario "+str(self.base_scenario)+" is not available in provided data. Possible values are: "+str(list(data.keys())))
@@ -435,6 +449,8 @@ class ColumnWithWaterfall(GeneralChart):
         # Optimize multiplier and data        
         self._optimize_multiplier()
 
+        return
+
 
     def _dataframe_aggregate(self, dataframe):
         """
@@ -458,7 +474,7 @@ class ColumnWithWaterfall(GeneralChart):
 
         # Aggregate data
         export_dataframe = dataframe.groupby(available_headers).sum().reset_index()
-        
+
         return export_dataframe
 
 
@@ -606,6 +622,14 @@ class ColumnWithWaterfall(GeneralChart):
         Parameters
         ----------
         dataframe         : pandas DataFrame
+
+        Self variables
+        --------------
+        self.all_scenarios     : List of all supported scenarios: Previous Year, PLan, ACtual, ForeCast [PY, PL, AC, FC] (in order of time)
+        self.date_column       : List of only 'Date' as supported headercolumn
+        self.month_column      : List of only 'Month' as supported headercolumn
+        self.translate_headers : Dictionary where you can translate fieldheaders
+        self.year_column       : List of only 'Year' as supported headercolumn
         
         Returns
         -------
@@ -636,60 +660,56 @@ class ColumnWithWaterfall(GeneralChart):
         export_dictionary = self._dataframe_to_dictionary(dataframe)
 
         return export_dictionary
-        
+
 
     def _make_subplots(self):
         """
-        Creates the figure and subplots:
-           subplot "left" for a total bar of the previous year and/or a total bar of the plan information
-           subplot "main" for the detail bars and the delta graphics
-           subplot "sum" for the total of actuals and forecast data
-           subplot "comment" for extra lines and texts
+        Creates the figure and subplot
 
         Self variables
         --------------
-        self.fig      : Figure-object for the generated plot and subplots
-
-        self.ax       : Dictionary of axesobjects for the generated subplots
-
+        self.ax           : Axes-object for the generated subplot
+        self.fig          : Figure-object for the generated plot and subplot
+        self.fig_ax_given : Boolean which indicates if both figure-object and axes-object are given as parameters when calling the class
         """
-        self.ax = dict()
-        
-        scenarios = self.filter_scenarios(scenario_list=['PY', 'PL'])
-        if len(scenarios) == 2:
-            left_width = 1.8
-        else:
-            left_width = 1.4
-        
-        self.fig, (self.ax["left"], self.ax["main"], self.ax["sum"], self.ax["comment"]) = \
-                   plt.subplots(nrows=1, ncols=4, sharey='row', figsize=(15,6),
-                                gridspec_kw={'width_ratios': [left_width, 15, 1.4, 1.2]})
-                                #width_ratios=[left_width, 15, 1.2, 1.2]) # From matplotlib-version 3.6.0 and above
+        if not self.fig_ax_given:
+            # No, the figure-object and axes-object are not given in the calling of this class, create new objects
+            self.fig, self.ax = plt.subplots(nrows=1, ncols=1, sharey='row', figsize=(15,6))
 
-        #plt.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=0.15, hspace=None)   # wspace is for the space between the subplots
-        self.fig.set_facecolor('white')   # Make a white background so the export to a file will have a white background
+        # Make a white background so the export to a file will have a white background
+        self.fig.set_facecolor('white')
 
-    
+        # Clean up the ticks and make the bottom-side available for the labels
+        self.ax.tick_params(top=False, bottom=False, left=False, right=False, labelleft=False, labelbottom=True)
+
+        # Remove the lines around the chart
+        self.ax.spines[['top', 'left', 'right', 'bottom']].set_visible(False)
+
+        return
+
+
     def _fill_main_ax(self):
         """
-        Fill all the components of the main ax:
+        This function orchestrates all the details about the main part of the chart:
            plot bars for the comparison scenario, AC and/or FC
            put text on the bars
            put label for the months
 
         Self variables
         --------------
-        self.base_scenario  : scenario to use for comparison bars, next to AC and/or FC
+        self.base_scenario : Scenario to use for comparison bars, next to AC and/or FC          
         """
         for scenario in self.filter_scenarios(scenario_list=[self.base_scenario, 'AC', 'FC']):
             self._fill_main_ax_bar(scenario=scenario)
         self._fill_main_ax_text()
         self._fill_main_ax_monthlabel()
+
+        return
         
         
     def _fill_main_ax_bar(self, scenario):
         """
-        Plots the bars from the comparison scenario and the actual and the forecast scenario
+        Plots the detailed bars from the comparison scenario and the actual and the forecast scenario
 
         Parameters
         ----------
@@ -697,60 +717,77 @@ class ColumnWithWaterfall(GeneralChart):
 
         Self variables
         --------------
-        self.data             : is a dictionary of the detaildata
-
-        self.barshift         : the barshift for the main part of the chart.
-
-        self.barwidth         : a float with the width of the bars for measure of ratio
-
-        self.colors           : a dictionary of colors needed for the consistent look of the charts
-
-        self.linewidth_bar    : the width of the lines from a bar
-
-        self.hatch            : the pattern for hatched
-
-        self.data_text        : a dictionary with the number of the matplotlib-ax-containers of the bar-data including the texts of the bars
-
-        self.decimals_details : number of decimals for detailed information
+        self.ax               : Axes-object for the generated subplot
+        self.barshift         : Float-value about how much we need to shift the column to the left or right to make it a grouped column
+        self.barwidth         : A float with the width of the bars for measure or ratio
+        self.colors           : Dictionary with colors. IBCS advices green for good variance, red for bad variance and blue for highlight. The rest is monochrome.
+        self.data             : Dataframe with detail data
+        self.data_text        : Dictionary with the number of the matplotllib-ax-containers of the bar-data including the texts of the bars
+        self.decimals_details : Number of decimals for detailed information
+        self.hatch            : String with slashes to determine the hatch pattern
+        self.linewidth_bar    : The width of the lines from a bar
         """
         scenario_data = optimize_data(data=self.data[scenario], numerator=1, denominator=1, decimals=self.decimals_details)
-        ax = self.ax["main"]
+        ax = self.ax
+
         if scenario[0] == 'P':
             xvalue = [x - self.barshift * self.barwidth for x in range(len(scenario_data))]
-            ax.bar(xvalue, scenario_data, color=self.colors[scenario][0], width=self.barwidth, linewidth=self.linewidth_bar, edgecolor=self.colors[scenario][1], label=scenario)
+            ax.bar(xvalue, scenario_data, color=self.colors[scenario][0], width=self.barwidth, linewidth=self.linewidth_bar, edgecolor=self.colors[scenario][1],
+            label=scenario, zorder=60)
         if scenario == 'AC':
             xvalue = [x + self.barshift * self.barwidth for x in range(len(scenario_data))]
-            ax.bar(xvalue, scenario_data, color=self.colors[scenario][0], width=self.barwidth, linewidth=self.linewidth_bar, edgecolor=self.colors[scenario][1], label=scenario)
+            ax.bar(xvalue, scenario_data, color=self.colors[scenario][0], width=self.barwidth, linewidth=self.linewidth_bar, edgecolor=self.colors[scenario][1],
+            label=scenario, zorder=70)
         if scenario == 'FC':
             xvalue = [x + self.barshift * self.barwidth for x in range(len(scenario_data))]
             ax.bar(xvalue[scenario_data.count(None):len(scenario_data)], 
                        scenario_data[scenario_data.count(None):], color=self.colors[scenario][0], width=self.barwidth, linewidth=self.linewidth_bar, edgecolor=self.colors[scenario][1], 
-                       label=scenario, hatch=self.hatch)
+                       label=scenario, hatch=self.hatch, zorder=70)
         self.data_text[scenario] = len(ax.containers)-1
+
+        return
 
 
     def _fill_main_ax_text(self):
         """
-        Fills the valuelabels above the AC and FC scenario on the main ax
+        Fills the valuelabels above the AC and FC scenario on the main part of the chart
         
         Self variables
         --------------
-        self.ax          : Dictionary of axesobjects for the generated subplots
-
-        self.padding     : Padding between the bars and the text
-
-        self.font        : All text in a chart has the same font
-        
-        self.fontsize    : All text in a chart has the same height
-        
-        self.data_text   : A dictionary with the number of the matplotlib-ax-containers of the bar-data including the texts of the bars
+        self.ax               : Axes-object for the generated subplot
+        self.bbox_dict        : Dictionary with style, colors and transparancy to be used with text
+        self.data_text        : Dictionary with the number of the matplotllib-ax-containers of the bar-data including the texts of the bars
+        self.decimals_details : Number of decimals for detailed information
+        self.font             : All text in a chart has the same font
+        self.fontsize         : All text in a chart has the same height
+        self.padding          : Padding between the bars and the text
         """
-        ax = self.ax["main"]
+        ax = self.ax
         format_string = formatstring(self.decimals_details)
         # Puts the values of actual and forecast above the bars in the 12 months bars.
         for scenario in self.filter_scenarios(scenario_list=['AC', 'FC']):
             # Only the available scenario's will be processed. With a full year of actuals, no forecast is left.
-            ax.bar_label(ax.containers[self.data_text[scenario]], fmt=format_string, label_type='edge', padding=self.padding, font=self.font, fontsize=self.fontsize )
+            ax.bar_label(ax.containers[self.data_text[scenario]], fmt=format_string, label_type='edge', padding=self.padding,
+                         font=self.font, fontsize=self.fontsize, bbox=self.bbox_dict, zorder=100)
+
+        return
+
+
+    def _set_xticks(self):
+        """
+        Set the xticks (labels on the x-axis)
+
+        Self variables
+        --------------
+        self.ax               : Axes-object for the generated subplot
+        self.font             : All text in a chart has the same font
+        self.fontsize         : All text in a chart has the same height
+        self.xtickslist_label : List of labelvalues on the x-axis
+        self.xtickslist_x     : List of coördinates on the x-axis
+        """
+        ax = self.ax
+        ax.set_xticks(self.xtickslist_x, self.xtickslist_label, font=self.font, fontsize=self.fontsize)
+        return
 
 
     def _fill_main_ax_monthlabel(self):
@@ -759,141 +796,131 @@ class ColumnWithWaterfall(GeneralChart):
         
         Self variables
         --------------
-        self.ax             : Dictionary of axesobjects for the generated subplots
-
-        self.colors         : A dictionary with all color information
-
-        self.barwidth       : A float with the width of the bars for measure of ratio
-        
+        self.ax             : Axes-object for the generated subplot
+        self.barshift       : Float-value about how much we need to shift the column to the left or right to make it a grouped column
+        self.barwidth       : A float with the width of the bars for measure or ratio
+        self.colors         : Dictionary with colors. IBCS advices green for good variance, red for bad variance and blue for highlight. The rest is monochrome.
+        self.linewidth_zero : The width of the zerolines
         self.main_months    : Month-names with delta scenario information. Delta_name is the key for the list of month-names
-
-        self.font           : All text in a chart has the same font
-        
-        self.fontsize       : All text in a chart has the same height
-        
-        self.linewidth_zero : Linewidth of the zeroline
-        
-        self.barshift       : Information about how much we need to shift the bar to fit right on top of the other charts
         """
-        ax = self.ax["main"]
-        ax.tick_params(top=False, bottom=False, left=False, right=False, labelleft=False, labelbottom=True)
+        ax = self.ax
         
         # Make a list of coordinates to shift the names of the months a bit to the right (if there is a comparison in the chart)
         xvalue = [x + self.barshift * self.barwidth for x in range(len(self.main_months["main"]))]
-        ax.set_xticks(xvalue, self.main_months["main"], font=self.font, fontsize=self.fontsize)
-        ax.spines[['top', 'left', 'right', 'bottom']].set_visible(False)
+        self.xtickslist_x.extend(xvalue)
+        self.xtickslist_label.extend(self.main_months["main"])
         
-        # This is the "Zeroline"
-        plot_line_within_ax(ax=ax, xbegin=0-0.5, ybegin=0, xend=11+0.5, yend=0, linecolor=self.colors['zeroline'], arrowstyle='-', linewidth=self.linewidth_zero, endpoints=False, endpointcolor=None)
+        # This is the "Zeroline" of the details
+        plot_line_within_ax(ax=ax, xbegin=0-0.5, ybegin=0, xend=11+0.5, yend=0, linecolor=self.colors['zeroline'], arrowstyle='-', linewidth=self.linewidth_zero, 
+                            endpoints=False, endpointcolor=None, zorder=90)
+
+        return
 
     
     def _fill_leftside_ax(self): 
         """
-        Fills the leftside ax (left of the main ax) with Previous Year and/or Plan information
+        Fills a leftside total chart (on the leftside of the main chart) with Previous Year and/or Plan information
 
         Self variables
         --------------
-        self.ax            : Dictionary of axesobjects for the generated subplots
-
-        self.font          : All text in a chart has the same font
-        
-        self.fontsize      : All text in a chart has the same height
-        
-        self.colors        : A dictionary with all color information
-
-        self.barwidth      : A float with the width of the bars for measure of ratio
-        
-        self.linewidth_bar : The width of the lines from a bar
-
-        self.data_total    : Total values for each scenario. Scenario is the key for the total value
-
-        self.year          : Year of the data
-        
-        self.fig              : Figure-object for the generated plot and subplots
-
-        self.delta_base_value : Base_values for the delta charts. Delta_name is the key for the value
-
-        self.linewidth_line_n : The normal width of the lines
-        
-        self.barshift_leftside  : The barshift for the left side part of the chart. This value will be overruled with barshift_value if there are relevant scenario's available
-        
-        self.outside_factor   : Factor to use to keep lines as much as possible outside of the bars
-        
-        self.base_scenario  : scenario to use for comparison bars, next to AC and/or FC
+        self.ax                : Axes-object for the generated subplot
+        self.barshift_leftside : The barshift for the left side part of the chart. This value will be overruled with barshift_value if there are relevant scenarios available
+        self.barwidth          : A float with the width of the bars for measure or ratio
+        self.base_scenario     : Scenario to use for comparison bars, next to AC and/or FC
+        self.bbox_dict         : Dictionary with style, colors and transparancy to be used with text
+        self.colors            : Dictionary with colors. IBCS advices green for good variance, red for bad variance and blue for highlight. The rest is monochrome.
+        self.data_total        : Dictionary (key=scenario) with the total value of each scenario
+        self.decimals_totals   : Number of decimals for total information
+        self.delta_base_value  : Base_values for the delta charts. Delta_name is the key for the value
+        self.font              : All text in a chart has the same font
+        self.fontsize          : All text in a chart has the same height
+        self.linewidth_bar     : The width of the lines from a bar
+        self.linewidth_line_n  : The normal width of the lines
+        self.linewidth_zero    : The width of the zerolines
+        self.outside_factor    : Factor to use to keep lines as much as possible outside of the bars
+        self.padding           : Padding between the bars and the text
+        self.year              : Year of the data
         """
-        ax = self.ax["left"]
+        ax               = self.ax
+        xoffset          = -2   # x-offset to put the total bars before the detailed bars
+        xoffset2         = 13   # x-offset to put the total bars after the detailed bars
+        totalwidthfactor = 1.3  # to make the total bars wider than the detailed bars
+        baroffset        = 1.25 # factor for the vertical bars with good/bad color
 
         scenarios = self.filter_scenarios(scenario_list=['PY', 'PL'])
 
-        for scenario in scenarios:
+        for x,scenario in enumerate(scenarios):
             PY_valuetext_special = False
             if len(scenarios) == 2:
                 # Yes, there are 2 scenario's. We need to put the bar of PY on the left and PL on the right.
-                textadjustment = 0.8
+                textadjustment = 0.73
                 if scenario == 'PY':
                     # Scenario is Previous Year
                     barsign    = -1     # Negative factor to place the PY-bar a bit to the left
                     if self.data_total['PY'] > self.data_total['PL']: linesign = -1
                     else: linesign = +1  
-                    textsign   = -1
+                    textsign   = -1 * totalwidthfactor
                     halignment = 'right'
-                    xend       = 1    # We need a line to the end of the ax-comments if there are 2 scenario's for the PY-scenario
+                    xend       = 2*baroffset    # We need a line to the end of the ax-comments if there are 2 scenario's for the PY-scenario
                     if self.data_total['PY'] < self.data_total['PL']*1.1: PY_valuetext_special = True  # PY-bar is not high enough to have it's value centered
                 else:
                     # Scenario is PLan
                     barsign    = +1     # Positive factor to place the PL-bar a bit to the right
                     linesign   = +1
-                    textsign   = +1
+                    textsign   = +1 * totalwidthfactor
                     halignment = 'left'
-                    xend       = 0    # The line needs to go to the beginning of the ax-comments if there are 2 scenario's for the PL-scenario
+                    xend       = 1*baroffset    # The line needs to go to the beginning of the ax-comments if there are 2 scenario's for the PL-scenario
             else:
                 # No, there is only 1 scenario. We put it in the middle
-                textadjustment = 0.6
+                textadjustment = 0.73
                 barsign    = 0
                 linesign   = 1
                 textsign   = -1
                 halignment = 'right'
-                xend       = 0
+                xend       = 1*baroffset
 
-            # Make the line accross the axes for the scenario
+            # Make the line from the first totals to the comments zone for the scenario
             base_value = self.data_total[scenario]
-            xbegin = 0 + (linesign * self.barshift_leftside) + (self.barwidth/2 * self.outside_factor)  
-            plot_line_accross_axes(fig=self.fig, axbegin=self.ax["left"],    xbegin=xbegin,  ybegin=base_value,
-                                                 axend  =self.ax["comment"], xend  =xend,    yend  =base_value,
-                                                 endpoints=False, linecolor=self.colors['line'], arrowstyle='-', linewidth=self.linewidth_line_n, endpointcolor=None)
+            xbegin = xoffset + (linesign * self.barshift_leftside) + (self.barwidth/2 * self.outside_factor)  
+            plot_line_within_ax(ax=ax, xbegin=xbegin,      ybegin=base_value,
+                                       xend=xoffset2+xend, yend=base_value,
+                                       linecolor=self.colors['line'], arrowstyle='-', linewidth=self.linewidth_line_n, endpoints=False, endpointcolor=None, zorder=25)
 
             # Remember the base_value for the integrated waterfall delta chart
             if self.base_scenario == scenario:
                 self.delta_base_value['main'] = base_value
 
             # Make the column for the scenario            
-            ax.bar(0 + (barsign * self.barshift_leftside), self.data_total[scenario], color=self.colors[scenario][0], width=self.barwidth, linewidth=self.linewidth_bar, edgecolor=self.colors[scenario][1], label=scenario)
+            ax.bar(xoffset + (barsign * self.barshift_leftside), self.data_total[scenario], color=self.colors[scenario][0], width=self.barwidth*totalwidthfactor, 
+                   linewidth=self.linewidth_bar, edgecolor=self.colors[scenario][1], label=scenario, zorder=(60+x))
 
             # Put the value on the column for the scenario
             if PY_valuetext_special:
                 # The PL-column with text is so high, that the valuetext of the PY-column needs to be more adjusted to the left.
-                ax.text(0-self.barwidth/2.5, self.data_total[scenario]*(1+(self.padding/250)),
+                ax.text(xoffset - self.barwidth/1.9, self.data_total[scenario]*(1+(self.padding/250)),
                         s=convert_number_to_string(data=self.data_total[scenario], decimals=self.decimals_totals, delta_value=False),
                         horizontalalignment='right', verticalalignment='bottom',
-                        font=self.font, fontsize=self.fontsize, color=self.colors['text'])
+                        font=self.font, fontsize=self.fontsize, color=self.colors['text'], bbox=self.bbox_dict, zorder=100)
             else:
                 # The PL-column with text is small enough, that we can put the valuetext centered on top of the PY-column.
                 string_list = [convert_number_to_string(data=self.data_total[scenario], decimals=self.decimals_totals, delta_value=False)]
-                ax.bar_label(ax.containers[-1], labels=string_list, label_type='edge', padding=self.padding, font=self.font, fontsize=self.fontsize)
+                ax.bar_label(ax.containers[-1], labels=string_list, label_type='edge', padding=self.padding,
+                             font=self.font, fontsize=self.fontsize, bbox=self.bbox_dict, zorder=100)
 
-            #if len(self.filter_scenarios(['PY', 'PL'])) > 1:
-                # Inline legend (barwidth * 0.8 to be close to the bar, but not adjacent)
-            ax.text(0 + (textsign * self.barwidth * textadjustment), self.data_total[scenario]/2, scenario, horizontalalignment=halignment, font=self.font, 
-                         fontsize=self.fontsize, color=self.colors['text'], verticalalignment='center')
-               
-                
-        ax.tick_params(top=False, bottom=False, left=False, right=False, labelleft=False, labelbottom=True)
-        # Puts the name of the year under the PL-bar
-        ax.set_xticks([0+self.barshift_leftside], [str(self.year)], font=self.font, fontsize=self.fontsize)
-        ax.spines[['top', 'left', 'right', 'bottom']].set_visible(False)
-        
-        # This is the "Zeroline"
-        plot_line_within_ax(ax=ax, xbegin=0-self.barshift_leftside-0.37, ybegin=0, xend=0+self.barshift_leftside+0.37, yend=0, linecolor=self.colors['zeroline'], arrowstyle='-', linewidth=self.linewidth_zero, endpoints=False, endpointcolor=None)
+            # Put the inline legend ('PY' and/or 'PL') next to the totalbars at half height position            
+            ax.text(xoffset + (textsign * self.barwidth * textadjustment), self.data_total[scenario]/2, scenario, horizontalalignment=halignment, font=self.font, 
+                         fontsize=self.fontsize, color=self.colors['text'], verticalalignment='center', bbox=self.bbox_dict, zorder=100)
+
+        # Puts the name of the year under the PL-bar by filling the xtickslist-variables
+        self.xtickslist_x.extend([xoffset + self.barshift_leftside])
+        self.xtickslist_label.extend([str(self.year)])
+
+        # This is the "Zeroline" for the totalcolumns for PY and/or PL.
+        plot_line_within_ax(ax=ax, xbegin=xoffset - self.barshift_leftside*totalwidthfactor - 0.47, ybegin=0,
+                                   xend=  xoffset + self.barshift_leftside*totalwidthfactor + 0.47, yend=0,
+                                   linecolor=self.colors['zeroline'], arrowstyle='-', linewidth=self.linewidth_zero, endpoints=False, endpointcolor=None, zorder=90)
+
+        return
     
     
     def _fill_side_axsum(self): 
@@ -902,28 +929,25 @@ class ColumnWithWaterfall(GeneralChart):
 
         Self variables
         --------------
-        self.ax              : Dictionary of axesobjects for the generated subplots
-
-        self.padding         : Padding between the bars and the text
-
-        self.font            : All text in a chart has the same font
-
-        self.fontsize        : All text in a chart has the same height
-
-        self.colors          : A dictionary with all color information
-
-        self.barwidth        : A float with the width of the bars for measure of ratio
-
-        self.decimals_totals : Number of decimals for total information
-
-        self.linewidth_bar   : The width of the lines from a bar
-
-        self.data_total      : Total values for each scenario. Scenario is the key for the total value
-
-        self.year            : Year of the data
+        self.ax                : Axes-object for the generated subplot
+        self.barshift_leftside : The barshift for the left side part of the chart. This value will be overruled with barshift_value if there are relevant scenarios available
+        self.barwidth          : A float with the width of the bars for measure or ratio
+        self.bbox_dict         : Dictionary with style, colors and transparancy to be used with text
+        self.colors            : Dictionary with colors. IBCS advices green for good variance, red for bad variance and blue for highlight. The rest is monochrome.
+        self.data_total        : Dictionary (key=scenario) with the total value of each scenario
+        self.decimals_totals   : Number of decimals for total information
+        self.font              : All text in a chart has the same font
+        self.fontsize          : All text in a chart has the same height
+        self.hatch             : String with slashes to determine the hatch pattern
+        self.linewidth_bar     : The width of the lines from a bar
+        self.linewidth_zero    : The width of the zerolines
+        self.padding           : Padding between the bars and the text
+        self.year              : Year of the data
         """
-        ax = self.ax["sum"]
         bottom = 0 
+        ax               = self.ax
+        xoffset          = 13   # x-offset to put the total bars after the 12 detailed bars
+        totalwidthfactor = 1.3  # to make the total bars wider than the detailed bars
 
         scenarios = self.filter_scenarios(scenario_list=['AC', 'FC'])
 
@@ -937,11 +961,12 @@ class ColumnWithWaterfall(GeneralChart):
                 hatch = self.hatch
 
             # Plot the (part of the stacked) bar (due to parameter bottom)
-            ax.bar(0, self.data_total[scenario], color=self.colors[scenario][0], width=self.barwidth, linewidth=self.linewidth_bar,
-                   edgecolor=self.colors[scenario][1], bottom=bottom, label=scenario, hatch=hatch)
+            ax.bar(xoffset+0, self.data_total[scenario], color=self.colors[scenario][0], width=self.barwidth*totalwidthfactor, linewidth=self.linewidth_bar,
+                   edgecolor=self.colors[scenario][1], bottom=bottom, label=scenario, hatch=hatch, zorder=30)
 
             # Inline legend (barwidth * 0.6 to be close to the bar, but not adjacent)
-            ax.text(0+self.barwidth*0.6, bottom + self.data_total[scenario]/2, scenario, horizontalalignment='left', font=self.font, fontsize=self.fontsize, color=self.colors['text'], verticalalignment='center')
+            ax.text(xoffset+0+self.barwidth*0.6*totalwidthfactor, bottom + self.data_total[scenario]/2, scenario, horizontalalignment='left',
+                    font=self.font, fontsize=self.fontsize, color=self.colors['text'], verticalalignment='center', bbox=self.bbox_dict, zorder=100)
 
             # Only stacked bar values inside if more than 1 scenario
             if len(scenarios)>1:
@@ -951,58 +976,55 @@ class ColumnWithWaterfall(GeneralChart):
                 # Two different kinds of adding text in the bars
                 if scenario == 'FC':
                     # use text function because the use of backgroundcolor
-                    ax.text(0, bottom + self.data_total[scenario]/2, s=value_string, horizontalalignment='center',
+                    ax.text(xoffset+0, bottom + self.data_total[scenario]/2, s=value_string, horizontalalignment='center',
                             verticalalignment='center', font=self.font, fontsize=self.fontsize, color=self.colors[scenario][2],
                             backgroundcolor=self.colors[scenario][3],
-                            bbox=dict(facecolor=self.colors[scenario][3], edgecolor='none', pad=0.8, alpha=0.85))
+                            bbox=dict(facecolor=self.colors[scenario][3], edgecolor='none', pad=0.8, alpha=0.85), zorder=100)
                 else:
                     # use standard label function
-                    ax.bar_label(ax.containers[-1], labels=[value_string], label_type='center', font=self.font, fontsize=self.fontsize, color=self.colors[scenario][2])
+                    ax.bar_label(ax.containers[-1], labels=[value_string], label_type='center', font=self.font, fontsize=self.fontsize,
+                                 color=self.colors[scenario][2], zorder=100)   # No bbox because the textcolor = white
 
             bottom = bottom + self.data_total[scenario]
 
-        # add top label
+        # Add top label
         # Round the value with the desired number of decimals and make it a string
         value_string = convert_number_to_string(data=bottom, decimals=self.decimals_totals, delta_value=False)
         if len(ax.containers) > 0:
             # Prevent adressing an index that is not available in an empty list
-            ax.bar_label(ax.containers[-1], labels=[value_string], label_type='edge', padding=self.padding, font=self.font, fontsize=self.fontsize, color=self.colors['text'])
+            ax.bar_label(ax.containers[-1], labels=[value_string], label_type='edge', padding=self.padding, font=self.font, fontsize=self.fontsize,
+                         color=self.colors['text'], bbox=self.bbox_dict, zorder=100)
 
-        ax.tick_params(top=False, bottom=False, left=False, right=False, labelleft=False, labelbottom=True)
-        ax.set_xticks([0], [str(self.year)], font=self.font, fontsize=self.fontsize)
-        ax.spines[['top', 'left', 'right', 'bottom']].set_visible(False)   
-        plot_line_within_ax(ax=ax, xbegin=0-0.37, ybegin=0, xend=0+0.37, yend=0, linecolor=self.colors['zeroline'], arrowstyle='-', linewidth=self.linewidth_zero, endpoints=False, endpointcolor=None)
+        # Add coordinate and year for x-axis
+        self.xtickslist_x.extend([xoffset])
+        self.xtickslist_label.extend([str(self.year)])
+        
+        # Zeroline for the total column at the right
+        plot_line_within_ax(ax=ax, xbegin=xoffset - self.barshift_leftside*totalwidthfactor - 0.37, ybegin=0,
+                                   xend=xoffset + self.barshift_leftside*totalwidthfactor + 0.37, yend=0,
+                                   linecolor=self.colors['zeroline'], arrowstyle='-', linewidth=self.linewidth_zero, endpoints=False, endpointcolor=None, zorder=90)
+
+        return
+
 
     def _show_delta(self, delta_name='main', last_line=True):
         """
-        Plots a delta bar on the main ax subplot of the chart
+        Plots a delta bar on the main part of the chart
 
         Self variables
         --------------
-        self.ax               : Dictionary of axesobjects for the generated subplots
-
-        self.fig              : Figure-object for the generated plot and subplots
-
-        self.data_text        : A dictionary with the number of the matplotlib-ax-containers of the bar-data including the texts of the bars
-
-        self.delta_base_value : Base_values for the delta charts. Delta_name is the key for the value
-
-        self.barshift         : Information about how much we need to shift the bar to fit right on top of the other charts
-
-        self.colors           : A dictionary with all color information
-
-        self.barwidth         : A float with the width of the bars for measure of ratio
-        
-        self.linewidth_line_n : The normal width of the lines
-        
-        self.linewidth_bar    : The width of the lines from a bar
+        self.ax                 : Axes-object for the generated subplot
+        self.barshift           : Float-value about how much we need to shift the column to the left or right to make it a grouped column
+        self.barwidth           : A float with the width of the bars for measure or ratio
+        self.colors             : Dictionary with colors. IBCS advices green for good variance, red for bad variance and blue for highlight. The rest is monochrome.
+        self.data_text          : Dictionary with the number of the matplotllib-ax-containers of the bar-data including the texts of the bars
+        self.delta_base_value   : Base_values for the delta charts. Delta_name is the key for the value
+        self.linewidth_bar      : The width of the lines from a bar
+        self.linewidth_line_n   : The normal width of the lines
         """
-        # For the best visual, first plot the line, then plot the bars.
-        # In that case, when you zoom in on the visual, the bars are neat and not slightly overwritten by the lines
-        #### This is the theory, but when I look at the visuals, this is not always the case... Need to improve on this.
-        
-        ax = self.ax["main"]
-        
+        ax               = self.ax
+        xoffset          = 13   # x-offset to put the total bars after the 12 detailed bars
+
         # Get the info of the delta bar
         delta_info = self.prepare_delta_bar(base_value=self.delta_base_value[delta_name],delta_name=delta_name, waterfall=True)
 
@@ -1013,18 +1035,21 @@ class ColumnWithWaterfall(GeneralChart):
         for xvalue, yvalue in enumerate(delta_info['connect'][:-1]):
             point1 = ( (0 + xvalue + self.barshift * self.barwidth + (self.barwidth / 2)), yvalue)
             point2 = ( (1 + xvalue + self.barshift * self.barwidth - (self.barwidth / 2)), yvalue)
-            plot_line_within_ax(ax=ax, xbegin=point1[0], ybegin=point1[1], xend=point2[0], yend=point2[1], linecolor=self.colors['line'], arrowstyle='-', linewidth=self.linewidth_line_n, endpoints=False, endpointcolor=None)
+            plot_line_within_ax(ax=ax, xbegin=point1[0], ybegin=point1[1], xend=point2[0], yend=point2[1], linecolor=self.colors['line'], arrowstyle='-',
+                                linewidth=self.linewidth_line_n, endpoints=False, endpointcolor=None, zorder=20)
 
         if last_line == True:
-            # Plot the last line accross axes so it ends in the sum axis
-            plot_line_accross_axes(fig=self.fig, axbegin=ax, xbegin=len(delta_info['connect'])-1 + self.barshift * self.barwidth + (self.barwidth / 2),  ybegin=delta_info['connect'][-1],
-                                   axend=self.ax["sum"],      xend=0-(self.barwidth/2), yend=delta_info['connect'][-1],
-                                   endpoints=False, linecolor=self.colors['line'], arrowstyle='-', linewidth=self.linewidth_line_n, endpointcolor=None)
-        
+            # Plot the last line so it ends in the sum-total-bar
+            plot_line_within_ax(ax=ax, xbegin=len(delta_info['connect'])-1 + self.barshift * self.barwidth + (self.barwidth / 2),  ybegin=delta_info['connect'][-1],
+                                       xend=xoffset-(self.barwidth/2), yend=delta_info['connect'][-1],
+                                       endpoints=False, linecolor=self.colors['line'], arrowstyle='-', linewidth=self.linewidth_line_n, endpointcolor=None, zorder=20)
+
         # Plot the delta bar
-        ax.bar(delta_info['xvalue'], delta_info['yvalue'], bottom=delta_info['bottom'], color=delta_info['color'], width=self.barwidth, linewidth=self.linewidth_bar, edgecolor=delta_info['edgecolor'], 
-                       label=delta_info['scenario_label'], hatch=delta_info['hatch'], zorder=10)
+        ax.bar(delta_info['xvalue'], delta_info['yvalue'], bottom=delta_info['bottom'], color=delta_info['color'], width=self.barwidth, linewidth=self.linewidth_bar,
+               edgecolor=delta_info['edgecolor'], label=delta_info['scenario_label'], hatch=delta_info['hatch'], zorder=80)
         self.data_text['delta'] = len(ax.containers)-1
+
+        return
 
         
     def _fill_delta_ax_text(self, delta_name='main'):
@@ -1033,71 +1058,61 @@ class ColumnWithWaterfall(GeneralChart):
         
         Self variables
         --------------
-        self.ax          : Dictionary of axesobjects for the generated subplots
-
-        self.delta_value : A dictionary with lists of delta values
-
-        self.data_text   : A dictionary with the number of the matplotlib-ax-containers of the bar-data including the texts of the bars
-
-        self.padding     : Padding between the bars and the text
-
-        self.font        : All text in a chart has the same font
-        
-        self.fontsize    : All text in a chart has the same height
+        self.ax               : Axes-object for the generated subplot
+        self.bbox_dict        : Dictionary with style, colors and transparancy to be used with text
+        self.data_text        : Dictionary with the number of the matplotllib-ax-containers of the bar-data including the texts of the bars
+        self.decimals_details : Number of decimals for detailed information
+        self.delta_value      : A dictionary with lists of delta values
+        self.font             : All text in a chart has the same font
+        self.fontsize         : All text in a chart has the same height
+        self.padding          : Padding between the bars and the text
         """
-        ax = self.ax["main"]
+        ax = self.ax
         label_value_list = convert_number_to_string(data=self.delta_value[delta_name], decimals=self.decimals_details, delta_value=True)
-        
-        if len(label_value_list) > 0:
-            ax.bar_label(ax.containers[self.data_text['delta']], labels=label_value_list, label_type='edge', padding = self.padding, font=self.font, fontsize=self.fontsize, zorder=10)
 
+        if len(label_value_list) > 0:
+            ax.bar_label(ax.containers[self.data_text['delta']], labels=label_value_list, label_type='edge', padding=self.padding,
+                         font=self.font, fontsize=self.fontsize, bbox=self.bbox_dict, zorder=100)
+
+        return
 
 
     def _fill_axcomments(self):
         """
-        Fills the last subplot with the lines, delta-lines and numbers of differences
+        Fills the comments section with the lines, delta-lines and numbers of differences
 
         Self variables
         --------------
-        self.ax               : Dictionary of axesobjects for the generated subplots
-        
-        self.fig              : Figure-object for the generated plot and subplots
-        
+        self.ax               : Axes-object for the generated subplot
+        self.barwidth         : A float with the width of the bars for measure or ratio
+        self.bbox_dict        : Dictionary with style, colors and transparancy to be used with text
+        self.colors           : Dictionary with colors. IBCS advices green for good variance, red for bad variance and blue for highlight. The rest is monochrome.
+        self.data_total       : Dictionary (key=scenario) with the total value of each scenario
+        self.decimals_totals  : Number of decimals for total information
         self.font             : All text in a chart has the same font
-        
         self.fontsize         : All text in a chart has the same height
-        
-        self.colors           : Collection of colors. IBCS advices green for good variance, red for bad variance and blue for highlight. The rest is monochrome.
-        
-        self.barwidth         : A float with the width of the bars for measure of ratio
-        
-        self.linewidth_line_n : The normal width of the lines
-        
         self.linewidth_delta  : The width of the delta-lines with the good or bad colors
-        
+        self.linewidth_line_n : The normal width of the lines
         self.outside_factor   : Factor to use to keep lines as much as possible outside of the bars
-        
-        self.data_total       : Total values for each scenario. Scenario is the key for the total value
         """
-        ax = self.ax["comment"]
+        ax               = self.ax
+        xoffset          = 13   # x-offset to put the total bars after the 12 detailed bars
+        baroffset        = 1.25 # factor for the vertical bars with good/bad color
+        textadjustment   = 0.15 # Text adjustment for the text next to the vertical bars
 
         # Calculate the maximum value of the axsum-bars
         yvaluesum = 0
         for scenario in self.filter_scenarios(scenario_list=['AC', 'FC']):
             yvaluesum += self.data_total[scenario]
-        
-        # Determine the end-coordinate for the PY and PL scenario's
-        scenarios = self.filter_scenarios(scenario_list=['PL', 'PY'])
-        if len(scenarios) == 2:
-            xend = 1                 # The end of a normal ax is 1, so we need to go to the last value for 2 scenario's
-            textadjustment = 0.12    # While having 2 scenario's, the textadjustment to set the numbers is bigger than for 1 scenario. #### I'm searching for a better implementation of this
-        else: 
-            xend = 0                 # If you have 1 scenario, you can keep everything in the neighbourhood of 0
-            textadjustment = 0.01    # If you have 1 scenario, the textadjustment-value makes a larger impact than with 2 scenario's above. #### I'm searching for a better implementation of this
-        
-        # Plot line from the top of the ax-sum-bar to the ax-comment
-        plot_line_accross_axes(fig=self.fig, axbegin=self.ax["sum"], xbegin=0 + (self.barwidth/2)*(self.outside_factor), ybegin=yvaluesum, axend=self.ax["comment"], xend=xend, yend=yvaluesum, 
-                          endpoints=False, linecolor=self.colors['line'], arrowstyle='-', linewidth=self.linewidth_line_n, endpointcolor=None)
+
+        # Determine the number of scenarios
+        scenarios     = self.filter_scenarios(scenario_list=['PL', 'PY'])
+        num_scenarios = len(scenarios)
+
+        # Plot line from the top of the total-sum-bar to the vertical deltabar
+        plot_line_within_ax(ax=ax, xbegin=xoffset + (self.barwidth/2)*(self.outside_factor), ybegin=yvaluesum,
+                                   xend=xoffset + num_scenarios*baroffset, yend=yvaluesum,
+                                   endpoints=False, linecolor=self.colors['line'], arrowstyle='-', linewidth=self.linewidth_line_n, endpointcolor=None, zorder=25)
 
         # For each scenario (PY and/or PL), plot the vertical deltabar in the right color and put the number next to that vertical bar
         for xbegin, scenario in enumerate(scenarios):
@@ -1105,42 +1120,49 @@ class ColumnWithWaterfall(GeneralChart):
             color = self.good_or_bad_color(differencevalue=yvaluesum-yvalue_scenario)
 
             # Plot vertical bar in a good or bad color
-            plot_line_within_ax(ax=self.ax["comment"], xbegin=xbegin, ybegin=yvaluesum, xend=xbegin, yend=yvalue_scenario, endpoints=False, linecolor=color, arrowstyle='-', linewidth=self.linewidth_delta)
-        
+            plot_line_within_ax(ax=ax, xbegin=xoffset+ (xbegin+1)*baroffset, ybegin=yvaluesum, xend=xoffset+ (xbegin+1)*baroffset, yend=yvalue_scenario, 
+                                endpoints=False, linecolor=color, arrowstyle='-', linewidth=self.linewidth_delta, zorder=55)
+
             # Set the value next to the vertical bar
-            ####value = optimize_data(data=(yvaluesum-yvalue_scenario), numerator=1, denominator=1, decimals=self.decimals_totals)
-            ax.text(xbegin + textadjustment, (yvaluesum+yvalue_scenario)/2,
+            ax.text(xoffset+ (xbegin+1)*baroffset + textadjustment, (yvaluesum+yvalue_scenario)/2,
                     s=convert_number_to_string(data=yvaluesum-yvalue_scenario, decimals=self.decimals_totals, delta_value=True),
                     horizontalalignment='left', verticalalignment='center',
-                    font=self.font, fontsize=self.fontsize, color=self.colors['text'], zorder=10)
+                    font=self.font, fontsize=self.fontsize, color=self.colors['text'], bbox=self.bbox_dict, zorder=100)
 
-        ax.tick_params(top=False, bottom=False, left=False, right=False, labelleft=False, labelbottom=False)
-        ax.spines[['top', 'left', 'right', 'bottom']].set_visible(False)
+        return
 
 
     def _footnote_figure(self):
         """
-        The function _footnote_figure puts a footnote in the lower left corner of the chart.
+        The function _footnote_figure puts a footnote in the lower left corner of the chart when no figure-object and no axes-object are given.
+        In that case, you need to add this info yourself.
 
         Self variables
         --------------
-        self.colors            : Dictionary with colors
-        self.fig               : Figure-object for the generated plot and subplots
+        self.colors            : Dictionary with colors. IBCS advices green for good variance, red for bad variance and blue for highlight. The rest is monochrome.
+        self.fig               : Figure-object for the generated plot and subplot
+        self.fig_ax_given      : Boolean which indicates if both figure-object and axes-object are given as parameters when calling the class
         self.font              : All text in a chart has the same font
         self.footnote          : Text that will be displayed on the bottom of the chart, starting at the left
         self.footnote_fontsize : Dictionary of predefined fontsizes for footnotes
         self.footnote_size     : Textvalues as keys for the predefined fontsizes for footnotes ('small' or 'normal')
         """
+        if self.fig_ax_given:
+            # In the calling of this class, you gave a figure-object and an axes-object. Maybe you are working with multiple subplots (small multiples) so
+            # you need to provide the footnote yourself. In a future release there will be additional methods available to make it more easy for you.
+            return
+
         # All checks are provided in the function footnote_figure
         #### TECHNICAL DEBT: How to determine the right x and y values?
-        footnote_figure(figure=self.fig, x=0.11, y=0, footnote=self.footnote, footnote_size=self.footnote_size,
+        footnote_figure(figure=self.fig, x=0.142, y=0, footnote=self.footnote, footnote_size=self.footnote_size,
                         footnote_fontsize=self.footnote_fontsize, font=self.font, colors=self.colors)
+
         return
 
 
     def _title(self, title=None):
         """
-        Puts a title in the upper left corner of the chart
+        Puts a title in the upper left corner of the chart when no figure-object and no axes-object are given. In that case, you need to add this info yourself.
         
         Parameters
         ----------
@@ -1152,42 +1174,62 @@ class ColumnWithWaterfall(GeneralChart):
                      title['Business_measure'] = 'Net profit'           # This is the name of the metric. Can also be a ratio. For example: 'Net profit' or 'Cost per headcount'
                      title['Unit'] = 'mUSD'                             # This is the name of the unit. For example: 'USD', 'EUR', '#', '%'. Add k for 1000, m for 1000000 and b for 1000000000
                      title['Time'] = '2022: AC Jan..Aug, FC Sep..Dec'   # This is the description of the time, scenario's and variances. For example: '2022 AC, PL, FC, PL%'
-        
+
         Self variables
         --------------
-        self.ax       : dictionary of axesobjects for the generated subplots
-        
-        self.font     : all text in a chart has the same font
-        
-        self.fontsize : all text in a chart has the same height
-        
-        self.colors   : collection of colors. IBCS advices green for good variance, red for bad variance and blue for highlight. The rest is monochrome.
-        
-        self.barwidth : a float with the width of the bars for measure of ratio
+        self.ax           : Axes-object for the generated subplot
+        self.barwidth     : A float with the width of the bars for measure or ratio
+        self.colors       : Dictionary with colors. IBCS advices green for good variance, red for bad variance and blue for highlight. The rest is monochrome.
+        self.fig_ax_given : Boolean which indicates if both figure-object and axes-object are given as parameters when calling the class
+        self.font         : All text in a chart has the same font
+        self.fontsize     : All text in a chart has the same height
         """
-        
+        if self.fig_ax_given:
+            # In the calling of this class, you gave a figure-object and an axes-object. Maybe you are working with multiple subplots (small multiples) so
+            # you need to provide the title yourself. In a future release there will be additional methods available to make it more easy for you.
+            return
+
         title_text = prepare_title(title, multiplier=self.multiplier.get_multiplier_string())
         # Check if there is a title prepared
         if title_text == None:
             # No title
             return
-        
-        # Determine in which ax the title needs to start
-        scenario = self.filter_scenarios(scenario_list=['PY', 'PL'])
-        if len(scenario) == 0:
-           # No Previous Year or Plan
-           ax = self.ax["main"]
-        else:
-           # The left ax
-           ax = self.ax["left"]
-           
+
+        # Prepare ax-object and x-offset
+        ax = self.ax
+        xoffset = -2 - 0.2
+
         #from matplotlib import rcParams as mpl_rcp  # This line is on top of this module, but only needed for this below.
         mpl_rcp['mathtext.rm'] = self.font           # import matplotlib as mpl : mpl.rcParams['mathtext.rm'] = self.font   ## This should do the same, but imports a whole matplotlib
-        
-        
+
         # Get the current limits of the axis
         limits = ax.axis()  # 4th value. Also possible with ax.get_ylim(), but then 2nd value
-        
+
         # Plot the title
         #### Need to think of a good strategy to fit the title at best!
-        ax.text(0 - self.barwidth*1.2, limits[3]*1.1, title_text, horizontalalignment='left', font=self.font, fontsize=self.fontsize, color=self.colors['text'], verticalalignment='bottom')
+        ax.text(xoffset - self.barwidth*1.2, limits[3]*1.1, title_text, horizontalalignment='left', font=self.font, fontsize=self.fontsize,
+                color=self.colors['text'], verticalalignment='bottom', zorder=100)
+
+        return
+
+
+    def __zorder_documentation(self):
+        """
+        The function __zorder_documentation is only here to document the zorder information
+
+        # zorder documentation
+        # zorder=100 -> text always on top
+        # zorder=60 or 61 base_totals
+        # zorder=60 base details
+        # zorder=70 compare details
+        # zorder=30 compare totals
+        # zorder=80 delta-bars
+        # zorder=20 waterfall line for delta-bars
+        # zorder=10 or 11 scalingband
+        # zorder=90 totalline and x-axis line
+        # zorder=50 lines from base-total to go over compare-total and even more lower y-coordinate
+        # zorder=25 line from compare-total to even more lower y-coordinate
+        # zorder=55 good/bad color fat blocks
+        """
+        pass
+        return
