@@ -2,6 +2,13 @@
 History
 =======
 
+0.2.20 (2025-09-05)
+-------------------
+
+* Column chart with waterfall is prepared for small multiples by using only one axes-object
+* Column chart with waterfall looks more crisp through better organizing of objects and text with zorder
+
+
 0.2.19 (2024-10-01)
 -------------------
 

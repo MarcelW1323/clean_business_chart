@@ -136,10 +136,17 @@ class ColumnWithWaterfall(GeneralChart):
         if self.filename is not None:
             plt.savefig(self.filename, bbox_inches='tight', dpi=150)
         
-        # For automatic testing of complete images of chart
-        if not do_not_show:
-            # No, no automatic testing of complete images of chart -> show the chart
-            plt.show()
+        # Show the chart?
+        if not self.fig_ax_given:
+            # The figure-object and axes-object are created by this class, so you can show the chart
+            # For automatic testing of complete images of chart you can set the 'do_not_show' to True
+            if not do_not_show:
+                # No, no automatic testing of complete images of chart -> show the chart
+                plt.show()
+            # elif do_not_show:
+                # Yes, do_not_show is set, used for automatic testing
+        # elif self.fig_ax_given:
+            # The figure-object and axes-object is given by the caller. The caller has the orchestration for showing the chart
         
 
     def _other_columnwithwaterfall_variables(self):

@@ -33,6 +33,8 @@ Features
   * added support for parameter footnote in version 0.2.15
   
   * added parameter last_closed_month to indicate last used month for actual values in version 0.2.18
+  
+  * technically optimized to use one axes-object (instead of 4) so it is prepared for small multiples. Chart looks more crisp because with zorder objects and text are better organized in version 0.2.20
 
 * BarWithWaterfall, the second chart released in version 0.2.2
 

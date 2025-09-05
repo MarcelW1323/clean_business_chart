@@ -33,6 +33,7 @@ setup(
         'Programming Language :: Python :: 3.10',
         'Programming Language :: Python :: 3.11',
         'Programming Language :: Python :: 3.12',
+        'Programming Language :: Python :: 3.13',
         'Topic :: Scientific/Engineering :: Visualization',
     ],
     # description will be visible in the search on PyPi.org
@@ -47,7 +48,7 @@ setup(
     test_suite='tests',
     tests_require=test_requirements,
     url='https://github.com/marcelw1323/clean_business_chart',
-    version='0.2.19',
+    version='0.2.20',
     zip_safe=False,
 )
 
