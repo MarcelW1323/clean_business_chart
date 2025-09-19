@@ -17,7 +17,8 @@ class GeneralChart:
     colors            = dict()   # Collection of colors. IBCS advices green for good variance, red for bad variance and blue for highlight. The rest is monochrome.
     month             = dict()   # Collection of monthsnames or abbreviations
     barwidths         = dict()   # Collection of default barwidths to use in charts
-    
+    barwidth_factors  = dict()   # Collection of default barwidth factors for time units to use in charts
+
     # Variables with direct value assignment, public variables for all instances
     fontsize          = 12       # All text in a chart has the same height
     fontsize_small    = 10       # Small fontsize for footnotes
@@ -55,6 +56,7 @@ class GeneralChart:
         self._fill_default_colors()
         self._fill_month()
         self._fill_default_barwidths()
+        self._fill_barwidth_factors_for_time_units()
         self._other_variables()
     
     def _other_variables(self):
@@ -168,6 +170,24 @@ class GeneralChart:
         # It would be nice if this could be improved, where the linewidth would be part of the formula.
         #self.barwidths["measure"] = 0.60      # IBCS advices the width of 2/3 of a bar for measures, now there is room for the linewidth
         #self.barwidths["ratio"]   = 0.30      # IBCS advices the width of 1/3 of a bar for ratios, now there is room for the linewidth
+
+        return
+
+    def _fill_barwidth_factors_for_time_units(self):
+        """
+        Assigns the default barwidth factors of charts into the dictionary variable barwidth_factors.
+        These barwidth factors are dependable of the time unit.
+
+        Self variables
+        --------------
+        self.barwidth_factors : a dictionary of barwidth factors for time units
+        """
+        factor = 1.1
+        self.barwidth_factors["Y"] = 1.0 * factor * factor      # Year
+        self.barwidth_factors["Q"] = 1.0 * factor               # Quarter
+        self.barwidth_factors["M"] = 1.0                        # Month
+        self.barwidth_factors["W"] = 1.0 / factor               # Week
+        self.barwidth_factors["D"] = 1.0 / factor / factor      # Day
 
         return
 
